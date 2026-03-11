@@ -2,26 +2,36 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { View, Text } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
+import { useAuth } from '../store/AuthContext';
 
 // 导入页面
 import HomeScreen from '../screens/Home/HomeScreen';
 import RecordScreen from '../screens/Record/RecordScreen';
+import CameraScreen from '../screens/Record/CameraScreen';
+import FoodSearchScreen from '../screens/Record/FoodSearchScreen';
 import AnalyticsScreen from '../screens/Analytics/AnalyticsScreen';
 import ConsultScreen from '../screens/Consult/ConsultScreen';
 import ChatScreen from '../screens/Consult/ChatScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import ProfileEditScreen from '../screens/Profile/ProfileEditScreen';
 import MealPlanScreen from '../screens/MealPlan/MealPlanScreen';
+import MealPlanDetailScreen from '../screens/MealPlan/MealPlanDetailScreen';
 import NotificationSettings from '../screens/Settings/NotificationSettings';
 import TipLibraryScreen from '../screens/Settings/TipLibraryScreen';
+import FeedbackScreen from '../screens/Settings/FeedbackScreen';
+import AboutScreen from '../screens/Settings/AboutScreen';
+import LoginScreen from '../screens/Auth/LoginScreen';
+import RegisterScreen from '../screens/Auth/RegisterScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+const AuthStack = createStackNavigator();
+const MainStack = createStackNavigator();
 
-// 底部Tab配置
+// 底部Tab导航器
 function MainTabNavigator() {
   return (
     <Tab.Navigator
@@ -114,43 +124,139 @@ function MainTabNavigator() {
   );
 }
 
-// 根导航器（包含所有页面）
+// 认证导航器
+function AuthNavigator() {
+  return (
+    <AuthStack.Navigator
+      screenOptions={{
+        headerShown: false,
+        cardStyle: { backgroundColor: Colors.background },
+      }}
+    >
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+      <AuthStack.Screen name="Register" component={RegisterScreen} />
+    </AuthStack.Navigator>
+  );
+}
+
+// 主应用导航器（包含所有页面）
+function AppStackNavigator() {
+  return (
+    <MainStack.Navigator 
+      screenOptions={{ 
+        headerShown: false,
+        cardStyle: { backgroundColor: Colors.background }
+      }}
+    >
+      {/* Tab主界面 */}
+      <MainStack.Screen name="Main" component={MainTabNavigator} />
+      
+      {/* 记录相关页面 */}
+      <MainStack.Screen 
+        name="Camera" 
+        component={CameraScreen} 
+        options={{ 
+          headerShown: false,
+          presentation: 'fullScreenModal'
+        }}
+      />
+      <MainStack.Screen 
+        name="FoodSearch" 
+        component={FoodSearchScreen}
+        options={{ headerShown: true, title: '搜索食物' }}
+      />
+      
+      {/* 咨询页面 */}
+      <MainStack.Screen 
+        name="Chat" 
+        component={ChatScreen} 
+        options={{ headerShown: true, title: 'AI营养顾问' }}
+      />
+      
+      {/* 个人资料页面 */}
+      <MainStack.Screen 
+        name="ProfileEdit" 
+        component={ProfileEditScreen} 
+        options={{ headerShown: true, title: '个人画像' }}
+      />
+      
+      {/* 食谱管理页面 */}
+      <MainStack.Screen 
+        name="MealPlan" 
+        component={MealPlanScreen} 
+        options={{ headerShown: true, title: '我的食谱' }}
+      />
+      <MainStack.Screen 
+        name="MealPlanDetail" 
+        component={MealPlanDetailScreen}
+        options={{ headerShown: true, title: '食谱详情' }}
+      />
+      
+      {/* 设置页面 */}
+      <MainStack.Screen 
+        name="NotificationSettings" 
+        component={NotificationSettings} 
+        options={{ headerShown: true, title: '提醒设置' }}
+      />
+      <MainStack.Screen 
+        name="TipLibrary" 
+        component={TipLibraryScreen} 
+        options={{ headerShown: true, title: '个性化提示库' }}
+      />
+      <MainStack.Screen 
+        name="Feedback" 
+        component={FeedbackScreen}
+        options={{ headerShown: true, title: '意见反馈' }}
+      />
+      <MainStack.Screen 
+        name="About" 
+        component={AboutScreen}
+        options={{ headerShown: true, title: '关于膳智' }}
+      />
+    </MainStack.Navigator>
+  );
+}
+
+// 根导航器
 export default function AppNavigator() {
+  const { isLoading, isAuthenticated } = useAuth();
+
+  // 加载中显示加载界面
+  if (isLoading) {
+    return (
+      <View style={{ 
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        backgroundColor: Colors.background 
+      }}>
+        <View style={{
+          width: 80,
+          height: 80,
+          backgroundColor: Colors.primaryLight,
+          borderRadius: 20,
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginBottom: 16,
+        }}>
+          <Text style={{ fontSize: 40 }}>🥗</Text>
+        </View>
+        <Text style={{ 
+          fontSize: 20, 
+          fontWeight: 'bold',
+          color: Colors.text,
+          marginBottom: 16 
+        }}>
+          膳智 DietWise
+        </Text>
+        <ActivityIndicator size="small" color={Colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer>
-      <Stack.Navigator 
-        screenOptions={{ 
-          headerShown: false,
-          cardStyle: { backgroundColor: Colors.background }
-        }}
-      >
-        <Stack.Screen name="Main" component={MainTabNavigator} />
-        <Stack.Screen 
-          name="Chat" 
-          component={ChatScreen} 
-          options={{ headerShown: true, title: 'AI营养顾问' }}
-        />
-        <Stack.Screen 
-          name="ProfileEdit" 
-          component={ProfileEditScreen} 
-          options={{ headerShown: true, title: '个人画像' }}
-        />
-        <Stack.Screen 
-          name="MealPlan" 
-          component={MealPlanScreen} 
-          options={{ headerShown: true, title: '我的食谱' }}
-        />
-        <Stack.Screen 
-          name="NotificationSettings" 
-          component={NotificationSettings} 
-          options={{ headerShown: true, title: '提醒设置' }}
-        />
-        <Stack.Screen 
-          name="TipLibrary" 
-          component={TipLibraryScreen} 
-          options={{ headerShown: true, title: '个性化提示库' }}
-        />
-      </Stack.Navigator>
+      {isAuthenticated ? <AppStackNavigator /> : <AuthNavigator />}
     </NavigationContainer>
   );
 }

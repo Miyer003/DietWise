@@ -1,23 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { 
   View, 
   Text, 
   ScrollView, 
   TouchableOpacity, 
   StyleSheet, 
-  Dimensions 
+  Dimensions,
+  RefreshControl,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
-import Colors from '../../constants/Colors';
-import { useAuth } from '../../store/AuthContext';
-import { DailySummary, DietRecord } from '../../types';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
+import Colors from '../../constants/Colors';
+import { useAuth } from '../../store/AuthContext';
+import { DietService, TipsService, AIService } from '../../services/api';
+import { DailySummary, DietRecord, AITip } from '../../types';
 
 const { width } = Dimensions.get('window');
 
-// 环形进度条组件（对应原型SVG）
+// 环形进度条组件
 const CircularProgress: React.FC<{ progress: number; consumed: number; goal: number }> = ({
   progress,
   consumed,
@@ -27,7 +30,7 @@ const CircularProgress: React.FC<{ progress: number; consumed: number; goal: num
   const strokeWidth = 10;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
+  const strokeDashoffset = circumference - (Math.min(progress, 100) / 100) * circumference;
 
   return (
     <View style={styles.progressRingContainer}>
@@ -44,7 +47,7 @@ const CircularProgress: React.FC<{ progress: number; consumed: number; goal: num
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={Colors.primary}
+          stroke={progress > 100 ? Colors.danger : Colors.primary}
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeDasharray={circumference}
@@ -55,13 +58,15 @@ const CircularProgress: React.FC<{ progress: number; consumed: number; goal: num
       <View style={styles.progressTextContainer}>
         <Text style={styles.progressValue}>{consumed.toLocaleString()}</Text>
         <Text style={styles.progressLabel}>/ {goal.toLocaleString()} kcal</Text>
-        <Text style={styles.progressPercent}>{Math.round(progress)}%</Text>
+        <Text style={[styles.progressPercent, { color: progress > 100 ? Colors.danger : Colors.primary }]}>
+          {Math.round(progress)}%
+        </Text>
       </View>
     </View>
   );
 };
 
-// 营养进度条（蛋白质/碳水/脂肪）
+// 营养进度条组件
 const NutrientBar: React.FC<{ label: string; current: number; total: number; color: string }> = ({
   label,
   current,
@@ -86,22 +91,14 @@ const NutrientBar: React.FC<{ label: string; current: number; total: number; col
   );
 };
 
-// AI建议卡片（对应原型中的渐变卡片）
-const AICard: React.FC<{ onConsult: () => void; onDetail: () => void }> = ({ onConsult, onDetail }) => {
-  const [tip, setTip] = useState('根据您近期的饮食数据，蔬菜摄入量较低，建议今晚增加一份清炒时蔬。');
-
-  const tips = [
-    "根据您近期的饮食数据，蔬菜摄入量较低，建议今晚增加一份清炒时蔬。",
-    "您今日的蛋白质摄入充足，保持得很好！记得多喝水促进代谢。",
-    "连续3天早餐规律，这是一个很好的习惯，请继续保持。",
-    "本周钠摄入较高，建议减少外卖和加工食品的摄入。",
-  ];
-
-  const refreshTip = () => {
-    const randomTip = tips[Math.floor(Math.random() * tips.length)];
-    setTip(randomTip);
-  };
-
+// AI建议卡片
+const AICard: React.FC<{ 
+  tip: AITip | null; 
+  onRefresh: () => void;
+  onConsult: () => void; 
+  onDetail: () => void;
+  isLoading: boolean;
+}> = ({ tip, onRefresh, onConsult, onDetail, isLoading }) => {
   return (
     <View style={styles.aiCard}>
       <View style={styles.aiCardHeader}>
@@ -109,13 +106,17 @@ const AICard: React.FC<{ onConsult: () => void; onDetail: () => void }> = ({ onC
           <Text style={styles.aiIconText}>🤖</Text>
         </View>
         <View style={styles.aiTitleContainer}>
-          <Text style={styles.aiTitle}>AI营养顾问建议</Text>
-          <TouchableOpacity onPress={refreshTip}>
-            <Text style={styles.aiTime}>刷新</Text>
+          <Text style={styles.aiTitle}>
+            {tip?.type === 'user' ? '我的提示' : 'AI营养顾问建议'}
+          </Text>
+          <TouchableOpacity onPress={onRefresh} disabled={isLoading}>
+            <Text style={[styles.aiTime, isLoading && { opacity: 0.5 }]}>
+              {isLoading ? '刷新中...' : '刷新'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
-      <Text style={styles.aiContent}>{tip}</Text>
+      <Text style={styles.aiContent}>{tip?.content || '正在获取建议...'}</Text>
       <View style={styles.aiActions}>
         <TouchableOpacity style={styles.aiButtonPrimary} onPress={onConsult}>
           <Text style={styles.aiButtonPrimaryText}>咨询AI →</Text>
@@ -128,8 +129,8 @@ const AICard: React.FC<{ onConsult: () => void; onDetail: () => void }> = ({ onC
   );
 };
 
-// 时间线项目（对应原型中的今日记录）
-const TimelineItem: React.FC<{ record: any; isLast?: boolean }> = ({ record, isLast }) => {
+// 时间线项目
+const TimelineItem: React.FC<{ record: DietRecord; isLast?: boolean }> = ({ record, isLast }) => {
   const getMealIcon = (type: string) => {
     switch(type) {
       case 'breakfast': return '🍳';
@@ -148,6 +149,19 @@ const TimelineItem: React.FC<{ record: any; isLast?: boolean }> = ({ record, isL
     }
   };
 
+  const formatTime = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'HH:mm');
+    } catch {
+      return '--:--';
+    }
+  };
+
+  const getFoodNames = (record: DietRecord) => {
+    if (!record.items || record.items.length === 0) return '无记录';
+    return record.items.map(item => item.food_name).join(' + ');
+  };
+
   return (
     <View style={styles.timelineItem}>
       <View style={styles.timelineDot} />
@@ -159,10 +173,10 @@ const TimelineItem: React.FC<{ record: any; isLast?: boolean }> = ({ record, isL
         <View style={styles.timelineInfo}>
           <View style={styles.timelineHeader}>
             <Text style={styles.timelineMealType}>{getMealName(record.meal_type)}</Text>
-            <Text style={styles.timelineTime}>08:30</Text>
+            <Text style={styles.timelineTime}>{formatTime(record.created_at)}</Text>
           </View>
-          <Text style={styles.timelineFood}>包子 + 豆浆</Text>
-          <Text style={styles.timelineCalories}>{record.total_calories} kcal</Text>
+          <Text style={styles.timelineFood} numberOfLines={1}>{getFoodNames(record)}</Text>
+          <Text style={styles.timelineCalories}>{Math.round(record.total_calories)} kcal</Text>
         </View>
       </View>
     </View>
@@ -172,53 +186,94 @@ const TimelineItem: React.FC<{ record: any; isLast?: boolean }> = ({ record, isL
 export default function HomeScreen({ navigation }: any) {
   const { user, profile } = useAuth();
   const [dailyData, setDailyData] = useState<DailySummary | null>(null);
+  const [aiTip, setAiTip] = useState<AITip | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isTipLoading, setIsTipLoading] = useState(false);
 
-  // 模拟数据（后续替换为API调用）
-  useEffect(() => {
-    const mockData: DailySummary = {
-      date: format(new Date(), 'yyyy-MM-dd'),
-      calorie_goal: profile?.daily_calorie_goal || 2000,
-      calorie_consumed: 1250,
-      calorie_remaining: 750,
-      protein_g: 80,
-      carbs_g: 180,
-      fat_g: 32,
-      health_score: 85,
-      meal_records: [
-        {
-          id: '1',
-          record_date: format(new Date(), 'yyyy-MM-dd'),
-          meal_type: 'breakfast',
-          total_calories: 450,
-          total_protein: 15,
-          total_carbs: 65,
-          total_fat: 8,
-          input_method: 'photo',
-          items: [],
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          record_date: format(new Date(), 'yyyy-MM-dd'),
-          meal_type: 'lunch',
-          total_calories: 800,
-          total_protein: 35,
-          total_carbs: 85,
-          total_fat: 22,
-          input_method: 'manual',
-          items: [],
-          created_at: new Date().toISOString(),
-        },
-      ],
-    };
-    setDailyData(mockData);
+  const today = format(new Date(), 'yyyy-MM-dd');
+
+  // 加载每日数据
+  const loadDailyData = useCallback(async () => {
+    try {
+      const response = await DietService.getDailySummary(today);
+      if (response.code === 0 && response.data) {
+        setDailyData(response.data);
+      }
+    } catch (error) {
+      console.error('加载每日数据失败:', error);
+    }
+  }, [today]);
+
+  // 加载AI建议
+  const loadAiTip = useCallback(async () => {
+    setIsTipLoading(true);
+    try {
+      // 先尝试获取用户自定义提示
+      const tipsRes = await TipsService.getTips();
+      if (tipsRes.code === 0 && tipsRes.data && tipsRes.data.length > 0) {
+        // 随机选择一个用户提示
+        const randomTip = tipsRes.data[Math.floor(Math.random() * tipsRes.data.length)];
+        setAiTip({
+          id: randomTip.id,
+          content: randomTip.content,
+          type: 'user',
+          color_theme: randomTip.color_theme,
+        });
+      } else {
+        // 没有用户提示，获取AI生成的建议
+        const aiRes = await AIService.generateTip();
+        if (aiRes.code === 0 && aiRes.data) {
+          setAiTip(aiRes.data);
+        }
+      }
+    } catch (error) {
+      console.error('加载建议失败:', error);
+      setAiTip({
+        id: 'default',
+        content: '根据您近期的饮食数据，建议保持均衡饮食，多吃蔬菜水果。',
+        type: 'ai',
+      });
+    } finally {
+      setIsTipLoading(false);
+    }
   }, []);
 
-  const progress = dailyData ? (dailyData.calorie_consumed / dailyData.calorie_goal) * 100 : 0;
+  // 初始加载
+  useEffect(() => {
+    const loadAll = async () => {
+      setIsLoading(true);
+      await Promise.all([loadDailyData(), loadAiTip()]);
+      setIsLoading(false);
+    };
+    loadAll();
+  }, [loadDailyData, loadAiTip]);
+
+  // 下拉刷新
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await Promise.all([loadDailyData(), loadAiTip()]);
+    setIsRefreshing(false);
+  }, [loadDailyData, loadAiTip]);
+
+  const progress = dailyData && dailyData.calorie_goal > 0
+    ? (dailyData.calorie_consumed / dailyData.calorie_goal) * 100 
+    : 0;
+
+  // 计算营养素目标（简化计算，实际应该从profile获取）
+  const proteinGoal = profile?.weight_kg ? profile.weight_kg * 1.2 : 60;
+  const carbsGoal = profile?.daily_calorie_goal ? (profile.daily_calorie_goal * 0.5) / 4 : 250;
+  const fatGoal = profile?.daily_calorie_goal ? (profile.daily_calorie_goal * 0.3) / 9 : 65;
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+        }
+      >
         {/* 顶部问候区 */}
         <View style={styles.header}>
           <View>
@@ -229,7 +284,7 @@ export default function HomeScreen({ navigation }: any) {
           </View>
           <TouchableOpacity 
             style={styles.avatarButton}
-            onPress={() => navigation.navigate('Profile')}
+            onPress={() => navigation.navigate('ProfileTab')}
           >
             <Text style={styles.avatarEmoji}>{user?.avatar_emoji || '😊'}</Text>
           </TouchableOpacity>
@@ -240,22 +295,40 @@ export default function HomeScreen({ navigation }: any) {
           <CircularProgress 
             progress={progress} 
             consumed={dailyData?.calorie_consumed || 0}
-            goal={dailyData?.calorie_goal || 2000}
+            goal={dailyData?.calorie_goal || profile?.daily_calorie_goal || 2000}
           />
         </View>
 
         {/* 营养进度条 */}
         <View style={styles.nutrientsContainer}>
-          <NutrientBar label="蛋白质" current={80} total={100} color={Colors.primary} />
-          <NutrientBar label="碳水" current={180} total={300} color={Colors.warning} />
-          <NutrientBar label="脂肪" current={32} total={80} color="#F97316" />
+          <NutrientBar 
+            label="蛋白质" 
+            current={dailyData?.protein_g || 0} 
+            total={proteinGoal} 
+            color={Colors.primary} 
+          />
+          <NutrientBar 
+            label="碳水" 
+            current={dailyData?.carbs_g || 0} 
+            total={carbsGoal} 
+            color={Colors.warning} 
+          />
+          <NutrientBar 
+            label="脂肪" 
+            current={dailyData?.fat_g || 0} 
+            total={fatGoal} 
+            color="#F97316" 
+          />
         </View>
 
         {/* AI智能建议卡片 */}
         <View style={styles.sectionPadding}>
           <AICard 
-            onConsult={() => navigation.navigate('Consult')}
-            onDetail={() => navigation.navigate('Analytics')}
+            tip={aiTip}
+            onRefresh={loadAiTip}
+            onConsult={() => navigation.navigate('ConsultTab')}
+            onDetail={() => navigation.navigate('AnalyticsTab')}
+            isLoading={isTipLoading}
           />
         </View>
 
@@ -263,34 +336,40 @@ export default function HomeScreen({ navigation }: any) {
         <View style={styles.timelineSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>📋 今日记录</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Analytics')}>
+            <TouchableOpacity onPress={() => navigation.navigate('AnalyticsTab')}>
               <Text style={styles.sectionLink}>查看全部 →</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.timelineCard}>
-            {dailyData?.meal_records.map((record, index) => (
-              <TimelineItem 
-                key={record.id} 
-                record={record} 
-                isLast={index === dailyData.meal_records.length - 1}
-              />
-            ))}
+            {dailyData?.meal_records && dailyData.meal_records.length > 0 ? (
+              dailyData.meal_records.map((record, index) => (
+                <TimelineItem 
+                  key={record.id} 
+                  record={record} 
+                  isLast={index === dailyData.meal_records.length - 1}
+                />
+              ))
+            ) : (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>今天还没有记录哦</Text>
+              </View>
+            )}
             
             {/* 添加记录入口 */}
             <TouchableOpacity 
               style={styles.addRecordItem}
-              onPress={() => navigation.navigate('Record')}
+              onPress={() => navigation.navigate('RecordTab')}
             >
               <View style={styles.addRecordIcon}>
                 <Text style={styles.addRecordPlus}>+</Text>
               </View>
-              <Text style={styles.addRecordText}>点击添加晚餐记录...</Text>
+              <Text style={styles.addRecordText}>点击添加记录...</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* 底部留白（避免被Tab栏遮挡） */}
+        {/* 底部留白 */}
         <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>
@@ -362,7 +441,6 @@ const styles = StyleSheet.create({
   },
   progressPercent: {
     fontSize: 16,
-    color: Colors.primary,
     fontWeight: '600',
     marginTop: 4,
   },
@@ -503,6 +581,14 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.card,
     borderRadius: 16,
     padding: 16,
+  },
+  emptyState: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: Colors.textMuted,
   },
   timelineItem: {
     flexDirection: 'row',
