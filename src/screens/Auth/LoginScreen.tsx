@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,7 +19,7 @@ import { AuthService } from '../../services/api';
 
 type LoginMode = 'password' | 'sms';
 
-export default function LoginScreen({ navigation }: any) {
+export default function LoginScreen({ navigation, route }: any) {
   const [mode, setMode] = useState<LoginMode>('password');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -30,6 +30,16 @@ export default function LoginScreen({ navigation }: any) {
   const [showPassword, setShowPassword] = useState(false);
 
   const { login, loginBySms } = useAuth();
+
+  // 接收从注册页传递的参数
+  useEffect(() => {
+    if (route.params?.phone) {
+      setPhone(route.params.phone);
+    }
+    if (route.params?.password) {
+      setPassword(route.params.password);
+    }
+  }, [route.params]);
 
   // 发送短信验证码
   const sendSmsCode = async () => {
@@ -42,7 +52,27 @@ export default function LoginScreen({ navigation }: any) {
     try {
       const response = await AuthService.sendSmsCode(phone);
       if (response.code === 0) {
-        Alert.alert('成功', '验证码已发送');
+        const { code, expireIn } = response.data || {};
+        
+        // 开发环境显示验证码弹窗
+        if (code) {
+          Alert.alert(
+            '验证码已发送（开发模式）',
+            `验证码: ${code}\n有效期: ${expireIn}秒`,
+            [
+              { 
+                text: '复制并填入', 
+                onPress: () => {
+                  setSmsCode(code);
+                }
+              },
+              { text: '知道了', style: 'cancel' }
+            ]
+          );
+        } else {
+          Alert.alert('成功', '验证码已发送');
+        }
+        
         setCountdown(60);
         const timer = setInterval(() => {
           setCountdown((prev) => {

@@ -13,7 +13,7 @@ interface AuthContextType {
   register: (data: {
     phone: string;
     password: string;
-    sms_code: string;
+    smsCode: string;
     nickname?: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
@@ -73,12 +73,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
 
   // 处理登录响应
   const handleLoginResponse = async (response: { data: LoginResponse }) => {
-    const { access_token, refresh_token, user } = response.data;
+    const { accessToken, refreshToken, user } = response.data;
     
     // 保存到本地存储
     await AsyncStorage.multiSet([
-      [AUTH_TOKEN_KEY, access_token],
-      [REFRESH_TOKEN_KEY, refresh_token],
+      [AUTH_TOKEN_KEY, accessToken],
+      [REFRESH_TOKEN_KEY, refreshToken],
       [USER_DATA_KEY, JSON.stringify(user)],
     ]);
 
@@ -125,17 +125,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
     }
   }, []);
 
-  // 注册
+  // 注册（不自动登录，返回成功状态让调用方处理）
   const register = useCallback(async (data: {
     phone: string;
     password: string;
-    sms_code: string;
+    smsCode: string;
     nickname?: string;
   }) => {
     try {
       const response = await AuthService.register(data);
       if (response.code === 0) {
-        await handleLoginResponse(response as any);
+        // 注册成功但不自动登录，让调用方导航到登录页
+        return;
       } else {
         throw new Error(response.message || '注册失败');
       }

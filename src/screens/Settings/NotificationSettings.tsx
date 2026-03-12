@@ -55,7 +55,11 @@ export default function NotificationSettings() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+      >
         {/* 主开关 */}
         <View style={styles.masterSwitch}>
           <View style={styles.masterIcon}>
@@ -215,6 +219,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
   },
   masterSwitch: {
     flexDirection: 'row',

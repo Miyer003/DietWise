@@ -13,7 +13,11 @@ export default function ConsultScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+      >
         {/* 顶部标题 */}
         <View style={styles.header}>
           <View>
@@ -78,7 +82,7 @@ export default function ConsultScreen({ navigation }: any) {
             <TouchableOpacity 
               key={index} 
               style={styles.questionItem}
-              onPress={() => navigation.navigate('Chat')}
+              onPress={() => navigation.navigate('Chat', { initialMessage: question })}
             >
               <Text style={styles.questionText}>{question}</Text>
               <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} />
@@ -99,6 +103,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
   },
   header: {
     flexDirection: 'row',

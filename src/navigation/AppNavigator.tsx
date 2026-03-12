@@ -37,7 +37,7 @@ function MainTabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = 'home';
+          let iconName: string = 'home';
           
           switch (route.name) {
             case 'HomeTab':

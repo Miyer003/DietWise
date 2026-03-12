@@ -11,9 +11,9 @@ import {
 } from '../../types';
 
 export interface CreateDietRecordRequest {
-  record_date: string;
-  meal_type: MealType;
-  input_method: InputMethod;
+  recordDate: string;
+  mealType: MealType;
+  inputMethod: InputMethod;
   notes?: string;
   items: Omit<DietRecordItem, 'id'>[];
 }

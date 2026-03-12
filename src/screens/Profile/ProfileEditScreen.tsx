@@ -1,41 +1,117 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   TouchableOpacity, 
   ScrollView,
-  TextInput 
+  TextInput,
+  Alert,
+  ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import Colors from '../../constants/Colors';
 import { useAuth } from '../../store/AuthContext';
+import { UserService } from '../../services/api';
 
 const avatars = ['😊', '😄', '🤔', '😎', '🤬', '😍', '🤓', '💪', '🌟', '🐼', '🌸', '🍎'];
 
 export default function ProfileEditScreen({ navigation }: any) {
-  const { user, profile, updateProfile } = useAuth();
-  const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar_emoji || '😊');
-  const [nickname, setNickname] = useState(user?.nickname || 'User');
-  const [bio, setBio] = useState('记录饮食，养成健康习惯');
-  const [gender, setGender] = useState<'male' | 'female' | 'other'>('male');
+  const { user, profile, updateUser, updateProfile } = useAuth();
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // 基本信息
+  const [selectedAvatar, setSelectedAvatar] = useState(user?.avatarEmoji || '😊');
+  const [nickname, setNickname] = useState(user?.nickname || '');
+  const [bio, setBio] = useState(profile?.bio || '');
+  
+  // 身体数据
+  const [gender, setGender] = useState<'male' | 'female' | 'other'>(profile?.gender || 'male');
+  const [heightCm, setHeightCm] = useState(profile?.heightCm?.toString() || '');
+  const [weightKg, setWeightKg] = useState(profile?.weightKg?.toString() || '');
+  const [targetWeightKg, setTargetWeightKg] = useState(profile?.targetWeightKg?.toString() || '');
+  const [birthDate, setBirthDate] = useState(profile?.birthDate || '');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  
+  // 饮食目标
+  const [healthGoal, setHealthGoal] = useState<'减脂' | '增肌' | '维持'>(profile?.healthGoal || '维持');
+  const [dailyCalorieGoal, setDailyCalorieGoal] = useState(profile?.dailyCalorieGoal?.toString() || '2000');
+  const [mealCount, setMealCount] = useState(profile?.mealCount?.toString() || '3');
+
+  // 加载现有数据
+  useEffect(() => {
+    if (user) {
+      setSelectedAvatar(user.avatarEmoji || '😊');
+      setNickname(user.nickname || '');
+    }
+    if (profile) {
+      setBio(profile.bio || '');
+      setGender(profile.gender || 'male');
+      setHeightCm(profile.heightCm?.toString() || '');
+      setWeightKg(profile.weightKg?.toString() || '');
+      setTargetWeightKg(profile.targetWeightKg?.toString() || '');
+      setBirthDate(profile.birthDate || '');
+      setHealthGoal(profile.healthGoal || '维持');
+      setDailyCalorieGoal(profile.dailyCalorieGoal?.toString() || '2000');
+      setMealCount(profile.mealCount?.toString() || '3');
+    }
+  }, [user, profile]);
 
   const handleSave = async () => {
-    // 模拟保存
-    navigation.goBack();
+    if (!nickname.trim()) {
+      Alert.alert('提示', '请输入昵称');
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      // 保存用户信息
+      if (nickname !== user?.nickname || selectedAvatar !== user?.avatarEmoji) {
+        await updateUser({
+          nickname: nickname.trim(),
+          avatarEmoji: selectedAvatar,
+        });
+      }
+      
+      // 保存用户画像
+      const profileData: any = {};
+      if (bio !== profile?.bio) profileData.bio = bio.trim();
+      if (gender !== profile?.gender) profileData.gender = gender;
+      if (heightCm) profileData.heightCm = parseFloat(heightCm);
+      if (weightKg) profileData.weightKg = parseFloat(weightKg);
+      if (targetWeightKg) profileData.targetWeightKg = parseFloat(targetWeightKg);
+      if (birthDate) profileData.birthDate = birthDate;
+      if (healthGoal !== profile?.healthGoal) profileData.healthGoal = healthGoal;
+      if (dailyCalorieGoal) profileData.dailyCalorieGoal = parseInt(dailyCalorieGoal);
+      if (mealCount) profileData.mealCount = parseInt(mealCount);
+      
+      if (Object.keys(profileData).length > 0) {
+        await updateProfile(profileData);
+      }
+      
+      Alert.alert('保存成功', '您的个人画像已更新');
+      navigation.goBack();
+    } catch (error: any) {
+      Alert.alert('保存失败', error.message || '请检查网络连接');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+      >
         {/* 头像选择 */}
         <View style={styles.avatarSection}>
           <View style={styles.avatarContainer}>
             <Text style={styles.avatarEmoji}>{selectedAvatar}</Text>
-            <TouchableOpacity style={styles.cameraBtn}>
-              <Ionicons name="camera" size={20} color={Colors.textSecondary} />
-            </TouchableOpacity>
           </View>
           <Text style={styles.avatarHint}>点击头像更换</Text>
         </View>
@@ -70,13 +146,15 @@ export default function ProfileEditScreen({ navigation }: any) {
                 value={nickname}
                 onChangeText={setNickname}
                 placeholder="输入您的昵称"
+                placeholderTextColor={Colors.textMuted}
+                editable={!isSaving}
               />
             </View>
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>用户ID</Text>
               <TextInput 
                 style={[styles.input, styles.inputDisabled]}
-                value="12345678"
+                value={user?.id?.slice(0, 8) || ''}
                 editable={false}
               />
             </View>
@@ -87,6 +165,9 @@ export default function ProfileEditScreen({ navigation }: any) {
                 value={bio}
                 onChangeText={setBio}
                 placeholder="输入个性签名"
+                multiline
+                numberOfLines={2}
+                editable={!isSaving}
               />
             </View>
           </View>
@@ -101,17 +182,68 @@ export default function ProfileEditScreen({ navigation }: any) {
                 <Text style={styles.inputLabel}>身高 (cm)</Text>
                 <TextInput 
                   style={styles.input}
-                  value="170"
+                  value={heightCm}
+                  onChangeText={setHeightCm}
+                  placeholder="170"
+                placeholderTextColor={Colors.textMuted}
                   keyboardType="numeric"
+                  editable={!isSaving}
                 />
               </View>
               <View style={[styles.inputGroup, { flex: 1 }]}>
                 <Text style={styles.inputLabel}>体重 (kg)</Text>
                 <TextInput 
                   style={styles.input}
-                  value="65"
+                  value={weightKg}
+                  onChangeText={setWeightKg}
+                  placeholder="65"
+                placeholderTextColor={Colors.textMuted}
                   keyboardType="numeric"
+                  editable={!isSaving}
                 />
+              </View>
+            </View>
+            
+            <View style={styles.rowInputs}>
+              <View style={[styles.inputGroup, { flex: 1, marginRight: 12 }]}>
+                <Text style={styles.inputLabel}>目标体重 (kg)</Text>
+                <TextInput 
+                  style={styles.input}
+                  value={targetWeightKg}
+                  onChangeText={setTargetWeightKg}
+                  placeholder="60"
+                placeholderTextColor={Colors.textMuted}
+                  keyboardType="numeric"
+                  editable={!isSaving}
+                />
+              </View>
+              <View style={[styles.inputGroup, { flex: 1 }]}>
+                <Text style={styles.inputLabel}>出生日期</Text>
+                <TouchableOpacity 
+                  style={styles.dateInput}
+                  onPress={() => setShowDatePicker(true)}
+                  disabled={isSaving}
+                >
+                  <Text style={birthDate ? styles.dateText : styles.datePlaceholder}>
+                    {birthDate || '选择出生日期'}
+                  </Text>
+                  <Ionicons name="calendar-outline" size={20} color={Colors.textMuted} />
+                </TouchableOpacity>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={birthDate ? new Date(birthDate) : new Date(1999, 0, 1)}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    maximumDate={new Date()}
+                    minimumDate={new Date(1900, 0, 1)}
+                    onChange={(event, selectedDate) => {
+                      setShowDatePicker(false);
+                      if (selectedDate) {
+                        setBirthDate(selectedDate.toISOString().split('T')[0]);
+                      }
+                    }}
+                  />
+                )}
               </View>
             </View>
             
@@ -121,32 +253,87 @@ export default function ProfileEditScreen({ navigation }: any) {
                 <TouchableOpacity 
                   style={[styles.genderBtn, gender === 'male' && styles.genderBtnActive]}
                   onPress={() => setGender('male')}
+                  disabled={isSaving}
                 >
                   <Text style={[styles.genderText, gender === 'male' && styles.genderTextActive]}>男</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={[styles.genderBtn, gender === 'female' && styles.genderBtnActive]}
                   onPress={() => setGender('female')}
+                  disabled={isSaving}
                 >
                   <Text style={[styles.genderText, gender === 'female' && styles.genderTextActive]}>女</Text>
                 </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.genderBtn, gender === 'other' && styles.genderBtnActive]}
+                  onPress={() => setGender('other')}
+                  disabled={isSaving}
+                >
+                  <Text style={[styles.genderText, gender === 'other' && styles.genderTextActive]}>其他</Text>
+                </TouchableOpacity>
               </View>
             </View>
+          </View>
+        </View>
 
+        {/* 饮食目标 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>饮食目标</Text>
+          <View style={styles.card}>
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>年龄</Text>
-              <TextInput 
-                style={styles.input}
-                value="25"
-                keyboardType="numeric"
-              />
+              <Text style={styles.inputLabel}>健康目标</Text>
+              <View style={styles.goalContainer}>
+                {(['减脂', '增肌', '维持'] as const).map((goal) => (
+                  <TouchableOpacity 
+                    key={goal}
+                    style={[styles.goalBtn, healthGoal === goal && styles.goalBtnActive]}
+                    onPress={() => setHealthGoal(goal)}
+                    disabled={isSaving}
+                  >
+                    <Text style={[styles.goalText, healthGoal === goal && styles.goalTextActive]}>
+                      {goal}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            
+            <View style={styles.rowInputs}>
+              <View style={[styles.inputGroup, { flex: 1, marginRight: 12 }]}>
+                <Text style={styles.inputLabel}>每日热量目标 (kcal)</Text>
+                <TextInput 
+                  style={styles.input}
+                  value={dailyCalorieGoal}
+                  onChangeText={setDailyCalorieGoal}
+                  placeholder="2000"
+                placeholderTextColor={Colors.textMuted}
+                  keyboardType="numeric"
+                  editable={!isSaving}
+                />
+              </View>
+              <View style={[styles.inputGroup, { flex: 1 }]}>
+                <Text style={styles.inputLabel}>每日餐数</Text>
+                <TextInput 
+                  style={styles.input}
+                  value={mealCount}
+                  onChangeText={setMealCount}
+                  placeholder="3"
+                placeholderTextColor={Colors.textMuted}
+                  keyboardType="numeric"
+                  editable={!isSaving}
+                />
+              </View>
             </View>
           </View>
         </View>
 
         {/* 保存按钮 */}
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-          <Text style={styles.saveBtnText}>保存修改</Text>
+        <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={isSaving}>
+          {isSaving ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={styles.saveBtnText}>保存修改</Text>
+          )}
         </TouchableOpacity>
 
         <View style={{ height: 40 }} />
@@ -162,6 +349,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
   },
   avatarSection: {
     alignItems: 'center',
@@ -184,21 +375,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 4,
-  },
-  cameraBtn: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 32,
-    height: 32,
-    backgroundColor: 'white',
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    elevation: 2,
   },
   avatarHint: {
     marginTop: 12,
@@ -257,8 +433,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.text,
   },
-  inputDisabled: {
+  dateInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  dateText: {
+    fontSize: 15,
+    color: Colors.text,
+  },
+  datePlaceholder: {
+    fontSize: 15,
     color: Colors.textMuted,
+  },
+  inputDisabled: {
+    color: Colors.textSecondary,
     backgroundColor: '#E5E7EB',
   },
   rowInputs: {
@@ -284,6 +477,28 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   genderTextActive: {
+    color: 'white',
+  },
+  goalContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  goalBtn: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  goalBtnActive: {
+    backgroundColor: Colors.primary,
+  },
+  goalText: {
+    fontSize: 15,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  goalTextActive: {
     color: 'white',
   },
   saveBtn: {

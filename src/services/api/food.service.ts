@@ -23,7 +23,7 @@ export const FoodService = {
 
   // 语义检索（RAG）
   semanticSearch: async (query: string, limit?: number): Promise<ApiResponse<FoodItem[]>> => {
-    return apiClient.get('/foods/semantic', { params: { q: query, limit } });
+    return apiClient.get('/foods/semantic/search', { params: { q: query, limit } });
   },
 
   // 获取最近常吃的食物

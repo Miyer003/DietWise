@@ -20,7 +20,7 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
   const { mealPlan } = route.params;
 
   const getDayData = (dayOfWeek: number) => {
-    return mealPlan.days?.filter(d => d.day_of_week === dayOfWeek) || [];
+    return mealPlan.days?.filter(d => d.dayOfWeek === dayOfWeek) || [];
   };
 
   const getMealTypeName = (type: string) => {
@@ -35,18 +35,22 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+      >
         {/* 计划概览 */}
         <View style={styles.overviewCard}>
           <View style={styles.overviewHeader}>
             <View style={[styles.planTypeBadge, 
-              mealPlan.plan_type === 'ai' ? styles.aiBadge : styles.customBadge
+              mealPlan.planType === 'ai' ? styles.aiBadge : styles.customBadge
             ]}>
               <Text style={[
                 styles.planTypeText,
-                mealPlan.plan_type === 'ai' ? styles.aiBadgeText : styles.customBadgeText
+                mealPlan.planType === 'ai' ? styles.aiBadgeText : styles.customBadgeText
               ]}>
-                {mealPlan.plan_type === 'ai' ? '🤖 AI生成' : '✏️ 自定义'}
+                {mealPlan.planType === 'ai' ? '🤖 AI生成' : '✏️ 自定义'}
               </Text>
             </View>
             <Text style={styles.planStatus}>
@@ -56,22 +60,22 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
 
           <View style={styles.overviewStats}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{mealPlan.calorie_target}</Text>
+              <Text style={styles.statValue}>{mealPlan.calorieTarget}</Text>
               <Text style={styles.statLabel}>目标热量(kcal)</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{mealPlan.meal_count}</Text>
+              <Text style={styles.statValue}>{mealPlan.mealCount}</Text>
               <Text style={styles.statLabel}>每日餐数</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{mealPlan.health_goal}</Text>
+              <Text style={styles.statValue}>{mealPlan.healthGoal}</Text>
               <Text style={styles.statLabel}>饮食目标</Text>
             </View>
           </View>
 
-          {mealPlan.flavor_prefs && mealPlan.flavor_prefs.length > 0 && (
+          {mealPlan.flavorPrefs && mealPlan.flavorPrefs.length > 0 && (
             <View style={styles.flavorContainer}>
-              {mealPlan.flavor_prefs.map((pref, index) => (
+              {mealPlan.flavorPrefs.map((pref, index) => (
                 <View key={index} style={styles.flavorTag}>
                   <Text style={styles.flavorText}>{pref}</Text>
                 </View>
@@ -93,19 +97,19 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
                 <View style={styles.dayHeader}>
                   <Text style={styles.dayName}>{dayName}</Text>
                   <Text style={styles.dayCalories}>
-                    {dayData.reduce((sum, d) => sum + (d.total_calories || 0), 0)} kcal
+                    {dayData.reduce((sum, d) => sum + (d.totalCalories || 0), 0)} kcal
                   </Text>
                 </View>
 
                 {dayData.map((meal, mealIndex) => (
                   <View key={mealIndex} style={styles.mealContainer}>
-                    <Text style={styles.mealType}>{getMealTypeName(meal.meal_type)}</Text>
+                    <Text style={styles.mealType}>{getMealTypeName(meal.mealType)}</Text>
                     
                     {meal.dishes?.map((dish, dishIndex) => (
                       <View key={dishIndex} style={styles.dishItem}>
                         <View style={styles.dishInfo}>
                           <Text style={styles.dishName}>{dish.name}</Text>
-                          <Text style={styles.dishQuantity}>{dish.quantity_g}g</Text>
+                          <Text style={styles.dishQuantity}>{dish.quantityG}g</Text>
                         </View>
                         <Text style={styles.dishCalories}>{dish.calories} kcal</Text>
                       </View>
@@ -141,6 +145,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
   },
   overviewCard: {
     backgroundColor: Colors.card,

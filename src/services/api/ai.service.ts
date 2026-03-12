@@ -10,24 +10,24 @@ import {
 
 export interface AnalyzeNutritionRequest {
   type: 'image' | 'text';
-  image_url?: string;
-  image_hash?: string;
+  imageUrl?: string;
+  imageHash?: string;
   description?: string;
-  quantity_g?: number;
+  quantityG?: number;
 }
 
 export interface ChatRequest {
-  session_id?: string;
+  sessionId?: string;
   message: string;
-  include_context?: boolean;
+  includeContext?: boolean;
 }
 
 export interface GenerateMealPlanRequest {
-  calorie_target: number;
-  meal_count: number;
-  health_goal: string;
-  flavor_prefs: string[];
-  use_ai?: boolean;
+  calorieTarget: number;
+  mealCount: number;
+  healthGoal: string;
+  flavorPrefs: string[];
+  useAI?: boolean;
 }
 
 export const AIService = {
@@ -38,9 +38,9 @@ export const AIService = {
 
   // AI对话（非流式）
   chat: async (data: ChatRequest): Promise<ApiResponse<{ 
-    session_id: string; 
+    sessionId: string; 
     content: string;
-    message_count: number;
+    messageCount: number;
   }>> => {
     return apiClient.post('/ai/chat', data);
   },
@@ -53,7 +53,7 @@ export const AIService = {
   }) => {
     // 流式请求需要特殊处理，这里提供基础实现
     const eventSource = new EventSource(
-      `${apiClient.defaults.baseURL}/ai/chat?session_id=${data.session_id || ''}&message=${encodeURIComponent(data.message)}`,
+      `${apiClient.defaults.baseURL}/ai/chat?sessionId=${data.sessionId || ''}&message=${encodeURIComponent(data.message)}`,
       { withCredentials: true }
     );
 
@@ -106,8 +106,8 @@ export const AIService = {
   // 获取AI使用统计
   getUsage: async (): Promise<ApiResponse<{
     month: string;
-    call_count: number;
-    cost_yuan: number;
+    callCount: number;
+    costYuan: number;
   }>> => {
     return apiClient.get('/ai/usage/me');
   },

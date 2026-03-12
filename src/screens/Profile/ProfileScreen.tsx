@@ -1,43 +1,202 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../../constants/Colors';
 import { useAuth } from '../../store/AuthContext';
+import { UserService, AuthService } from '../../services/api';
+import { Achievement } from '../../types';
+
+// 用户统计数据类型
+interface UserStats {
+  totalRecords: number;
+  streakDays: number;
+  joinDays: number;
+  joinDate: string;
+}
 
 export default function ProfileScreen({ navigation }: any) {
-  const { user, profile } = useAuth();
+  const { user, profile, logout } = useAuth();
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [stats, setStats] = useState<UserStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const menuItems = [
-    { icon: '👤', title: '个人画像', color: '#818CF8', screen: 'ProfileEdit' },
-    { icon: '🥡', title: '我的食谱', color: Colors.warning, screen: 'MealPlan' },
-    { icon: '📊', title: '详细数据报告', color: '#60A5FA', screen: 'Analytics' },
-    { icon: '💡', title: '个性化提示库', color: '#F472B6', screen: 'TipLibrary' },
-    { icon: '🔔', title: '提醒设置', color: Colors.warning, screen: 'NotificationSettings' },
+    { icon: '👤', title: '个人画像', color: '#818CF8', screen: 'ProfileEdit', isTab: false },
+    { icon: '🥡', title: '我的食谱', color: Colors.warning, screen: 'MealPlan', isTab: false },
+    { icon: '📊', title: '详细数据报告', color: '#60A5FA', screen: 'AnalyticsTab', params: { initialTab: 3 }, isTab: true },
+    { icon: '💡', title: '个性化提示库', color: '#F472B6', screen: 'TipLibrary', isTab: false },
+    { icon: '🔔', title: '提醒设置', color: Colors.warning, screen: 'NotificationSettings', isTab: false },
   ];
 
-  const badges = [
-    { icon: '🔥', name: '连续7天\n记录', unlocked: true },
-    { icon: '⚖️', name: '营养均衡\n达标', unlocked: true },
-    { icon: '🍬', name: '控糖\n卫士', unlocked: true },
-    { icon: '🥬', name: '蔬菜\n达人', unlocked: false },
-  ];
+  // 加载成就徽章和统计数据
+  const loadData = useCallback(async () => {
+    try {
+      const [achievementsRes, statsRes] = await Promise.all([
+        UserService.getAchievements(),
+        UserService.getStats(),
+      ]);
+
+      if (achievementsRes.code === 0 && achievementsRes.data) {
+        setAchievements(achievementsRes.data.achievements || []);
+      }
+
+      if (statsRes.code === 0 && statsRes.data) {
+        setStats(statsRes.data as UserStats);
+      }
+    } catch (error) {
+      console.error('加载数据失败:', error);
+    }
+  }, []);
+
+  // 初始加载
+  useEffect(() => {
+    const init = async () => {
+      setIsLoading(true);
+      await loadData();
+      setIsLoading(false);
+    };
+    init();
+  }, [loadData]);
+
+  // 下拉刷新
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await loadData();
+    setIsRefreshing(false);
+  }, [loadData]);
+
+  // 处理退出登录
+  const handleLogout = useCallback(async () => {
+    Alert.alert(
+      '确认退出',
+      '确定要退出登录吗？',
+      [
+        { text: '取消', style: 'cancel' },
+        { 
+          text: '退出', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await logout();
+            } catch (error) {
+              console.error('退出登录失败:', error);
+            }
+          }
+        },
+      ]
+    );
+  }, [logout]);
+
+  // 获取AI生成的饮食画像标签
+  const getPortraitTags = () => {
+    const tags: { name: string; bgColor: string; textColor: string; icon: string }[] = [];
+    
+    // 基于用户画像数据生成标签
+    if (profile?.aiPortraitTags && profile.aiPortraitTags.length > 0) {
+      const tagColors = [
+        { bg: '#FFEDD5', text: '#C2410C' },
+        { bg: '#DBEAFE', text: '#1E40AF' },
+        { bg: '#FEE2E2', text: '#991B1B' },
+        { bg: '#D1FAE5', text: '#065F46' },
+      ];
+      
+      profile.aiPortraitTags.forEach((tag, index) => {
+        const colors = tagColors[index % tagColors.length];
+        // 根据标签内容选择合适的图标
+        let icon = '🏷️';
+        if (tag.includes('早餐')) icon = '🍳';
+        else if (tag.includes('蛋白')) icon = '🥩';
+        else if (tag.includes('碳')) icon = '🍞';
+        else if (tag.includes('辣')) icon = '🌶️';
+        else if (tag.includes('蔬菜')) icon = '🥬';
+        else if (tag.includes('糖')) icon = '🍬';
+        
+        tags.push({
+          name: tag,
+          bgColor: colors.bg,
+          textColor: colors.text,
+          icon,
+        });
+      });
+    }
+    
+    // 如果没有标签，显示基于健康目标的默认标签
+    if (tags.length === 0 && profile?.healthGoal) {
+      const goalMap: Record<string, { name: string; icon: string; bg: string; text: string }> = {
+        '减脂': { name: '减脂达人', icon: '🔥', bg: '#FFEDD5', text: '#C2410C' },
+        '增肌': { name: '增肌先锋', icon: '💪', bg: '#DBEAFE', text: '#1E40AF' },
+        '维持': { name: '均衡饮食', icon: '⚖️', bg: '#D1FAE5', text: '#065F46' },
+      };
+      const goal = goalMap[profile.healthGoal];
+      if (goal) {
+        tags.push({
+          name: goal.name,
+          bgColor: goal.bg,
+          textColor: goal.text,
+          icon: goal.icon,
+        });
+      }
+    }
+    
+    // 添加饮食偏好标签
+    if (profile?.flavorPrefs && profile.flavorPrefs.length > 0) {
+      const pref = profile.flavorPrefs[0];
+      tags.push({
+        name: pref,
+        bgColor: '#FEE2E2',
+        textColor: '#991B1B',
+        icon: '👅',
+      });
+    }
+    
+    return tags.length > 0 ? tags : [
+      { name: '膳智用户', bgColor: '#F3F4F6', textColor: '#6B7280', icon: '🌟' },
+    ];
+  };
+
+  // 获取AI分析描述
+  const getPortraitDesc = () => {
+    if (profile?.bio) {
+      return profile.bio;
+    }
+    
+    const goals: Record<string, string> = {
+      '减脂': '您选择了减脂目标，建议控制热量摄入，增加蛋白质比例，保持适量运动。',
+      '增肌': '您选择了增肌目标，建议增加蛋白质和碳水化合物摄入，配合力量训练。',
+      '维持': '您选择了维持目标，建议保持均衡饮食，注意营养搭配。',
+    };
+    
+    return goals[profile?.healthGoal || '维持'] || '完善您的个人画像，获取更精准的饮食建议。';
+  };
+
+  const portraitTags = getPortraitTags();
+  const portraitDesc = getPortraitDesc();
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+        }
+      >
         {/* 顶部个人信息卡片 */}
         <View style={styles.headerCard}>
           <View style={styles.headerContent}>
             <View style={styles.avatarContainer}>
-              <Text style={styles.avatarEmoji}>{user?.avatar_emoji || '😊'}</Text>
+              <Text style={styles.avatarEmoji}>{user?.avatarEmoji || '😊'}</Text>
             </View>
             <View style={styles.userInfo}>
-              <Text style={styles.nickname}>{user?.nickname || 'User'}</Text>
-              <Text style={styles.userId}>ID: {user?.id || '12345678'}</Text>
-              <Text style={styles.joinDays}>加入膳智 15 天</Text>
+              <Text style={styles.nickname}>{user?.nickname || '膳智用户'}</Text>
+              <Text style={styles.userId}>ID: {user?.id?.slice(0, 8) || '--'}</Text>
+              <Text style={styles.joinDays}>加入膳智 {stats?.joinDays || 0} 天</Text>
             </View>
-            <TouchableOpacity style={styles.editBtn}>
+            <TouchableOpacity 
+              style={styles.editBtn}
+              onPress={() => navigation.navigate('ProfileEdit')}
+            >
               <Ionicons name="chevron-forward" size={24} color="white" />
             </TouchableOpacity>
           </View>
@@ -52,21 +211,16 @@ export default function ProfileScreen({ navigation }: any) {
             </View>
           </View>
           <View style={styles.tagsContainer}>
-            <View style={[styles.tag, { backgroundColor: '#FFEDD5' }]}>
-              <Text style={[styles.tagText, { color: '#C2410C' }]}>🍳 早餐战士</Text>
-            </View>
-            <View style={[styles.tag, { backgroundColor: '#DBEAFE' }]}>
-              <Text style={[styles.tagText, { color: '#1E40AF' }]}>⚖️ 低碳先锋</Text>
-            </View>
-            <View style={[styles.tag, { backgroundColor: '#FEE2E2' }]}>
-              <Text style={[styles.tagText, { color: '#991B1B' }]}>🌶️ 爱吃辣</Text>
-            </View>
-            <View style={[styles.tag, { backgroundColor: '#D1FAE5' }]}>
-              <Text style={[styles.tagText, { color: '#065F46' }]}>🥩 蛋白质爱好者</Text>
-            </View>
+            {portraitTags.map((tag, index) => (
+              <View key={index} style={[styles.tag, { backgroundColor: tag.bgColor }]}>
+                <Text style={[styles.tagText, { color: tag.textColor }]}>
+                  {tag.icon} {tag.name}
+                </Text>
+              </View>
+            ))}
           </View>
           <Text style={styles.portraitDesc}>
-            AI分析：您坚持吃早餐的习惯非常好，但蔬菜摄入频率偏低，建议增加深色蔬菜比例。
+            AI分析：{portraitDesc}
           </Text>
         </View>
 
@@ -74,22 +228,33 @@ export default function ProfileScreen({ navigation }: any) {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>🏆 成就徽章</Text>
-            <Text style={styles.badgeCount}>4/12</Text>
+            <Text style={styles.badgeCount}>{achievements.length}/12</Text>
           </View>
-          <View style={styles.badgesContainer}>
-            {badges.map((badge, index) => (
-              <View key={index} style={styles.badgeItem}>
-                <View style={[styles.badgeIcon, !badge.unlocked && styles.badgeLocked]}>
-                  <Text style={[styles.badgeEmoji, !badge.unlocked && styles.badgeEmojiLocked]}>
-                    {badge.unlocked ? badge.icon : '🔒'}
-                  </Text>
+          {achievements.length > 0 ? (
+            <View style={styles.badgesContainer}>
+              {achievements.slice(0, 4).map((achievement, index) => (
+                <View key={index} style={styles.badgeItem}>
+                  <View style={[styles.badgeIcon, { backgroundColor: achievement.iconColor || '#FCD34D' }]}>
+                    <Text style={styles.badgeEmoji}>{achievement.iconEmoji}</Text>
+                  </View>
+                  <Text style={styles.badgeName}>{achievement.badgeName}</Text>
                 </View>
-                <Text style={[styles.badgeName, !badge.unlocked && styles.badgeNameLocked]}>
-                  {badge.name}
-                </Text>
-              </View>
-            ))}
-          </View>
+              ))}
+              {/* 未解锁的徽章用锁图标填充 */}
+              {achievements.length < 4 && Array.from({ length: 4 - achievements.length }).map((_, index) => (
+                <View key={`locked-${index}`} style={styles.badgeItem}>
+                  <View style={[styles.badgeIcon, styles.badgeLocked]}>
+                    <Text style={[styles.badgeEmoji, styles.badgeEmojiLocked]}>🔒</Text>
+                  </View>
+                  <Text style={[styles.badgeName, styles.badgeNameLocked]}>未解锁</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={styles.emptyBadges}>
+              <Text style={styles.emptyBadgesText}>还没有解锁任何徽章，快去记录饮食吧！</Text>
+            </View>
+          )}
         </View>
 
         {/* 功能菜单 */}
@@ -98,7 +263,18 @@ export default function ProfileScreen({ navigation }: any) {
             <TouchableOpacity 
               key={index}
               style={styles.menuItem}
-              onPress={() => navigation.navigate(item.screen)}
+              onPress={() => {
+                if (item.isTab) {
+                  // 导航到 Tab 导航器中的屏幕
+                  navigation.navigate('Main', {
+                    screen: item.screen,
+                    params: item.params || {},
+                  });
+                } else {
+                  // 直接导航到 Stack 屏幕
+                  navigation.navigate(item.screen, item.params || {});
+                }
+              }}
             >
               <View style={[styles.menuIcon, { backgroundColor: `${item.color}20` }]}>
                 <Text style={{ fontSize: 20 }}>{item.icon}</Text>
@@ -110,7 +286,7 @@ export default function ProfileScreen({ navigation }: any) {
         </View>
 
         {/* 退出登录 */}
-        <TouchableOpacity style={styles.logoutBtn}>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
           <Text style={styles.logoutText}>🚪 退出登录</Text>
         </TouchableOpacity>
 
@@ -290,6 +466,17 @@ const styles = StyleSheet.create({
   },
   badgeNameLocked: {
     color: Colors.textMuted,
+  },
+  emptyBadges: {
+    padding: 20,
+    alignItems: 'center',
+    backgroundColor: Colors.card,
+    borderRadius: 16,
+  },
+  emptyBadgesText: {
+    fontSize: 14,
+    color: Colors.textMuted,
+    textAlign: 'center',
   },
   menuContainer: {
     paddingHorizontal: 16,

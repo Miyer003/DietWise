@@ -5,39 +5,39 @@
 export interface User {
   id: string;
   nickname: string;
-  avatar_emoji: string;
+  avatarEmoji: string;
   phone: string;
   role: 'user' | 'admin';
 }
 
 export interface UserProfile {
-  user_id: string;
+  userId: string;
   gender?: 'male' | 'female' | 'other';
-  birth_date?: string;
-  height_cm?: number;
-  weight_kg?: number;
-  target_weight_kg?: number;
-  health_goal?: '减脂' | '增肌' | '维持';
-  activity_level?: 'sedentary' | 'lightly' | 'moderately' | 'very';
+  birthDate?: string;
+  heightCm?: number;
+  weightKg?: number;
+  targetWeightKg?: number;
+  healthGoal?: '减脂' | '增肌' | '维持';
+  activityLevel?: 'sedentary' | 'lightly' | 'moderately' | 'very';
   bmr?: number;
-  daily_calorie_goal?: number;
-  meal_count?: number;
-  diet_tags?: string[];
-  allergy_tags?: string[];
-  flavor_prefs?: string[];
-  ai_portrait_tags?: string[];
+  dailyCalorieGoal?: number;
+  mealCount?: number;
+  dietTags?: string[];
+  allergyTags?: string[];
+  flavorPrefs?: string[];
+  aiPortraitTags?: string[];
   bio?: string;
 }
 
 // 成就徽章
 export interface Achievement {
-  badge_code: string;
-  badge_name: string;
-  badge_desc?: string;
-  icon_emoji: string;
-  icon_color: string;
-  unlocked_at: string;
-  is_new: boolean;
+  badgeCode: string;
+  badgeName: string;
+  badgeDesc?: string;
+  iconEmoji: string;
+  iconColor: string;
+  unlockedAt: string;
+  isNew: boolean;
 }
 
 // ============================================
@@ -49,34 +49,34 @@ export type InputMethod = 'photo' | 'voice' | 'manual';
 
 export interface DietRecordItem {
   id?: string;
-  food_name: string;
-  food_item_id?: string;
-  quantity_g: number;
-  portion_factor?: number;
+  foodName: string;
+  foodItemId?: string;
+  quantityG: number;
+  portionFactor?: number;
   calories: number;
-  protein_g: number;
-  carbs_g: number;
-  fat_g: number;
-  fiber_g?: number;
-  sodium_mg?: number;
-  image_url?: string;
-  image_hash?: string;
-  ai_confidence?: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  fiberG?: number;
+  sodiumMg?: number;
+  imageUrl?: string;
+  imageHash?: string;
+  aiConfidence?: number;
 }
 
 export interface DietRecord {
   id: string;
-  record_date: string;
-  meal_type: MealType;
-  meal_seq?: number;
-  total_calories: number;
-  total_protein: number;
-  total_carbs: number;
-  total_fat: number;
-  input_method: InputMethod;
+  recordDate: string;
+  mealType: MealType;
+  mealSeq?: number;
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
+  inputMethod: InputMethod;
   notes?: string;
   items: DietRecordItem[];
-  created_at: string;
+  createdAt: string;
 }
 
 // ============================================
@@ -85,45 +85,45 @@ export interface DietRecord {
 
 export interface DailySummary {
   date: string;
-  calorie_goal: number;
-  calorie_consumed: number;
-  calorie_remaining: number;
-  protein_g: number;
-  carbs_g: number;
-  fat_g: number;
-  fiber_g?: number;
-  health_score: number;
-  meal_records: DietRecord[];
+  calorieGoal: number;
+  calorieConsumed: number;
+  calorieRemaining: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  fiberG?: number;
+  healthScore: number;
+  mealRecords: DietRecord[];
 }
 
 export interface WeeklySummary {
-  week_start: string;
-  week_end: string;
-  avg_daily_calories: number;
-  total_days: number;
-  compliant_days: number;
-  health_score: number;
-  daily_trends: DailyTrend[];
+  weekStart: string;
+  weekEnd: string;
+  avgDailyCalories: number;
+  totalDays: number;
+  compliantDays: number;
+  healthScore: number;
+  dailyTrends: DailyTrend[];
 }
 
 export interface DailyTrend {
   date: string;
   calories: number;
-  is_compliant: boolean;
+  isCompliant: boolean;
 }
 
 export interface MonthlySummary {
   month: string;
-  avg_daily_calories: number;
-  total_days: number;
-  compliant_days: number;
-  health_score: number;
-  weekly_trends: WeeklyTrend[];
+  avgDailyCalories: number;
+  totalDays: number;
+  compliantDays: number;
+  healthScore: number;
+  weeklyTrends: WeeklyTrend[];
 }
 
 export interface WeeklyTrend {
   week: number;
-  avg_calories: number;
+  avgCalories: number;
 }
 
 // ============================================
@@ -133,16 +133,16 @@ export interface WeeklyTrend {
 export interface FoodItem {
   id: string;
   name: string;
-  name_pinyin?: string;
-  name_aliases?: string[];
+  namePinyin?: string;
+  nameAliases?: string[];
   category: FoodCategory;
-  calories_per_100g: number;
-  protein_per_100g: number;
-  carbs_per_100g: number;
-  fat_per_100g: number;
-  fiber_per_100g?: number;
-  sodium_per_100g?: number;
-  default_portion_g?: number;
+  caloriesPer100g: number;
+  proteinPer100g: number;
+  carbsPer100g: number;
+  fatPer100g: number;
+  fiberPer100g?: number;
+  sodiumPer100g?: number;
+  defaultPortionG?: number;
 }
 
 export type FoodCategory = '主食' | '肉类' | '蔬菜' | '水果' | '饮品' | '其他';
@@ -153,31 +153,31 @@ export type FoodCategory = '主食' | '肉类' | '蔬菜' | '水果' | '饮品' 
 
 export interface MealPlan {
   id: string;
-  plan_type: 'custom' | 'ai';
-  calorie_target: number;
-  meal_count: number;
-  health_goal: string;
-  flavor_prefs: string[];
-  week_start_date?: string;
+  planType: 'custom' | 'ai';
+  calorieTarget: number;
+  mealCount: number;
+  healthGoal: string;
+  flavorPrefs: string[];
+  weekStartDate?: string;
   status: 'active' | 'archived';
   days: MealPlanDay[];
-  created_at: string;
+  createdAt: string;
 }
 
 export interface MealPlanDay {
   id: string;
-  day_of_week: number; // 1-7
-  meal_type: MealType;
+  dayOfWeek: number; // 1-7
+  mealType: MealType;
   dishes: Dish[];
-  total_calories: number;
+  totalCalories: number;
   notes?: string;
 }
 
 export interface Dish {
   name: string;
-  quantity_g: number;
+  quantityG: number;
   calories: number;
-  cooking_tip?: string;
+  cookingTip?: string;
 }
 
 // ============================================
@@ -188,36 +188,36 @@ export interface AITip {
   id: string;
   content: string;
   type: 'ai' | 'user';
-  color_theme?: 'green' | 'blue' | 'pink' | 'orange' | 'purple';
+  colorTheme?: 'green' | 'blue' | 'pink' | 'orange' | 'purple';
 }
 
 export interface NutritionAnalysisResult {
-  food_name: string;
-  quantity_g: number;
+  foodName: string;
+  quantityG: number;
   calories: number;
-  protein_g: number;
-  carbs_g: number;
-  fat_g: number;
-  fiber_g?: number;
-  sodium_mg?: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  fiberG?: number;
+  sodiumMg?: number;
   confidence: number;
-  is_cached?: boolean;
+  isCached?: boolean;
 }
 
 export interface ChatSession {
   id: string;
   title?: string;
-  context_snapshot?: DailySummary;
-  message_count: number;
-  last_message_at?: string;
-  created_at: string;
+  contextSnapshot?: DailySummary;
+  messageCount: number;
+  lastMessageAt?: string;
+  createdAt: string;
 }
 
 export interface ChatMessage {
   id?: string;
   role: 'user' | 'assistant';
   content: string;
-  created_at?: string;
+  createdAt?: string;
 }
 
 // ============================================
@@ -225,21 +225,21 @@ export interface ChatMessage {
 // ============================================
 
 export interface NotificationSettings {
-  master_enabled: boolean;
-  breakfast_enabled: boolean;
-  breakfast_time: string;
-  lunch_enabled: boolean;
-  lunch_time: string;
-  dinner_enabled: boolean;
-  dinner_time: string;
-  water_enabled: boolean;
-  water_interval_h: number;
-  water_start_time: string;
-  water_end_time: string;
-  record_remind: boolean;
-  bedtime_remind: boolean;
-  bedtime_time: string;
-  expo_push_token?: string;
+  masterEnabled: boolean;
+  breakfastEnabled: boolean;
+  breakfastTime: string;
+  lunchEnabled: boolean;
+  lunchTime: string;
+  dinnerEnabled: boolean;
+  dinnerTime: string;
+  waterEnabled: boolean;
+  waterIntervalH: number;
+  waterStartTime: string;
+  waterEndTime: string;
+  recordRemind: boolean;
+  bedtimeRemind: boolean;
+  bedtimeTime: string;
+  expoPushToken?: string;
 }
 
 // ============================================
@@ -249,10 +249,10 @@ export interface NotificationSettings {
 export interface UserTip {
   id: string;
   content: string;
-  color_theme: 'pink' | 'green' | 'blue' | 'orange' | 'purple';
-  sort_order?: number;
-  display_weight?: number;
-  is_active: boolean;
+  colorTheme: 'pink' | 'green' | 'blue' | 'orange' | 'purple';
+  sortOrder?: number;
+  displayWeight?: number;
+  isActive: boolean;
 }
 
 // ============================================
@@ -265,16 +265,22 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
+  accessToken: string;
+  refreshToken: string;
   user: User;
 }
 
 export interface RegisterRequest {
   phone: string;
   password: string;
-  sms_code: string;
+  smsCode: string;
   nickname?: string;
+}
+
+export interface SmsCodeResponse {
+  message: string;
+  expireIn: number;
+  code?: string;  // 开发环境返回
 }
 
 // ============================================
@@ -301,18 +307,18 @@ export interface ApiError {
 // ============================================
 
 export interface SyncData {
-  device_id: string;
+  deviceId: string;
   records: DietRecord[];
   tips: UserTip[];
-  notification_settings?: NotificationSettings;
+  notificationSettings?: NotificationSettings;
 }
 
 export interface SyncResult {
-  success_count: number;
-  conflict_count: number;
+  successCount: number;
+  conflictCount: number;
   conflicts?: Array<{
     id: string;
-    server_updated_at: string;
+    serverUpdatedAt: string;
   }>;
 }
 
@@ -324,8 +330,8 @@ export interface Feedback {
   id?: string;
   type: 'bug' | 'feature' | 'data_error' | 'other';
   content: string;
-  contact_info?: string;
+  contactInfo?: string;
   screenshots?: string[];
   status?: 'pending' | 'processing' | 'resolved' | 'rejected';
-  admin_reply?: string;
+  adminReply?: string;
 }

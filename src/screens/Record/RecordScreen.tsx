@@ -76,7 +76,11 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+      >
         {/* 顶部导航 */}
         <View style={styles.header}>
           <TouchableOpacity 
@@ -206,6 +210,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
   },
   header: {
     flexDirection: 'row',

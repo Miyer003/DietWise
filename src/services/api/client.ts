@@ -1,7 +1,12 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = 'https://api.dietwise.cn/v1';
+// 开发环境使用本地后端，生产环境使用线上地址
+// 注意：使用手机测试时需要使用电脑的局域网 IP，不能用 localhost
+// 获取本机 IP: macOS: ifconfig | grep "inet "  Windows: ipconfig
+const API_BASE_URL = __DEV__ 
+  ? 'http://10.133.50.211:3000/v1'  // 请替换为你的电脑局域网 IP
+  : 'https://api.dietwise.cn/v1';
 
 // 创建 axios 实例
 const apiClient: AxiosInstance = axios.create({
@@ -28,14 +33,14 @@ const refreshToken = async (): Promise<string | null> => {
     if (!refreshToken) return null;
 
     const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-      refresh_token: refreshToken,
+      refreshToken: refreshToken,
     });
 
     if (response.data?.code === 0 && response.data?.data) {
-      const { access_token, refresh_token } = response.data.data;
-      await AsyncStorage.setItem('access_token', access_token);
-      await AsyncStorage.setItem('refresh_token', refresh_token);
-      return access_token;
+      const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+      await AsyncStorage.setItem('access_token', accessToken);
+      await AsyncStorage.setItem('refresh_token', newRefreshToken);
+      return accessToken;
     }
     return null;
   } catch {
@@ -80,6 +85,16 @@ apiClient.interceptors.response.use(
     // 统一错误处理
     const errorData = (error.response?.data as any) || {};
     const errorMessage = errorData.message || '请求失败，请稍后重试';
+    
+    // 记录错误日志（开发环境）
+    if (__DEV__) {
+      console.error('API Error:', {
+        url: originalRequest?.url,
+        status: error.response?.status,
+        message: errorMessage,
+        data: errorData,
+      });
+    }
     
     return Promise.reject({
       message: errorMessage,

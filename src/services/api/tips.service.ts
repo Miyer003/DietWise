@@ -3,8 +3,8 @@ import { ApiResponse, UserTip } from '../../types';
 
 export interface CreateTipRequest {
   content: string;
-  color_theme?: 'pink' | 'green' | 'blue' | 'orange' | 'purple';
-  display_weight?: number;
+  colorTheme?: 'pink' | 'green' | 'blue' | 'orange' | 'purple';
+  displayWeight?: number;
 }
 
 export const TipsService = {

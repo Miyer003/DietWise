@@ -29,9 +29,10 @@ export const UserService = {
 
   // 获取用户统计
   getStats: async (): Promise<ApiResponse<{
-    streak_days: number;
-    total_records: number;
-    join_days: number;
+    streakDays: number;
+    totalRecords: number;
+    joinDays: number;
+    joinDate: string;
   }>> => {
     return apiClient.get('/users/me/stats');
   },

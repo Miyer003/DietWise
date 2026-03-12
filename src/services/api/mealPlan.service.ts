@@ -2,10 +2,10 @@ import apiClient from './client';
 import { ApiResponse, MealPlan } from '../../types';
 
 export interface CreateMealPlanRequest {
-  calorie_target: number;
-  meal_count: number;
-  health_goal: string;
-  flavor_prefs: string[];
+  calorieTarget: number;
+  mealCount: number;
+  healthGoal: string;
+  flavorPrefs: string[];
 }
 
 export const MealPlanService = {

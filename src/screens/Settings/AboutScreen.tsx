@@ -20,7 +20,11 @@ export default function AboutScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+      >
         {/* Logo区域 */}
         <View style={styles.logoSection}>
           <View style={styles.logo}>
@@ -113,6 +117,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
   },
   logoSection: {
     alignItems: 'center',

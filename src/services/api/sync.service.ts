@@ -2,12 +2,12 @@ import apiClient from './client';
 import { ApiResponse, SyncData, SyncResult, DietRecord, MealPlan, UserProfile, NotificationSettings, Achievement } from '../../types';
 
 export interface PullResponse {
-  diet_records: DietRecord[];
-  meal_plans: MealPlan[];
-  user_profile: UserProfile | null;
-  notification_settings: NotificationSettings | null;
+  dietRecords: DietRecord[];
+  mealPlans: MealPlan[];
+  userProfile: UserProfile | null;
+  notificationSettings: NotificationSettings | null;
   achievements: Achievement[];
-  server_time: string;
+  serverTime: string;
 }
 
 export const SyncService = {
@@ -18,8 +18,8 @@ export const SyncService = {
 
   // 拉取云端最新数据
   pull: async (params: {
-    last_sync_at: string;
-    device_id: string;
+    lastSyncAt: string;
+    deviceId: string;
   }): Promise<ApiResponse<PullResponse>> => {
     return apiClient.get('/sync/pull', { params });
   },

@@ -1,20 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   TouchableOpacity, 
   ScrollView,
+  Alert,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../../constants/Colors';
+import { useAuth } from '../../store/AuthContext';
+import { MealPlanService, AIService } from '../../services/api';
+import { MealPlan } from '../../types';
+
+type HealthGoal = '减脂' | '增肌' | '维持';
 
 export default function MealPlanScreen({ navigation }: any) {
-  const [calories, setCalories] = useState(2000);
-  const [mealCount, setMealCount] = useState(3);
-  const [goal, setGoal] = useState<'减脂' | '增肌' | '维持'>('减脂');
-  const [preferences, setPreferences] = useState<string[]>(['清淡']);
+  const { profile } = useAuth();
+  
+  const [activePlan, setActivePlan] = useState<MealPlan | null>(null);
+  const [hasActivePlan, setHasActivePlan] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  const [calories, setCalories] = useState(profile?.dailyCalorieGoal || 2000);
+  const [mealCount, setMealCount] = useState(profile?.mealCount || 3);
+  const [goal, setGoal] = useState<HealthGoal>(profile?.healthGoal || '维持');
+  const [preferences, setPreferences] = useState<string[]>(profile?.flavorPrefs || ['清淡']);
+
+  const preferenceOptions = ['清淡', '微辣', '无辣不欢', '少油', '低糖', '高蛋白'];
+
+  const loadActivePlan = useCallback(async () => {
+    try {
+      const res = await MealPlanService.getActivePlan();
+      if (res.code === 0 && res.data) {
+        const plan = res.data as MealPlan & { hasPlan?: boolean };
+        setHasActivePlan(plan.status === 'active');
+        setActivePlan(plan.status === 'active' ? plan : null);
+        
+        if (plan.status === 'active') {
+          setCalories(plan.calorieTarget);
+          setMealCount(plan.mealCount);
+          setGoal(plan.healthGoal as HealthGoal);
+          setPreferences(plan.flavorPrefs || []);
+        }
+      }
+    } catch (error) {
+      console.error('加载食谱失败:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    const init = async () => {
+      setIsLoading(true);
+      await loadActivePlan();
+      setIsLoading(false);
+    };
+    init();
+  }, [loadActivePlan]);
+
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await loadActivePlan();
+    setIsRefreshing(false);
+  }, [loadActivePlan]);
 
   const togglePreference = (pref: string) => {
     if (preferences.includes(pref)) {
@@ -24,39 +78,111 @@ export default function MealPlanScreen({ navigation }: any) {
     }
   };
 
-  const preferenceOptions = ['清淡', '微辣', '无辣不欢', '少油', '低糖', '高蛋白'];
+  const handleSave = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      const res = await MealPlanService.createPlan({
+        calorieTarget: calories,
+        mealCount: mealCount,
+        healthGoal: goal,
+        flavorPrefs: preferences,
+      });
+      
+      if (res.code === 0) {
+        Alert.alert('保存成功', '您的食谱设置已保存');
+        await loadActivePlan();
+      } else {
+        Alert.alert('保存失败', res.message || '请稍后重试');
+      }
+    } catch (error: any) {
+      Alert.alert('保存失败', error.message || '请检查网络连接');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [calories, mealCount, goal, preferences, loadActivePlan]);
+
+  const handleAIGenerate = useCallback(async () => {
+    setIsGeneratingAI(true);
+    try {
+      const res = await AIService.generateMealPlan({
+        calorieTarget: calories,
+        mealCount: mealCount,
+        healthGoal: goal,
+        flavorPrefs: preferences,
+        useAI: true,
+      });
+      
+      if (res.code === 0 && res.data) {
+        Alert.alert('生成成功', 'AI已为您生成专属食谱');
+        await loadActivePlan();
+      } else {
+        Alert.alert('生成失败', res.message || '请稍后重试');
+      }
+    } catch (error: any) {
+      Alert.alert('生成失败', error.message || '请检查网络连接');
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  }, [calories, mealCount, goal, preferences, loadActivePlan]);
+
+  const getGoalDescription = (g: HealthGoal) => {
+    const descriptions: Record<HealthGoal, string> = {
+      '减脂': '控制热量摄入，促进脂肪消耗',
+      '增肌': '增加蛋白质摄入，支持肌肉生长',
+      '维持': '保持均衡饮食，维持当前体重',
+    };
+    return descriptions[g];
+  };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>加载中...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        {/* 当前状态卡片 */}
-        <View style={[styles.statusCard, { backgroundColor: '#FFEDD5' }]}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={[styles.statusCard, hasActivePlan ? { backgroundColor: '#D1FAE5', borderColor: '#34D399' } : { backgroundColor: '#FFEDD5', borderColor: '#FED7AA' }]}>
           <View style={styles.statusHeader}>
-            <View style={[styles.statusIcon, { backgroundColor: Colors.warning }]}>
-              <Text style={{ fontSize: 24 }}>🥡</Text>
+            <View style={[styles.statusIcon, { backgroundColor: hasActivePlan ? Colors.primary : Colors.warning }]}>
+              <Text style={{ fontSize: 24 }}>{hasActivePlan ? '🥗' : '🥡'}</Text>
             </View>
             <View>
               <Text style={styles.statusTitle}>当前饮食计划</Text>
-              <Text style={styles.statusSubtitle}>未设置食谱</Text>
+              <Text style={styles.statusSubtitle}>
+                {hasActivePlan ? `已设置 ${activePlan?.planType === 'ai' ? 'AI生成' : '自定义'}食谱` : '未设置食谱'}
+              </Text>
             </View>
           </View>
           <View style={styles.statusStats}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>--</Text>
-              <Text style={styles.statLabel}>每日摄入</Text>
+              <Text style={styles.statValue}>{hasActivePlan ? calories : '--'}</Text>
+              <Text style={styles.statLabel}>每日摄入(kcal)</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>--</Text>
+              <Text style={styles.statValue}>{hasActivePlan ? mealCount : '--'}</Text>
               <Text style={styles.statLabel}>每日餐数</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>--</Text>
+              <Text style={styles.statValue}>{hasActivePlan ? goal : '--'}</Text>
               <Text style={styles.statLabel}>饮食目标</Text>
             </View>
           </View>
         </View>
 
-        {/* 自定义设置 */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>自定义设置</Text>
@@ -65,32 +191,28 @@ export default function MealPlanScreen({ navigation }: any) {
             </View>
           </View>
 
-          {/* 卡路里滑块 */}
           <View style={styles.card}>
             <View style={styles.sliderHeader}>
               <Text style={styles.sliderLabel}>每日摄入量</Text>
               <Text style={styles.sliderValue}>{calories} kcal</Text>
             </View>
-            // 替换原来的 Slider 部分
             <View style={styles.sliderContainer}>
-                <Text style={styles.sliderMin}>1200</Text>
-                <TouchableOpacity 
-                    style={styles.sliderTrack}
-                    onPressIn={(e) => {
-                    // 简化版：点击设置数值
-                    const x = e.nativeEvent.locationX;
-                    const percentage = x / 200; // 假设宽度200
-                    const newCal = Math.round(1200 + percentage * 2300);
-                    setCalories(Math.max(1200, Math.min(3500, newCal)));
-                    }}
-                >
-                    <View style={[styles.sliderFill, { width: `${((calories - 1200) / 2300) * 100}%` }]} />
-                </TouchableOpacity>
-                <Text style={styles.sliderMax}>3500</Text>
+              <Text style={styles.sliderMin}>1200</Text>
+              <TouchableOpacity 
+                style={styles.sliderTrack}
+                onPressIn={(e) => {
+                  const x = e.nativeEvent.locationX;
+                  const percentage = x / 200;
+                  const newCal = Math.round(1200 + percentage * 2300);
+                  setCalories(Math.max(1200, Math.min(3500, newCal)));
+                }}
+              >
+                <View style={[styles.sliderFill, { width: `${((calories - 1200) / 2300) * 100}%` }]} />
+              </TouchableOpacity>
+              <Text style={styles.sliderMax}>3500</Text>
             </View>
           </View>
 
-          {/* 餐数选择 */}
           <View style={[styles.card, { marginTop: 12 }]}>
             <Text style={styles.inputLabel}>每日餐数</Text>
             <View style={styles.segmentControl}>
@@ -108,11 +230,10 @@ export default function MealPlanScreen({ navigation }: any) {
             </View>
           </View>
 
-          {/* 饮食目标 */}
           <View style={[styles.card, { marginTop: 12 }]}>
             <Text style={styles.inputLabel}>饮食目标</Text>
             <View style={styles.segmentControl}>
-              {(['减脂', '增肌', '维持'] as const).map((g) => (
+              {(['减脂', '增肌', '维持'] as HealthGoal[]).map((g) => (
                 <TouchableOpacity 
                   key={g}
                   style={[styles.segmentBtn, goal === g && styles.segmentBtnActive]}
@@ -122,9 +243,9 @@ export default function MealPlanScreen({ navigation }: any) {
                 </TouchableOpacity>
               ))}
             </View>
+            <Text style={styles.goalDescription}>{getGoalDescription(goal)}</Text>
           </View>
 
-          {/* 口味偏好 */}
           <View style={[styles.card, { marginTop: 12 }]}>
             <Text style={styles.inputLabel}>口味偏好（可多选）</Text>
             <View style={styles.preferencesContainer}>
@@ -149,24 +270,49 @@ export default function MealPlanScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* 智能定制入口 */}
-        <TouchableOpacity style={[styles.card, styles.aiCard]}>
+        <TouchableOpacity 
+          style={[styles.card, styles.aiCard]}
+          onPress={handleAIGenerate}
+          disabled={isGeneratingAI}
+        >
           <View style={styles.aiCardContent}>
             <View style={[styles.aiIcon, { backgroundColor: Colors.primary }]}>
-              <Text style={{ fontSize: 24 }}>🤖</Text>
+              {isGeneratingAI ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Text style={{ fontSize: 24 }}>🤖</Text>
+              )}
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.aiCardTitle}>智能定制食谱</Text>
+              <Text style={styles.aiCardTitle}>
+                {isGeneratingAI ? 'AI正在生成食谱...' : '智能定制食谱'}
+              </Text>
               <Text style={styles.aiCardDesc}>不确定怎么设置？让AI帮您定制</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={Colors.primary} />
           </View>
         </TouchableOpacity>
 
-        {/* 保存按钮 */}
-        <TouchableOpacity style={styles.saveBtn}>
-          <Text style={styles.saveBtnText}>💾 保存食谱设置</Text>
+        <TouchableOpacity 
+          style={[styles.saveBtn, isSaving && { opacity: 0.7 }]}
+          onPress={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text style={styles.saveBtnText}>💾 保存食谱设置</Text>
+          )}
         </TouchableOpacity>
+
+        {hasActivePlan && (
+          <TouchableOpacity 
+            style={styles.viewListBtn}
+            onPress={() => navigation.navigate('MealPlanDetail', { planId: activePlan?.id })}
+          >
+            <Text style={styles.viewListBtnText}>📋 查看食谱详情</Text>
+          </TouchableOpacity>
+        )}
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -179,15 +325,28 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: Colors.textSecondary,
+  },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
   },
   statusCard: {
     margin: 16,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#FED7AA',
   },
   statusHeader: {
     flexDirection: 'row',
@@ -337,6 +496,12 @@ const styles = StyleSheet.create({
   segmentTextActive: {
     color: Colors.primary,
   },
+  goalDescription: {
+    fontSize: 12,
+    color: Colors.textMuted,
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
   preferencesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -402,6 +567,20 @@ const styles = StyleSheet.create({
   },
   saveBtnText: {
     color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  viewListBtn: {
+    marginHorizontal: 16,
+    backgroundColor: Colors.card,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  viewListBtnText: {
+    color: Colors.primary,
     fontSize: 16,
     fontWeight: 'bold',
   },

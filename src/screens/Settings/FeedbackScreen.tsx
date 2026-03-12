@@ -51,7 +51,7 @@ export default function FeedbackScreen({ navigation }: any) {
       const response = await FeedbackService.submitFeedback({
         type,
         content: content.trim(),
-        contact_info: contact.trim() || undefined,
+        contactInfo: contact.trim() || undefined,
       });
 
       if (response.code === 0) {
@@ -73,7 +73,12 @@ export default function FeedbackScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* 反馈类型选择 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>反馈类型</Text>
@@ -164,6 +169,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
   },
   section: {
     padding: 16,

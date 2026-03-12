@@ -159,7 +159,7 @@ const TimelineItem: React.FC<{ record: DietRecord; isLast?: boolean }> = ({ reco
 
   const getFoodNames = (record: DietRecord) => {
     if (!record.items || record.items.length === 0) return '无记录';
-    return record.items.map(item => item.food_name).join(' + ');
+    return record.items.map(item => item.foodName).join(' + ');
   };
 
   return (
@@ -168,15 +168,15 @@ const TimelineItem: React.FC<{ record: DietRecord; isLast?: boolean }> = ({ reco
       {!isLast && <View style={styles.timelineLine} />}
       <View style={styles.timelineContent}>
         <View style={styles.timelineIcon}>
-          <Text style={styles.timelineIconText}>{getMealIcon(record.meal_type)}</Text>
+          <Text style={styles.timelineIconText}>{getMealIcon(record.mealType)}</Text>
         </View>
         <View style={styles.timelineInfo}>
           <View style={styles.timelineHeader}>
-            <Text style={styles.timelineMealType}>{getMealName(record.meal_type)}</Text>
-            <Text style={styles.timelineTime}>{formatTime(record.created_at)}</Text>
+            <Text style={styles.timelineMealType}>{getMealName(record.mealType)}</Text>
+            <Text style={styles.timelineTime}>{formatTime(record.createdAt)}</Text>
           </View>
           <Text style={styles.timelineFood} numberOfLines={1}>{getFoodNames(record)}</Text>
-          <Text style={styles.timelineCalories}>{Math.round(record.total_calories)} kcal</Text>
+          <Text style={styles.timelineCalories}>{Math.round(record.totalCalories)} kcal</Text>
         </View>
       </View>
     </View>
@@ -205,12 +205,18 @@ export default function HomeScreen({ navigation }: any) {
     }
   }, [today]);
 
-  // 加载AI建议
+  // 加载AI建议（带3秒超时）
   const loadAiTip = useCallback(async () => {
     setIsTipLoading(true);
     try {
       // 先尝试获取用户自定义提示
-      const tipsRes = await TipsService.getTips();
+      const tipsRes = await Promise.race([
+        TipsService.getTips(),
+        new Promise<{code: number, data?: any}>((_, reject) => 
+          setTimeout(() => reject(new Error('获取提示超时')), 3000)
+        )
+      ]);
+      
       if (tipsRes.code === 0 && tipsRes.data && tipsRes.data.length > 0) {
         // 随机选择一个用户提示
         const randomTip = tipsRes.data[Math.floor(Math.random() * tipsRes.data.length)];
@@ -218,20 +224,28 @@ export default function HomeScreen({ navigation }: any) {
           id: randomTip.id,
           content: randomTip.content,
           type: 'user',
-          color_theme: randomTip.color_theme,
+          colorTheme: randomTip.colorTheme,
         });
       } else {
         // 没有用户提示，获取AI生成的建议
-        const aiRes = await AIService.generateTip();
+        const aiRes = await Promise.race([
+          AIService.generateTip(),
+          new Promise<{code: number, data?: any}>((_, reject) => 
+            setTimeout(() => reject(new Error('AI建议超时')), 5000)
+          )
+        ]);
+        
         if (aiRes.code === 0 && aiRes.data) {
           setAiTip(aiRes.data);
+        } else {
+          throw new Error('获取AI建议失败');
         }
       }
     } catch (error) {
       console.error('加载建议失败:', error);
       setAiTip({
         id: 'default',
-        content: '根据您近期的饮食数据，建议保持均衡饮食，多吃蔬菜水果。',
+        content: '保持均衡饮食，多吃蔬菜水果，适量摄入蛋白质和碳水化合物。',
         type: 'ai',
       });
     } finally {
@@ -256,14 +270,14 @@ export default function HomeScreen({ navigation }: any) {
     setIsRefreshing(false);
   }, [loadDailyData, loadAiTip]);
 
-  const progress = dailyData && dailyData.calorie_goal > 0
-    ? (dailyData.calorie_consumed / dailyData.calorie_goal) * 100 
+  const progress = dailyData && dailyData.calorieGoal > 0
+    ? (dailyData.calorieConsumed / dailyData.calorieGoal) * 100 
     : 0;
 
   // 计算营养素目标（简化计算，实际应该从profile获取）
-  const proteinGoal = profile?.weight_kg ? profile.weight_kg * 1.2 : 60;
-  const carbsGoal = profile?.daily_calorie_goal ? (profile.daily_calorie_goal * 0.5) / 4 : 250;
-  const fatGoal = profile?.daily_calorie_goal ? (profile.daily_calorie_goal * 0.3) / 9 : 65;
+  const proteinGoal = profile?.weightKg ? profile.weightKg * 1.2 : 60;
+  const carbsGoal = profile?.dailyCalorieGoal ? (profile.dailyCalorieGoal * 0.5) / 4 : 250;
+  const fatGoal = profile?.dailyCalorieGoal ? (profile.dailyCalorieGoal * 0.3) / 9 : 65;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -284,9 +298,9 @@ export default function HomeScreen({ navigation }: any) {
           </View>
           <TouchableOpacity 
             style={styles.avatarButton}
-            onPress={() => navigation.navigate('ProfileTab')}
+            onPress={() => navigation.navigate('Main', { screen: 'ProfileTab' })}
           >
-            <Text style={styles.avatarEmoji}>{user?.avatar_emoji || '😊'}</Text>
+            <Text style={styles.avatarEmoji}>{user?.avatarEmoji || '😊'}</Text>
           </TouchableOpacity>
         </View>
 
@@ -294,8 +308,8 @@ export default function HomeScreen({ navigation }: any) {
         <View style={styles.progressContainer}>
           <CircularProgress 
             progress={progress} 
-            consumed={dailyData?.calorie_consumed || 0}
-            goal={dailyData?.calorie_goal || profile?.daily_calorie_goal || 2000}
+            consumed={dailyData?.calorieConsumed || 0}
+            goal={dailyData?.calorieGoal || profile?.dailyCalorieGoal || 2000}
           />
         </View>
 
@@ -303,19 +317,19 @@ export default function HomeScreen({ navigation }: any) {
         <View style={styles.nutrientsContainer}>
           <NutrientBar 
             label="蛋白质" 
-            current={dailyData?.protein_g || 0} 
+            current={dailyData?.proteinG || 0} 
             total={proteinGoal} 
             color={Colors.primary} 
           />
           <NutrientBar 
             label="碳水" 
-            current={dailyData?.carbs_g || 0} 
+            current={dailyData?.carbsG || 0} 
             total={carbsGoal} 
             color={Colors.warning} 
           />
           <NutrientBar 
             label="脂肪" 
-            current={dailyData?.fat_g || 0} 
+            current={dailyData?.fatG || 0} 
             total={fatGoal} 
             color="#F97316" 
           />
@@ -326,8 +340,8 @@ export default function HomeScreen({ navigation }: any) {
           <AICard 
             tip={aiTip}
             onRefresh={loadAiTip}
-            onConsult={() => navigation.navigate('ConsultTab')}
-            onDetail={() => navigation.navigate('AnalyticsTab')}
+            onConsult={() => navigation.navigate('Main', { screen: 'ConsultTab' })}
+            onDetail={() => navigation.navigate('Main', { screen: 'AnalyticsTab' })}
             isLoading={isTipLoading}
           />
         </View>
@@ -336,18 +350,18 @@ export default function HomeScreen({ navigation }: any) {
         <View style={styles.timelineSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>📋 今日记录</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('AnalyticsTab')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Main', { screen: 'AnalyticsTab' })}>
               <Text style={styles.sectionLink}>查看全部 →</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.timelineCard}>
-            {dailyData?.meal_records && dailyData.meal_records.length > 0 ? (
-              dailyData.meal_records.map((record, index) => (
+            {dailyData?.mealRecords && dailyData.mealRecords.length > 0 ? (
+              dailyData.mealRecords.map((record, index) => (
                 <TimelineItem 
                   key={record.id} 
                   record={record} 
-                  isLast={index === dailyData.meal_records.length - 1}
+                  isLast={index === dailyData.mealRecords.length - 1}
                 />
               ))
             ) : (

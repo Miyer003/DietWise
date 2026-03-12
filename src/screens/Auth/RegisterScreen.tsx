@@ -96,11 +96,16 @@ export default function RegisterScreen({ navigation }: any) {
       await register({
         phone,
         password,
-        sms_code: smsCode,
+        smsCode: smsCode,
         nickname: nickname || undefined,
       });
-      // 注册成功，导航器会自动切换到主界面
-      Alert.alert('注册成功', '欢迎加入膳智！');
+      // 注册成功，跳转到登录页
+      Alert.alert('注册成功', '请使用密码登录', [
+        { 
+          text: '确定', 
+          onPress: () => navigation.navigate('Login', { phone, password })
+        }
+      ]);
     } catch (error: any) {
       Alert.alert('注册失败', error.message || '请稍后重试');
     } finally {

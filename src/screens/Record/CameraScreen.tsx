@@ -64,13 +64,13 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
   const pickImage = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: 'images',
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.8,
       });
 
-      if (!result.canceled && result.assets[0]) {
+      if (!result.canceled && result.assets && result.assets[0]) {
         setCapturedImage(result.assets[0].uri);
       }
     } catch (error) {
@@ -110,7 +110,7 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
       const imageUrl = uploadUrl.split('?')[0]; // 去掉预签名参数
       const analyzeRes = await AIService.analyzeNutrition({
         type: 'image',
-        image_url: imageUrl,
+        imageUrl: imageUrl,
       });
 
       if (analyzeRes.code === 0 && analyzeRes.data) {
@@ -130,20 +130,20 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
     try {
       const today = new Date().toISOString().split('T')[0];
       const recordRes = await DietService.createRecord({
-        record_date: today,
-        meal_type: mealType,
-        input_method: 'photo',
+        recordDate: today,
+        mealType: mealType,
+        inputMethod: 'photo',
         items: [
           {
-            food_name: result.food_name,
-            quantity_g: result.quantity_g,
+            foodName: result.foodName,
+            quantityG: result.quantityG,
             calories: result.calories,
-            protein_g: result.protein_g,
-            carbs_g: result.carbs_g,
-            fat_g: result.fat_g,
-            fiber_g: result.fiber_g || 0,
-            sodium_mg: result.sodium_mg || 0,
-            ai_confidence: result.confidence,
+            proteinG: result.proteinG,
+            carbsG: result.carbsG,
+            fatG: result.fatG,
+            fiberG: result.fiberG || 0,
+            sodiumMg: result.sodiumMg || 0,
+            aiConfidence: result.confidence,
           },
         ],
       });
@@ -207,7 +207,7 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
 
           <View style={styles.resultCard}>
             <View style={styles.resultHeader}>
-              <Text style={styles.foodName}>{analysisResult.food_name}</Text>
+              <Text style={styles.foodName}>{analysisResult.foodName}</Text>
               <View style={styles.confidenceBadge}>
                 <Text style={styles.confidenceText}>
                   置信度 {Math.round(analysisResult.confidence * 100)}%
@@ -221,20 +221,20 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
                 <Text style={styles.nutritionLabel}>千卡</Text>
               </View>
               <View style={styles.nutritionItem}>
-                <Text style={styles.nutritionValue}>{analysisResult.protein_g}g</Text>
+                <Text style={styles.nutritionValue}>{analysisResult.proteinG}g</Text>
                 <Text style={styles.nutritionLabel}>蛋白质</Text>
               </View>
               <View style={styles.nutritionItem}>
-                <Text style={styles.nutritionValue}>{analysisResult.carbs_g}g</Text>
+                <Text style={styles.nutritionValue}>{analysisResult.carbsG}g</Text>
                 <Text style={styles.nutritionLabel}>碳水</Text>
               </View>
               <View style={styles.nutritionItem}>
-                <Text style={styles.nutritionValue}>{analysisResult.fat_g}g</Text>
+                <Text style={styles.nutritionValue}>{analysisResult.fatG}g</Text>
                 <Text style={styles.nutritionLabel}>脂肪</Text>
               </View>
             </View>
 
-            <Text style={styles.portionText}>份量: {analysisResult.quantity_g}g</Text>
+            <Text style={styles.portionText}>份量: {analysisResult.quantityG}g</Text>
           </View>
 
           <View style={styles.actionButtons}>

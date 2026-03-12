@@ -59,7 +59,11 @@ export default function TipLibraryScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+      >
         {/* 说明卡片 */}
         <View style={[styles.card, styles.infoCard]}>
           <View style={styles.infoHeader}>
@@ -162,6 +166,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
   },
   card: {
     backgroundColor: Colors.card,

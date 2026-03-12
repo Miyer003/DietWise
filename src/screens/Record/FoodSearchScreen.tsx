@@ -88,10 +88,10 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
   const calculateNutrition = useCallback((food: FoodItem, qty: number) => {
     const ratio = qty / 100;
     return {
-      calories: Math.round(food.calories_per_100g * ratio),
-      protein: Math.round(food.protein_per_100g * ratio * 10) / 10,
-      carbs: Math.round(food.carbs_per_100g * ratio * 10) / 10,
-      fat: Math.round(food.fat_per_100g * ratio * 10) / 10,
+      calories: Math.round(food.caloriesPer100g * ratio),
+      protein: Math.round(food.proteinPer100g * ratio * 10) / 10,
+      carbs: Math.round(food.carbsPer100g * ratio * 10) / 10,
+      fat: Math.round(food.fatPer100g * ratio * 10) / 10,
     };
   }, []);
 
@@ -104,22 +104,22 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
       const today = new Date().toISOString().split('T')[0];
 
       const response = await DietService.createRecord({
-        record_date: today,
-        meal_type: mealType,
-        input_method: 'manual',
+        recordDate: today,
+        mealType: mealType,
+        inputMethod: 'manual',
         items: [
           {
-            food_item_id: selectedFood.id,
-            food_name: selectedFood.name,
-            quantity_g: quantity,
+            foodItemId: selectedFood.id,
+            foodName: selectedFood.name,
+            quantityG: quantity,
             calories: nutrition.calories,
-            protein_g: nutrition.protein,
-            carbs_g: nutrition.carbs,
-            fat_g: nutrition.fat,
-            fiber_g: selectedFood.fiber_per_100g ? 
-              Math.round(selectedFood.fiber_per_100g * (quantity / 100) * 10) / 10 : 0,
-            sodium_mg: selectedFood.sodium_per_100g ?
-              Math.round(selectedFood.sodium_per_100g * (quantity / 100)) : 0,
+            proteinG: nutrition.protein,
+            carbsG: nutrition.carbs,
+            fatG: nutrition.fat,
+            fiberG: selectedFood.fiberPer100g ? 
+              Math.round(selectedFood.fiberPer100g * (quantity / 100) * 10) / 10 : 0,
+            sodiumMg: selectedFood.sodiumPer100g ?
+              Math.round(selectedFood.sodiumPer100g * (quantity / 100)) : 0,
           },
         ],
       });
@@ -154,7 +154,7 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
       style={styles.foodItem}
       onPress={() => {
         setSelectedFood(item);
-        setQuantity(item.default_portion_g || 100);
+        setQuantity(item.defaultPortionG || 100);
       }}
     >
       <View style={styles.foodInfo}>
@@ -162,7 +162,7 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
         <Text style={styles.foodCategory}>{item.category}</Text>
       </View>
       <View style={styles.foodCalories}>
-        <Text style={styles.calorieValue}>{item.calories_per_100g}</Text>
+        <Text style={styles.calorieValue}>{item.caloriesPer100g}</Text>
         <Text style={styles.calorieUnit}>kcal/100g</Text>
       </View>
     </TouchableOpacity>
@@ -334,7 +334,8 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
           data={foods}
           keyExtractor={(item) => item.id}
           renderItem={renderFoodItem}
-          contentContainerStyle={styles.listContainer}
+          contentContainerStyle={[styles.listContainer, { flexGrow: 1 }]}
+          showsVerticalScrollIndicator={true}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>未找到相关食物</Text>
@@ -349,7 +350,8 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
             data={recentFoods}
             keyExtractor={(item) => item.id}
             renderItem={renderFoodItem}
-            contentContainerStyle={styles.listContainer}
+            contentContainerStyle={[styles.listContainer, { flexGrow: 1, paddingBottom: 40 }]}
+            showsVerticalScrollIndicator={true}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>暂无记录</Text>

@@ -19,6 +19,6 @@ export const NotificationService = {
 
   // 注册 Expo Push Token
   registerPushToken: async (token: string): Promise<ApiResponse<null>> => {
-    return apiClient.post('/notifications/push-token', { expo_push_token: token });
+    return apiClient.post('/notifications/push-token', { expoPushToken: token });
   },
 };
