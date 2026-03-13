@@ -164,9 +164,21 @@ export interface MealPlan {
   createdAt: string;
 }
 
+// 后端返回的食谱天数据结构（嵌套 meals）
 export interface MealPlanDay {
-  id: string;
+  id?: string;
   dayOfWeek: number; // 1-7
+  // 后端 formatPlanResponse 返回的是嵌套结构
+  meals?: MealPlanMeal[];
+  // 原始数据库结构（扁平）
+  mealType?: MealType;
+  dishes?: Dish[];
+  totalCalories?: number;
+  notes?: string;
+}
+
+// 餐次结构
+export interface MealPlanMeal {
   mealType: MealType;
   dishes: Dish[];
   totalCalories: number;
@@ -175,9 +187,21 @@ export interface MealPlanDay {
 
 export interface Dish {
   name: string;
-  quantityG: number;
+  quantityG?: number;        // 驼峰命名（前端使用）
+  quantity_g?: number;       // 下划线命名（后端返回）
   calories: number;
+  proteinG?: number;
+  protein_g?: number;
+  carbsG?: number;
+  carbs_g?: number;
+  fatG?: number;
+  fat_g?: number;
+  fiberG?: number;
+  fiber_g?: number;
+  sodiumMg?: number;
+  sodium_mg?: number;
   cookingTip?: string;
+  cooking_tip?: string;
 }
 
 // ============================================

@@ -96,7 +96,14 @@ export default function AIGeneratePlanPreviewScreen({ navigation, route }: AIGen
       }
     } catch (err: any) {
       console.error('生成食谱失败:', err);
-      setError(err.message || '网络错误，请稍后重试');
+      // 处理超时错误
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        setError('请求超时，AI生成食谱需要较长时间，请重试或检查网络');
+      } else if (err.code === 'ERR_NETWORK') {
+        setError('网络连接失败，请检查网络后重试');
+      } else {
+        setError(err.message || '网络错误，请稍后重试');
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -156,41 +163,93 @@ export default function AIGeneratePlanPreviewScreen({ navigation, route }: AIGen
   const calculateWeeklyTotal = () => {
     if (!generatedPlan?.days) return null;
     
+    // 按天分组计算
+    const dayMap = new Map<number, { calories: number; protein: number; carbs: number; fat: number }>();
+    
+    generatedPlan.days.forEach(day => {
+      const dayNum = day.dayOfWeek;
+      if (!dayMap.has(dayNum)) {
+        dayMap.set(dayNum, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+      }
+      const dayStats = dayMap.get(dayNum)!;
+      
+      // 处理嵌套 meals 结构
+      if (day.meals && Array.isArray(day.meals)) {
+        day.meals.forEach(meal => {
+          dayStats.calories += parseFloat(meal.totalCalories) || 0;
+          meal.dishes?.forEach((dish: any) => {
+            dayStats.protein += parseFloat(dish.protein_g || dish.proteinG) || 0;
+            dayStats.carbs += parseFloat(dish.carbs_g || dish.carbsG) || 0;
+            dayStats.fat += parseFloat(dish.fat_g || dish.fatG) || 0;
+          });
+        });
+      } 
+      // 兼容扁平结构
+      else if (day.mealType) {
+        dayStats.calories += parseFloat(day.totalCalories as any) || 0;
+        day.dishes?.forEach((dish: any) => {
+          dayStats.protein += parseFloat(dish.protein_g || dish.proteinG) || 0;
+          dayStats.carbs += parseFloat(dish.carbs_g || dish.carbsG) || 0;
+          dayStats.fat += parseFloat(dish.fat_g || dish.fatG) || 0;
+        });
+      }
+    });
+
+    // 计算平均值
     let totalCalories = 0;
     let totalProtein = 0;
     let totalCarbs = 0;
     let totalFat = 0;
-
-    generatedPlan.days.forEach(day => {
-      totalCalories += day.totalCalories || 0;
-      // 从 notes 中解析营养数据
-      if (day.notes) {
-        const proteinMatch = day.notes.match(/蛋白质[:：]\s*(\d+)/);
-        const carbsMatch = day.notes.match(/碳水[:：]\s*(\d+)/);
-        const fatMatch = day.notes.match(/脂肪[:：]\s*(\d+)/);
-        if (proteinMatch) totalProtein += parseInt(proteinMatch[1]);
-        if (carbsMatch) totalCarbs += parseInt(carbsMatch[1]);
-        if (fatMatch) totalFat += parseInt(fatMatch[1]);
-      }
+    
+    dayMap.forEach(stats => {
+      totalCalories += stats.calories;
+      totalProtein += stats.protein;
+      totalCarbs += stats.carbs;
+      totalFat += stats.fat;
     });
 
+    const dayCount = dayMap.size || 7;
+    
     return {
-      avgCalories: Math.round(totalCalories / 7),
-      avgProtein: Math.round(totalProtein / 7),
-      avgCarbs: Math.round(totalCarbs / 7),
-      avgFat: Math.round(totalFat / 7),
+      avgCalories: Math.round(totalCalories / dayCount),
+      avgProtein: Math.round(totalProtein / dayCount),
+      avgCarbs: Math.round(totalCarbs / dayCount),
+      avgFat: Math.round(totalFat / dayCount),
     };
   };
 
-  // 获取某天的数据
-  const getDayData = (dayOfWeek: number) => {
-    return generatedPlan?.days?.filter(d => d.dayOfWeek === dayOfWeek) || [];
+  // 获取某天的数据（处理后端的嵌套 meals 结构）
+  const getDayData = (dayOfWeek: number): any[] => {
+    if (!generatedPlan?.days) return [];
+    
+    const day = generatedPlan.days.find(d => d.dayOfWeek === dayOfWeek);
+    if (!day) return [];
+    
+    // 如果是嵌套结构（有 meals 数组）
+    if (day.meals && Array.isArray(day.meals)) {
+      return day.meals;
+    }
+    
+    // 如果是扁平结构（兼容旧数据）
+    if (day.mealType) {
+      return [{
+        mealType: day.mealType,
+        dishes: day.dishes || [],
+        totalCalories: day.totalCalories || 0,
+        notes: day.notes,
+      }];
+    }
+    
+    return [];
   };
 
   // 计算某天总热量
   const getDayTotalCalories = (dayOfWeek: number) => {
-    const dayData = getDayData(dayOfWeek);
-    return dayData.reduce((sum, meal) => sum + (meal.totalCalories || 0), 0);
+    const meals = getDayData(dayOfWeek);
+    return meals.reduce((sum, meal) => {
+      const calories = parseFloat(meal.totalCalories) || 0;
+      return sum + calories;
+    }, 0);
   };
 
   if (isGenerating) {
@@ -206,6 +265,9 @@ export default function AIGeneratePlanPreviewScreen({ navigation, route }: AIGen
           <Text style={styles.loadingTitle}>AI 正在为你定制食谱</Text>
           <Text style={styles.loadingDesc}>
             正在根据你的{requestParams.healthGoal}目标和口味偏好，生成专属一周食谱...
+          </Text>
+          <Text style={styles.loadingTimeHint}>
+            ⏱️ 大约需要 30-90 秒，请耐心等待
           </Text>
           <View style={styles.loadingParams}>
             <View style={styles.paramTag}>
@@ -372,21 +434,39 @@ export default function AIGeneratePlanPreviewScreen({ navigation, route }: AIGen
                         </View>
                         
                         <View style={styles.dishesList}>
-                          {meal.dishes?.map((dish, dishIndex) => (
-                            <View key={dishIndex} style={styles.dishItem}>
-                              <View style={styles.dishMain}>
-                                <Text style={styles.dishName}>{dish.name}</Text>
-                                <View style={styles.dishMeta}>
-                                  <Text style={styles.dishQuantity}>{dish.quantityG}g</Text>
-                                  <Text style={styles.dishDot}>·</Text>
+                          {meal.dishes?.map((dish, dishIndex) => {
+                            // 兼容后端返回的下划线命名和驼峰命名
+                            const quantity = dish.quantityG || dish.quantity_g || 0;
+                            const protein = dish.proteinG || dish.protein_g || 0;
+                            const carbs = dish.carbsG || dish.carbs_g || 0;
+                            const fat = dish.fatG || dish.fat_g || 0;
+                            const cookingTip = dish.cookingTip || dish.cooking_tip;
+                            
+                            return (
+                              <View key={dishIndex} style={styles.dishItem}>
+                                <View style={styles.dishMainRow}>
+                                  <View style={styles.dishInfo}>
+                                    <Text style={styles.dishName}>{dish.name}</Text>
+                                    <View style={styles.dishMeta}>
+                                      <Text style={styles.dishQuantity}>{quantity}g</Text>
+                                      {(protein > 0 || carbs > 0 || fat > 0) && (
+                                        <>
+                                          <Text style={styles.dishDot}>·</Text>
+                                          <Text style={styles.dishNutrition}>
+                                            蛋{protein}g·碳{carbs}g·脂{fat}g
+                                          </Text>
+                                        </>
+                                      )}
+                                    </View>
+                                  </View>
                                   <Text style={styles.dishCals}>{dish.calories} kcal</Text>
                                 </View>
+                                {cookingTip && (
+                                  <Text style={styles.cookingTip}>{cookingTip}</Text>
+                                )}
                               </View>
-                              {dish.cookingTip && (
-                                <Text style={styles.cookingTip}>{dish.cookingTip}</Text>
-                              )}
-                            </View>
-                          ))}
+                            );
+                          })}
                         </View>
                       </View>
                     ))}
@@ -472,6 +552,12 @@ const styles = StyleSheet.create({
   loadingDesc: {
     fontSize: 14,
     color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  loadingTimeHint: {
+    fontSize: 13,
+    color: Colors.textMuted,
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -750,11 +836,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
   },
-  dishMain: {
+  dishMainRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
+    alignItems: 'flex-start',
+  },
+  dishInfo: {
+    flex: 1,
   },
   dishName: {
     fontSize: 14,
@@ -765,6 +853,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    marginTop: 2,
+    flexWrap: 'wrap',
   },
   dishQuantity: {
     fontSize: 12,
@@ -774,9 +864,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textMuted,
   },
-  dishCals: {
-    fontSize: 12,
+  dishNutrition: {
+    fontSize: 11,
     color: Colors.textSecondary,
+  },
+  dishCals: {
+    fontSize: 13,
+    color: Colors.warning,
+    fontWeight: '600',
   },
   cookingTip: {
     fontSize: 12,

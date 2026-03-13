@@ -100,9 +100,9 @@ export const AIService = {
     return apiClient.delete(`/ai/chat/sessions/${id}`);
   },
 
-  // 生成食谱（超时时间设置为60秒，因为AI生成可能需要较长时间）
+  // 生成食谱（超时时间设置为120秒，因为AI生成可能需要较长时间）
   generateMealPlan: async (data: GenerateMealPlanRequest): Promise<ApiResponse<MealPlan>> => {
-    return apiClient.post('/ai/generate-plan', data, { timeout: 60000 });
+    return apiClient.post('/ai/generate-plan', data, { timeout: 120000 });
   },
 
   // 生成今日AI健康建议

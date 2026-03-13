@@ -50,8 +50,29 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
     }
   };
 
-  const getDayData = (dayOfWeek: number) => {
-    return mealPlan?.days?.filter(d => d.dayOfWeek === dayOfWeek) || [];
+  // 获取某天的所有餐次（处理后端的嵌套结构）
+  const getDayData = (dayOfWeek: number): any[] => {
+    if (!mealPlan?.days) return [];
+    
+    const day = mealPlan.days.find(d => d.dayOfWeek === dayOfWeek);
+    if (!day) return [];
+    
+    // 如果是嵌套结构（有 meals 数组）
+    if (day.meals && Array.isArray(day.meals)) {
+      return day.meals;
+    }
+    
+    // 如果是扁平结构（兼容旧数据）
+    if (day.mealType) {
+      return [{
+        mealType: day.mealType,
+        dishes: day.dishes || [],
+        totalCalories: day.totalCalories || 0,
+        notes: day.notes,
+      }];
+    }
+    
+    return [];
   };
 
   const getMealTypeName = (type: string) => {
@@ -144,34 +165,61 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
           <Text style={styles.sectionTitle}>一周食谱详情</Text>
           
           {WEEK_DAYS.map((dayName, index) => {
-            const dayData = getDayData(index + 1);
-            if (dayData.length === 0) return null;
+            const dayMeals = getDayData(index + 1);
+            if (dayMeals.length === 0) return null;
+
+            // 计算当天总热量
+            const dayTotalCalories = dayMeals.reduce((sum, meal) => {
+              const calories = parseFloat(meal.totalCalories) || 0;
+              return sum + calories;
+            }, 0);
 
             return (
               <View key={index} style={styles.dayCard}>
                 <View style={styles.dayHeader}>
                   <Text style={styles.dayName}>{dayName}</Text>
                   <Text style={styles.dayCalories}>
-                    {dayData.reduce((sum, d) => sum + (d.totalCalories || 0), 0)} kcal
+                    {dayTotalCalories} kcal
                   </Text>
                 </View>
 
-                {dayData.map((meal, mealIndex) => (
+                {dayMeals.map((meal, mealIndex) => (
                   <View key={mealIndex} style={styles.mealContainer}>
-                    <Text style={styles.mealType}>{getMealTypeName(meal.mealType)}</Text>
+                    <Text style={styles.mealType}>{getMealTypeName(meal.mealType || 'breakfast')}</Text>
                     
-                    {meal.dishes?.map((dish, dishIndex) => (
-                      <View key={dishIndex} style={styles.dishItem}>
-                        <View style={styles.dishInfo}>
-                          <Text style={styles.dishName}>{dish.name}</Text>
-                          <Text style={styles.dishQuantity}>{dish.quantityG}g</Text>
+                    {meal.dishes?.map((dish, dishIndex) => {
+                      // 兼容后端返回的下划线命名和驼峰命名
+                      const quantity = dish.quantityG || dish.quantity_g || 0;
+                      const protein = dish.proteinG || dish.protein_g || 0;
+                      const carbs = dish.carbsG || dish.carbs_g || 0;
+                      const fat = dish.fatG || dish.fat_g || 0;
+                      const cookingTip = dish.cookingTip || dish.cooking_tip;
+                      
+                      return (
+                        <View key={dishIndex} style={styles.dishItem}>
+                          <View style={styles.dishMain}>
+                            <Text style={styles.dishName}>{dish.name}</Text>
+                            <View style={styles.dishMeta}>
+                              <Text style={styles.dishQuantity}>{quantity}g</Text>
+                              {(protein > 0 || carbs > 0 || fat > 0) && (
+                                <Text style={styles.dishNutrition}>
+                                  蛋{protein}g·碳{carbs}g·脂{fat}g
+                                </Text>
+                              )}
+                            </View>
+                          </View>
+                          <View style={styles.dishRight}>
+                            <Text style={styles.dishCalories}>{dish.calories} kcal</Text>
+                          </View>
+                          {cookingTip && (
+                            <Text style={styles.cookingTip}>💡 {cookingTip}</Text>
+                          )}
                         </View>
-                        <Text style={styles.dishCalories}>{dish.calories} kcal</Text>
-                      </View>
-                    ))}
+                      );
+                    })}
 
                     {meal.notes && (
-                      <Text style={styles.cookingTip}>💡 {meal.notes}</Text>
+                      <Text style={styles.mealNotes}>📊 {meal.notes}</Text>
                     )}
                   </View>
                 ))}
@@ -382,6 +430,30 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: 8,
     fontStyle: 'italic',
+  },
+  dishMain: {
+    flex: 1,
+  },
+  dishMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  dishNutrition: {
+    fontSize: 12,
+    color: Colors.textMuted,
+  },
+  dishRight: {
+    alignItems: 'flex-end',
+  },
+  mealNotes: {
+    fontSize: 12,
+    color: Colors.primary,
+    backgroundColor: Colors.primaryLight,
+    padding: 8,
+    borderRadius: 6,
+    marginTop: 8,
   },
   activateBtn: {
     backgroundColor: Colors.primary,
