@@ -103,31 +103,15 @@ export default function MealPlanScreen({ navigation }: any) {
     }
   }, [calories, mealCount, goal, preferences, loadActivePlan, refreshUser]);
 
-  const handleAIGenerate = useCallback(async () => {
-    setIsGeneratingAI(true);
-    try {
-      const res = await AIService.generateMealPlan({
-        calorieTarget: calories,
-        mealCount: mealCount,
-        healthGoal: goal,
-        flavorPrefs: preferences,
-        useAI: true,
-      });
-      
-      if (res.code === 0 && res.data) {
-        // 刷新用户profile以获取最新的每日热量目标
-        await refreshUser();
-        Alert.alert('生成成功', 'AI已为您生成专属食谱');
-        await loadActivePlan();
-      } else {
-        Alert.alert('生成失败', res.message || '请稍后重试');
-      }
-    } catch (error: any) {
-      Alert.alert('生成失败', error.message || '请检查网络连接');
-    } finally {
-      setIsGeneratingAI(false);
-    }
-  }, [calories, mealCount, goal, preferences, loadActivePlan, refreshUser]);
+  const handleAIGenerate = useCallback(() => {
+    // 跳转到 AI 生成输入页面
+    navigation.navigate('AIGeneratePlanInput', {
+      initialCalories: calories,
+      initialMealCount: mealCount,
+      initialGoal: goal,
+      initialPreferences: preferences,
+    });
+  }, [calories, mealCount, goal, preferences, navigation]);
 
   const getGoalDescription = (g: HealthGoal) => {
     const descriptions: Record<HealthGoal, string> = {

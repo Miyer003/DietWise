@@ -1,0 +1,843 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import Colors from '../../constants/Colors';
+import { AIService, MealPlanService } from '../../services/api';
+import { useAuth } from '../../store/AuthContext';
+import { MealPlan } from '../../types';
+
+interface AIGeneratePlanPreviewScreenProps {
+  navigation: any;
+  route: {
+    params: {
+      requestParams: {
+        calorieTarget: number;
+        mealCount: number;
+        healthGoal: string;
+        flavorPrefs: string[];
+        restrictions: string[];
+        customRequest: string;
+        cookingDifficulty: string;
+        heightCm?: number;
+        weightKg?: number;
+      };
+    };
+  };
+}
+
+const WEEK_DAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+const MEAL_TYPE_NAMES: Record<string, string> = {
+  breakfast: '早餐',
+  lunch: '午餐',
+  dinner: '晚餐',
+  snack: '加餐',
+};
+
+export default function AIGeneratePlanPreviewScreen({ navigation, route }: AIGeneratePlanPreviewScreenProps) {
+  const { requestParams } = route.params;
+  const { refreshUser } = useAuth();
+  
+  const [isGenerating, setIsGenerating] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [generatedPlan, setGeneratedPlan] = useState<MealPlan | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedDays, setExpandedDays] = useState<number[]>([1]); // 默认展开第一天
+
+  // 生成食谱
+  useEffect(() => {
+    generatePlan();
+  }, []);
+
+  const generatePlan = async () => {
+    setIsGenerating(true);
+    setError(null);
+    try {
+      // 构建请求参数，过滤掉 undefined 值
+      const apiParams: any = {
+        calorieTarget: requestParams.calorieTarget,
+        mealCount: requestParams.mealCount,
+        healthGoal: requestParams.healthGoal,
+        flavorPrefs: requestParams.flavorPrefs,
+      };
+      
+      // 只在有值时才传递身高体重
+      if (requestParams.heightCm != null && !isNaN(requestParams.heightCm)) {
+        apiParams.heightCm = requestParams.heightCm;
+      }
+      if (requestParams.weightKg != null && !isNaN(requestParams.weightKg)) {
+        apiParams.weightKg = requestParams.weightKg;
+      }
+      if (requestParams.customRequest) {
+        apiParams.customRequest = requestParams.customRequest;
+      }
+      if (requestParams.restrictions?.length) {
+        apiParams.restrictions = requestParams.restrictions;
+      }
+      if (requestParams.cookingDifficulty) {
+        apiParams.cookingDifficulty = requestParams.cookingDifficulty;
+      }
+      
+      const response = await AIService.generateMealPlan(apiParams);
+
+      if (response.code === 0 && response.data) {
+        setGeneratedPlan(response.data);
+      } else {
+        setError(response.message || '生成失败，请重试');
+      }
+    } catch (err: any) {
+      console.error('生成食谱失败:', err);
+      setError(err.message || '网络错误，请稍后重试');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // 应用食谱
+  const applyPlan = async () => {
+    if (!generatedPlan) return;
+
+    setIsSaving(true);
+    try {
+      // 刷新用户数据
+      await refreshUser();
+      Alert.alert('成功', 'AI 食谱已应用！', [
+        {
+          text: '查看详情',
+          onPress: () => {
+            navigation.navigate('MealPlanDetail', { planId: generatedPlan.id });
+          },
+        },
+        {
+          text: '返回',
+          onPress: () => navigation.navigate('MealPlan'),
+          style: 'cancel',
+        },
+      ]);
+    } catch (err: any) {
+      Alert.alert('保存失败', err.message || '请重试');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // 重新生成
+  const regenerate = () => {
+    Alert.alert('重新生成', '确定要重新生成食谱吗？', [
+      { text: '取消', style: 'cancel' },
+      { text: '确定', onPress: generatePlan },
+    ]);
+  };
+
+  // 修改需求
+  const editRequest = () => {
+    navigation.goBack();
+  };
+
+  // 展开/收起某天
+  const toggleDay = (dayOfWeek: number) => {
+    if (expandedDays.includes(dayOfWeek)) {
+      setExpandedDays(expandedDays.filter(d => d !== dayOfWeek));
+    } else {
+      setExpandedDays([...expandedDays, dayOfWeek]);
+    }
+  };
+
+  // 计算一周总营养
+  const calculateWeeklyTotal = () => {
+    if (!generatedPlan?.days) return null;
+    
+    let totalCalories = 0;
+    let totalProtein = 0;
+    let totalCarbs = 0;
+    let totalFat = 0;
+
+    generatedPlan.days.forEach(day => {
+      totalCalories += day.totalCalories || 0;
+      // 从 notes 中解析营养数据
+      if (day.notes) {
+        const proteinMatch = day.notes.match(/蛋白质[:：]\s*(\d+)/);
+        const carbsMatch = day.notes.match(/碳水[:：]\s*(\d+)/);
+        const fatMatch = day.notes.match(/脂肪[:：]\s*(\d+)/);
+        if (proteinMatch) totalProtein += parseInt(proteinMatch[1]);
+        if (carbsMatch) totalCarbs += parseInt(carbsMatch[1]);
+        if (fatMatch) totalFat += parseInt(fatMatch[1]);
+      }
+    });
+
+    return {
+      avgCalories: Math.round(totalCalories / 7),
+      avgProtein: Math.round(totalProtein / 7),
+      avgCarbs: Math.round(totalCarbs / 7),
+      avgFat: Math.round(totalFat / 7),
+    };
+  };
+
+  // 获取某天的数据
+  const getDayData = (dayOfWeek: number) => {
+    return generatedPlan?.days?.filter(d => d.dayOfWeek === dayOfWeek) || [];
+  };
+
+  // 计算某天总热量
+  const getDayTotalCalories = (dayOfWeek: number) => {
+    const dayData = getDayData(dayOfWeek);
+    return dayData.reduce((sum, meal) => sum + (meal.totalCalories || 0), 0);
+  };
+
+  if (isGenerating) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <View style={styles.aiIconContainer}>
+            <Text style={styles.aiIcon}>🤖</Text>
+            <View style={styles.aiThinking}>
+              <ActivityIndicator size="small" color={Colors.primary} />
+            </View>
+          </View>
+          <Text style={styles.loadingTitle}>AI 正在为你定制食谱</Text>
+          <Text style={styles.loadingDesc}>
+            正在根据你的{requestParams.healthGoal}目标和口味偏好，生成专属一周食谱...
+          </Text>
+          <View style={styles.loadingParams}>
+            <View style={styles.paramTag}>
+              <Text style={styles.paramText}>{requestParams.calorieTarget} kcal/天</Text>
+            </View>
+            <View style={styles.paramTag}>
+              <Text style={styles.paramText}>{requestParams.mealCount}餐/天</Text>
+            </View>
+            {requestParams.flavorPrefs.map(pref => (
+              <View key={pref} style={styles.paramTag}>
+                <Text style={styles.paramText}>{pref}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorIcon}>⚠️</Text>
+          <Text style={styles.errorTitle}>生成失败</Text>
+          <Text style={styles.errorText}>{error}</Text>
+          <View style={styles.errorActions}>
+            <TouchableOpacity style={styles.retryBtn} onPress={generatePlan}>
+              <Text style={styles.retryBtnText}>重试</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+              <Text style={styles.backBtnText}>修改需求</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const weeklyStats = calculateWeeklyTotal();
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        refreshControl={
+          <RefreshControl refreshing={isGenerating} onRefresh={generatePlan} />
+        }
+      >
+        {/* 头部 */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color={Colors.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>AI 食谱预览</Text>
+          <TouchableOpacity onPress={editRequest}>
+            <Text style={styles.editBtn}>修改</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* 概览卡片 */}
+        <View style={styles.overviewCard}>
+          <View style={styles.overviewHeader}>
+            <View style={styles.aiBadge}>
+              <Text style={styles.aiBadgeText}>🤖 AI 生成</Text>
+            </View>
+            <TouchableOpacity style={styles.regenerateBtn} onPress={regenerate}>
+              <Ionicons name="refresh" size={16} color={Colors.primary} />
+              <Text style={styles.regenerateText}>重新生成</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.statsGrid}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{requestParams.calorieTarget}</Text>
+              <Text style={styles.statLabel}>目标热量(kcal)</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{weeklyStats?.avgCalories || 0}</Text>
+              <Text style={styles.statLabel}>平均每日(kcal)</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{requestParams.mealCount}</Text>
+              <Text style={styles.statLabel}>每日餐数</Text>
+            </View>
+          </View>
+
+          {weeklyStats && (weeklyStats.avgProtein > 0 || weeklyStats.avgCarbs > 0 || weeklyStats.avgFat > 0) && (
+            <View style={styles.nutritionOverview}>
+              <Text style={styles.nutritionOverviewTitle}>平均每日营养</Text>
+              <View style={styles.nutritionRow}>
+                <View style={styles.nutritionPill}>
+                  <Text style={styles.nutritionPillValue}>{weeklyStats.avgProtein}g</Text>
+                  <Text style={styles.nutritionPillLabel}>蛋白质</Text>
+                </View>
+                <View style={styles.nutritionPill}>
+                  <Text style={styles.nutritionPillValue}>{weeklyStats.avgCarbs}g</Text>
+                  <Text style={styles.nutritionPillLabel}>碳水</Text>
+                </View>
+                <View style={styles.nutritionPill}>
+                  <Text style={styles.nutritionPillValue}>{weeklyStats.avgFat}g</Text>
+                  <Text style={styles.nutritionPillLabel}>脂肪</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          <View style={styles.preferencesRow}>
+            <Text style={styles.preferencesLabel}>饮食目标：</Text>
+            <View style={styles.preferencesTags}>
+              <View style={styles.prefTag}>
+                <Text style={styles.prefTagText}>{requestParams.healthGoal}</Text>
+              </View>
+              {requestParams.flavorPrefs.map(pref => (
+                <View key={pref} style={styles.prefTag}>
+                  <Text style={styles.prefTagText}>{pref}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        {/* 每日食谱 */}
+        <View style={styles.daysSection}>
+          <Text style={styles.sectionTitle}>一周食谱详情</Text>
+          
+          {WEEK_DAYS.map((dayName, index) => {
+            const dayOfWeek = index + 1;
+            const dayData = getDayData(dayOfWeek);
+            const isExpanded = expandedDays.includes(dayOfWeek);
+            const dayCalories = getDayTotalCalories(dayOfWeek);
+
+            if (dayData.length === 0) return null;
+
+            return (
+              <View key={dayOfWeek} style={styles.dayCard}>
+                <TouchableOpacity 
+                  style={styles.dayHeader}
+                  onPress={() => toggleDay(dayOfWeek)}
+                >
+                  <View style={styles.dayTitleSection}>
+                    <Text style={styles.dayName}>{dayName}</Text>
+                    <Text style={styles.dayCalories}>{dayCalories} kcal</Text>
+                  </View>
+                  <View style={styles.dayHeaderRight}>
+                    <Text style={styles.dayMealCount}>{dayData.length}餐</Text>
+                    <Ionicons 
+                      name={isExpanded ? 'chevron-up' : 'chevron-down'} 
+                      size={20} 
+                      color={Colors.textMuted} 
+                    />
+                  </View>
+                </TouchableOpacity>
+
+                {isExpanded && (
+                  <View style={styles.dayContent}>
+                    {dayData.map((meal, mealIndex) => (
+                      <View key={mealIndex} style={styles.mealSection}>
+                        <View style={styles.mealHeader}>
+                          <Text style={styles.mealType}>{MEAL_TYPE_NAMES[meal.mealType] || meal.mealType}</Text>
+                          <Text style={styles.mealCalories}>{meal.totalCalories || 0} kcal</Text>
+                        </View>
+                        
+                        <View style={styles.dishesList}>
+                          {meal.dishes?.map((dish, dishIndex) => (
+                            <View key={dishIndex} style={styles.dishItem}>
+                              <View style={styles.dishMain}>
+                                <Text style={styles.dishName}>{dish.name}</Text>
+                                <View style={styles.dishMeta}>
+                                  <Text style={styles.dishQuantity}>{dish.quantityG}g</Text>
+                                  <Text style={styles.dishDot}>·</Text>
+                                  <Text style={styles.dishCals}>{dish.calories} kcal</Text>
+                                </View>
+                              </View>
+                              {dish.cookingTip && (
+                                <Text style={styles.cookingTip}>{dish.cookingTip}</Text>
+                              )}
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    ))}
+                    
+                    {dayData[0]?.notes && (
+                      <View style={styles.dayNotes}>
+                        <Text style={styles.dayNotesText}>{dayData[0].notes}</Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
+            );
+          })}
+        </View>
+
+        {/* 底部操作 */}
+        <View style={styles.bottomActions}>
+          <TouchableOpacity style={styles.adjustBtn} onPress={editRequest}>
+            <Ionicons name="create-outline" size={18} color={Colors.text} />
+            <Text style={styles.adjustBtnText}>调整需求</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.applyBtn, isSaving && styles.applyBtnDisabled]}
+            onPress={applyPlan}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <>
+                <Ionicons name="checkmark" size={18} color="white" />
+                <Text style={styles.applyBtnText}>应用此食谱</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  aiIconContainer: {
+    position: 'relative',
+    marginBottom: 24,
+  },
+  aiIcon: {
+    fontSize: 64,
+  },
+  aiThinking: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  loadingTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 12,
+  },
+  loadingDesc: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  loadingParams: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  paramTag: {
+    backgroundColor: Colors.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  paramText: {
+    fontSize: 13,
+    color: Colors.primary,
+    fontWeight: '500',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  errorIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  errorText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  errorActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  retryBtn: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryBtnText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  backBtn: {
+    backgroundColor: Colors.card,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  backBtnText: {
+    color: Colors.text,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  editBtn: {
+    fontSize: 14,
+    color: Colors.primary,
+    fontWeight: '500',
+  },
+  overviewCard: {
+    backgroundColor: Colors.card,
+    margin: 16,
+    borderRadius: 16,
+    padding: 20,
+  },
+  overviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  aiBadge: {
+    backgroundColor: Colors.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  aiBadgeText: {
+    fontSize: 13,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  regenerateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  regenerateText: {
+    fontSize: 13,
+    color: Colors.primary,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
+  nutritionOverview: {
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    paddingTop: 16,
+    marginBottom: 16,
+  },
+  nutritionOverviewTitle: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginBottom: 12,
+  },
+  nutritionRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  nutritionPill: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    borderRadius: 8,
+    padding: 10,
+    alignItems: 'center',
+  },
+  nutritionPillValue: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 2,
+  },
+  nutritionPillLabel: {
+    fontSize: 11,
+    color: Colors.textMuted,
+  },
+  preferencesRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    paddingTop: 16,
+  },
+  preferencesLabel: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginRight: 8,
+  },
+  preferencesTags: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  prefTag: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  prefTagText: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
+  daysSection: {
+    paddingHorizontal: 16,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 12,
+  },
+  dayCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  dayHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  dayTitleSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  dayName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  dayCalories: {
+    fontSize: 14,
+    color: Colors.primary,
+    fontWeight: '500',
+  },
+  dayHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  dayMealCount: {
+    fontSize: 13,
+    color: Colors.textMuted,
+  },
+  dayContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  mealSection: {
+    marginBottom: 16,
+  },
+  mealHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  mealType: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  mealCalories: {
+    fontSize: 13,
+    color: Colors.warning,
+    fontWeight: '500',
+  },
+  dishesList: {
+    gap: 8,
+  },
+  dishItem: {
+    backgroundColor: Colors.background,
+    borderRadius: 8,
+    padding: 12,
+  },
+  dishMain: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  dishName: {
+    fontSize: 14,
+    color: Colors.text,
+    fontWeight: '500',
+  },
+  dishMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  dishQuantity: {
+    fontSize: 12,
+    color: Colors.textMuted,
+  },
+  dishDot: {
+    fontSize: 12,
+    color: Colors.textMuted,
+  },
+  dishCals: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
+  cookingTip: {
+    fontSize: 12,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
+  dayNotes: {
+    backgroundColor: Colors.primaryLight,
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 8,
+  },
+  dayNotesText: {
+    fontSize: 12,
+    color: Colors.primary,
+  },
+  bottomActions: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 16,
+    marginTop: 8,
+  },
+  adjustBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.card,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    gap: 6,
+  },
+  adjustBtnText: {
+    fontSize: 15,
+    color: Colors.text,
+    fontWeight: '500',
+  },
+  applyBtn: {
+    flex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary,
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 6,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  applyBtnDisabled: {
+    opacity: 0.7,
+  },
+  applyBtnText: {
+    fontSize: 15,
+    color: 'white',
+    fontWeight: 'bold',
+  },
+});

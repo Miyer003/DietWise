@@ -12,6 +12,7 @@ import HomeScreen from '../screens/Home/HomeScreen';
 import RecordScreen from '../screens/Record/RecordScreen';
 import CameraScreen from '../screens/Record/CameraScreen';
 import FoodSearchScreen from '../screens/Record/FoodSearchScreen';
+import FoodAIInputScreen from '../screens/Record/FoodAIInputScreen';
 import AnalyticsScreen from '../screens/Analytics/AnalyticsScreen';
 import ConsultScreen from '../screens/Consult/ConsultScreen';
 import ChatScreen from '../screens/Consult/ChatScreen';
@@ -19,6 +20,8 @@ import ProfileScreen from '../screens/Profile/ProfileScreen';
 import ProfileEditScreen from '../screens/Profile/ProfileEditScreen';
 import MealPlanScreen from '../screens/MealPlan/MealPlanScreen';
 import MealPlanDetailScreen from '../screens/MealPlan/MealPlanDetailScreen';
+import AIGeneratePlanInputScreen from '../screens/MealPlan/AIGeneratePlanInputScreen';
+import AIGeneratePlanPreviewScreen from '../screens/MealPlan/AIGeneratePlanPreviewScreen';
 import NotificationSettings from '../screens/Settings/NotificationSettings';
 import TipLibraryScreen from '../screens/Settings/TipLibraryScreen';
 import FeedbackScreen from '../screens/Settings/FeedbackScreen';
@@ -165,6 +168,11 @@ function AppStackNavigator() {
         component={FoodSearchScreen}
         options={{ headerShown: true, title: '搜索食物' }}
       />
+      <MainStack.Screen 
+        name="FoodAIInput" 
+        component={FoodAIInputScreen}
+        options={{ headerShown: true, title: 'AI 智能分析' }}
+      />
       
       {/* 咨询页面 */}
       <MainStack.Screen 
@@ -190,6 +198,16 @@ function AppStackNavigator() {
         name="MealPlanDetail" 
         component={MealPlanDetailScreen}
         options={{ headerShown: true, title: '食谱详情' }}
+      />
+      <MainStack.Screen 
+        name="AIGeneratePlanInput" 
+        component={AIGeneratePlanInputScreen}
+        options={{ headerShown: false }}
+      />
+      <MainStack.Screen 
+        name="AIGeneratePlanPreview" 
+        component={AIGeneratePlanPreviewScreen}
+        options={{ headerShown: false }}
       />
       
       {/* 设置页面 */}

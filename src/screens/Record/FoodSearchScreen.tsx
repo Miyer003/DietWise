@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../../constants/Colors';
-import { FoodService, DietService } from '../../services/api';
+import { FoodService, DietService, AIService } from '../../services/api';
 import { FoodItem, MealType } from '../../types';
 
 interface FoodSearchScreenProps {
@@ -295,6 +295,23 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
         </View>
       </View>
 
+      {/* AI 智能分析入口 */}
+      <TouchableOpacity 
+        style={styles.aiEntryCard}
+        onPress={() => navigation.navigate('FoodAIInput', { mealType })}
+      >
+        <View style={styles.aiEntryContent}>
+          <View style={styles.aiEntryIcon}>
+            <Ionicons name="sparkles" size={24} color={Colors.primary} />
+          </View>
+          <View style={styles.aiEntryText}>
+            <Text style={styles.aiEntryTitle}>AI 智能分析</Text>
+            <Text style={styles.aiEntryDesc}>输入食物名称，AI自动分析营养成分</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+        </View>
+      </TouchableOpacity>
+
       {/* 分类筛选 */}
       <View style={styles.categoryContainer}>
         <FlatList
@@ -368,6 +385,42 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  // AI 入口样式
+  aiEntryCard: {
+    backgroundColor: Colors.card,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.primaryLight,
+  },
+  aiEntryContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+  },
+  aiEntryIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  aiEntryText: {
+    flex: 1,
+  },
+  aiEntryTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  aiEntryDesc: {
+    fontSize: 13,
+    color: Colors.textSecondary,
   },
   header: {
     flexDirection: 'row',

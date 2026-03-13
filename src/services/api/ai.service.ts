@@ -29,6 +29,12 @@ export interface GenerateMealPlanRequest {
   healthGoal: string;
   flavorPrefs: string[];
   useAI?: boolean;
+  heightCm?: number;
+  weightKg?: number;
+  // 高级设置
+  restrictions?: string[];
+  customRequest?: string;
+  cookingDifficulty?: string;
 }
 
 export const AIService = {
