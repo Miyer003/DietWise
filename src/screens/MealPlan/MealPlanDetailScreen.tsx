@@ -11,7 +11,7 @@ interface MealPlanDetailScreenProps {
   route: {
     params: {
       planId?: string;
-      mealPlan?: MealPlan;  // 兼容旧的方式
+      mealPlan?: MealPlan;
     };
   };
 }
@@ -24,9 +24,9 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(initialMealPlan || null);
   const [isLoading, setIsLoading] = useState(!initialMealPlan && !!planId);
   const [error, setError] = useState<string | null>(null);
+  const [expandedDays, setExpandedDays] = useState<number[]>([1]); // 默认展开第一天
 
   useEffect(() => {
-    // 如果没有传入 mealPlan 但有 planId，则获取详情
     if (!initialMealPlan && planId) {
       loadPlanDetail();
     }
@@ -50,19 +50,16 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
     }
   };
 
-  // 获取某天的所有餐次（处理后端的嵌套结构）
   const getDayData = (dayOfWeek: number): any[] => {
     if (!mealPlan?.days) return [];
     
     const day = mealPlan.days.find(d => d.dayOfWeek === dayOfWeek);
     if (!day) return [];
     
-    // 如果是嵌套结构（有 meals 数组）
     if (day.meals && Array.isArray(day.meals)) {
       return day.meals;
     }
     
-    // 如果是扁平结构（兼容旧数据）
     if (day.mealType) {
       return [{
         mealType: day.mealType,
@@ -75,6 +72,14 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
     return [];
   };
 
+  const toggleDay = (dayOfWeek: number) => {
+    if (expandedDays.includes(dayOfWeek)) {
+      setExpandedDays(expandedDays.filter(d => d !== dayOfWeek));
+    } else {
+      setExpandedDays([...expandedDays, dayOfWeek]);
+    }
+  };
+
   const getMealTypeName = (type: string) => {
     const names: Record<string, string> = {
       breakfast: '早餐',
@@ -83,6 +88,16 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
       snack: '加餐',
     };
     return names[type] || type;
+  };
+
+  const getMealIcon = (type: string) => {
+    const icons: Record<string, string> = {
+      breakfast: '🌅',
+      lunch: '☀️',
+      dinner: '🌙',
+      snack: '🍎',
+    };
+    return icons[type] || '🍽️';
   };
 
   if (isLoading) {
@@ -165,64 +180,118 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
           <Text style={styles.sectionTitle}>一周食谱详情</Text>
           
           {WEEK_DAYS.map((dayName, index) => {
-            const dayMeals = getDayData(index + 1);
+            const dayOfWeek = index + 1;
+            const dayMeals = getDayData(dayOfWeek);
             if (dayMeals.length === 0) return null;
 
-            // 计算当天总热量
             const dayTotalCalories = dayMeals.reduce((sum, meal) => {
               const calories = parseFloat(meal.totalCalories) || 0;
               return sum + calories;
             }, 0);
 
+            const isExpanded = expandedDays.includes(dayOfWeek);
+
             return (
               <View key={index} style={styles.dayCard}>
-                <View style={styles.dayHeader}>
-                  <Text style={styles.dayName}>{dayName}</Text>
-                  <Text style={styles.dayCalories}>
-                    {dayTotalCalories} kcal
-                  </Text>
-                </View>
-
-                {dayMeals.map((meal, mealIndex) => (
-                  <View key={mealIndex} style={styles.mealContainer}>
-                    <Text style={styles.mealType}>{getMealTypeName(meal.mealType || 'breakfast')}</Text>
-                    
-                    {meal.dishes?.map((dish, dishIndex) => {
-                      // 兼容后端返回的下划线命名和驼峰命名
-                      const quantity = dish.quantityG || dish.quantity_g || 0;
-                      const protein = dish.proteinG || dish.protein_g || 0;
-                      const carbs = dish.carbsG || dish.carbs_g || 0;
-                      const fat = dish.fatG || dish.fat_g || 0;
-                      const cookingTip = dish.cookingTip || dish.cooking_tip;
-                      
-                      return (
-                        <View key={dishIndex} style={styles.dishItem}>
-                          <View style={styles.dishMain}>
-                            <Text style={styles.dishName}>{dish.name}</Text>
-                            <View style={styles.dishMeta}>
-                              <Text style={styles.dishQuantity}>{quantity}g</Text>
-                              {(protein > 0 || carbs > 0 || fat > 0) && (
-                                <Text style={styles.dishNutrition}>
-                                  蛋{protein}g·碳{carbs}g·脂{fat}g
-                                </Text>
-                              )}
-                            </View>
-                          </View>
-                          <View style={styles.dishRight}>
-                            <Text style={styles.dishCalories}>{dish.calories} kcal</Text>
-                          </View>
-                          {cookingTip && (
-                            <Text style={styles.cookingTip}>💡 {cookingTip}</Text>
-                          )}
-                        </View>
-                      );
-                    })}
-
-                    {meal.notes && (
-                      <Text style={styles.mealNotes}>📊 {meal.notes}</Text>
-                    )}
+                {/* 日期头部 - 可点击展开/收起 */}
+                <TouchableOpacity 
+                  style={styles.dayHeader}
+                  onPress={() => toggleDay(dayOfWeek)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.dayHeaderLeft}>
+                    <Text style={styles.dayName}>{dayName}</Text>
+                    <View style={styles.dayCalorieBadge}>
+                      <Text style={styles.dayCalorieText}>{Math.round(dayTotalCalories)} kcal</Text>
+                    </View>
                   </View>
-                ))}
+                  <View style={styles.dayHeaderRight}>
+                    <Text style={styles.dayMealCount}>{dayMeals.length}餐</Text>
+                    <Ionicons 
+                      name={isExpanded ? 'chevron-up' : 'chevron-down'} 
+                      size={20} 
+                      color={Colors.textMuted} 
+                    />
+                  </View>
+                </TouchableOpacity>
+
+                {/* 展开的餐食详情 */}
+                {isExpanded && (
+                  <View style={styles.dayContent}>
+                    {dayMeals.map((meal, mealIndex) => (
+                      <View key={mealIndex} style={styles.mealSection}>
+                        {/* 餐次标题 */}
+                        <View style={styles.mealHeader}>
+                          <View style={styles.mealTitleRow}>
+                            <Text style={styles.mealIcon}>{getMealIcon(meal.mealType)}</Text>
+                            <Text style={styles.mealType}>{getMealTypeName(meal.mealType || 'breakfast')}</Text>
+                          </View>
+                          <View style={styles.mealCalorieBadge}>
+                            <Text style={styles.mealCalorieText}>{Math.round(parseFloat(meal.totalCalories) || 0)} kcal</Text>
+                          </View>
+                        </View>
+                        
+                        {/* 菜品列表 */}
+                        <View style={styles.dishesList}>
+                          {meal.dishes?.map((dish, dishIndex) => {
+                            const quantity = dish.quantityG || dish.quantity_g || 0;
+                            const protein = dish.proteinG || dish.protein_g || 0;
+                            const carbs = dish.carbsG || dish.carbs_g || 0;
+                            const fat = dish.fatG || dish.fat_g || 0;
+                            const cookingTip = dish.cookingTip || dish.cooking_tip;
+                            
+                            return (
+                              <View key={dishIndex} style={styles.dishCard}>
+                                {/* 菜品主信息 */}
+                                <View style={styles.dishMainRow}>
+                                  <View style={styles.dishInfo}>
+                                    <Text style={styles.dishName}>{dish.name}</Text>
+                                    <View style={styles.dishMetaRow}>
+                                      <View style={styles.dishMetaItem}>
+                                        <Ionicons name="scale-outline" size={12} color={Colors.textMuted} />
+                                        <Text style={styles.dishMetaText}>{quantity}g</Text>
+                                      </View>
+                                      {(protein > 0 || carbs > 0 || fat > 0) && (
+                                        <>
+                                          <View style={styles.dishMetaDivider} />
+                                          <View style={styles.dishMetaItem}>
+                                            <Text style={styles.dishNutritionText}>
+                                              蛋{protein.toFixed(1)}g · 碳{carbs.toFixed(1)}g · 脂{fat.toFixed(1)}g
+                                            </Text>
+                                          </View>
+                                        </>
+                                      )}
+                                    </View>
+                                  </View>
+                                  <View style={styles.dishCalorieBox}>
+                                    <Text style={styles.dishCalorieNumber}>{dish.calories}</Text>
+                                    <Text style={styles.dishCalorieUnit}>kcal</Text>
+                                  </View>
+                                </View>
+                                
+                                {/* 烹饪建议 */}
+                                {cookingTip && (
+                                  <View style={styles.cookingTipBox}>
+                                    <Ionicons name="restaurant-outline" size={14} color={Colors.textSecondary} />
+                                    <Text style={styles.cookingTipText}>{cookingTip}</Text>
+                                  </View>
+                                )}
+                              </View>
+                            );
+                          })}
+                        </View>
+
+                        {/* 餐次营养汇总 */}
+                        {meal.notes && (
+                          <View style={styles.mealNotesBox}>
+                            <Ionicons name="nutrition-outline" size={14} color={Colors.primary} />
+                            <Text style={styles.mealNotesText}>{meal.notes}</Text>
+                          </View>
+                        )}
+                      </View>
+                    ))}
+                  </View>
+                )}
               </View>
             );
           })}
@@ -371,89 +440,174 @@ const styles = StyleSheet.create({
   dayCard: {
     backgroundColor: Colors.card,
     borderRadius: 16,
-    padding: 16,
     marginBottom: 12,
+    overflow: 'hidden',
   },
   dayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    padding: 16,
+  },
+  dayHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   dayName: {
     fontSize: 16,
     fontWeight: '600',
     color: Colors.text,
   },
-  dayCalories: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '500',
+  dayCalorieBadge: {
+    backgroundColor: Colors.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
-  mealContainer: {
+  dayCalorieText: {
+    fontSize: 13,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  dayHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  dayMealCount: {
+    fontSize: 13,
+    color: Colors.textMuted,
+  },
+  dayContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  mealSection: {
     marginBottom: 16,
   },
-  mealType: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginBottom: 8,
-  },
-  dishItem: {
+  mealHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    marginBottom: 10,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
   },
-  dishInfo: {
+  mealTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
+  },
+  mealIcon: {
+    fontSize: 16,
+  },
+  mealType: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  mealCalorieBadge: {
+    backgroundColor: Colors.warning + '20',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  mealCalorieText: {
+    fontSize: 12,
+    color: Colors.warning,
+    fontWeight: '600',
+  },
+  dishesList: {
+    gap: 10,
+  },
+  dishCard: {
+    backgroundColor: Colors.background,
+    borderRadius: 12,
+    padding: 12,
+  },
+  dishMainRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  dishInfo: {
+    flex: 1,
   },
   dishName: {
     fontSize: 15,
-    color: Colors.text,
-  },
-  dishQuantity: {
-    fontSize: 13,
-    color: Colors.textMuted,
-  },
-  dishCalories: {
-    fontSize: 14,
-    color: Colors.warning,
     fontWeight: '500',
+    color: Colors.text,
+    marginBottom: 6,
   },
-  cookingTip: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginTop: 8,
-    fontStyle: 'italic',
-  },
-  dishMain: {
-    flex: 1,
-  },
-  dishMeta: {
+  dishMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 4,
+    gap: 6,
+    flexWrap: 'wrap',
   },
-  dishNutrition: {
+  dishMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  dishMetaText: {
     fontSize: 12,
     color: Colors.textMuted,
   },
-  dishRight: {
-    alignItems: 'flex-end',
+  dishMetaDivider: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: Colors.textMuted,
   },
-  mealNotes: {
+  dishNutritionText: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+  },
+  dishCalorieBox: {
+    alignItems: 'flex-end',
+    minWidth: 50,
+  },
+  dishCalorieNumber: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.warning,
+  },
+  dishCalorieUnit: {
+    fontSize: 10,
+    color: Colors.textMuted,
+  },
+  cookingTipBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  cookingTipText: {
+    flex: 1,
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontStyle: 'italic',
+    lineHeight: 18,
+  },
+  mealNotesBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: Colors.primaryLight,
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  mealNotesText: {
+    flex: 1,
     fontSize: 12,
     color: Colors.primary,
-    backgroundColor: Colors.primaryLight,
-    padding: 8,
-    borderRadius: 6,
-    marginTop: 8,
   },
   activateBtn: {
     backgroundColor: Colors.primary,

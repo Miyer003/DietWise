@@ -220,7 +220,7 @@ export default function ProfileScreen({ navigation }: any) {
             ))}
           </View>
           <Text style={styles.portraitDesc}>
-            AI分析：{portraitDesc}
+            个人标签：{portraitDesc}
           </Text>
         </View>
 

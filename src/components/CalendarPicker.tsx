@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Modal,
   Dimensions,
-  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
@@ -150,26 +149,31 @@ export default function CalendarPicker({
                 style={styles.dayCell}
                 onPress={() => dayData && handleDatePress(dayData.date)}
                 disabled={!dayData}
+                activeOpacity={0.7}
               >
                 {dayData && (
                   <View
                     style={[
                       styles.dayContent,
+                      // 优先级：选中 > 今天 > 有记录
                       dayData.isSelected && styles.selectedDay,
-                      dayData.isToday && !dayData.isSelected && styles.today,
+                      !dayData.isSelected && dayData.isToday && styles.today,
+                      !dayData.isSelected && !dayData.isToday && dayData.hasRecord && styles.hasRecordDay,
                     ]}
                   >
                     <Text
                       style={[
                         styles.dayText,
                         dayData.isSelected && styles.selectedDayText,
-                        dayData.isToday && !dayData.isSelected && styles.todayText,
+                        !dayData.isSelected && dayData.isToday && styles.todayText,
+                        !dayData.isSelected && !dayData.isToday && dayData.hasRecord && styles.hasRecordDayText,
                       ]}
                     >
                       {dayData.day}
                     </Text>
-                    {dayData.hasRecord && (
-                      <View style={styles.recordDot} />
+                    {/* 只在今天显示标记 */}
+                    {dayData.isToday && (
+                      <Text style={styles.todayLabel}>今天</Text>
                     )}
                   </View>
                 )}
@@ -180,12 +184,16 @@ export default function CalendarPicker({
           {/* 图例 */}
           <View style={styles.legend}>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, styles.recordDot]} />
-              <Text style={styles.legendText}>有记录</Text>
+              <View style={[styles.legendBox, { backgroundColor: Colors.primary }]} />
+              <Text style={styles.legendText}>已选中</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, styles.todayDot]} />
+              <View style={[styles.legendBox, styles.todayBox]} />
               <Text style={styles.legendText}>今天</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendBox, { backgroundColor: '#DBEAFE' }]} />
+              <Text style={styles.legendText}>有记录</Text>
             </View>
           </View>
 
@@ -248,55 +256,68 @@ const styles = StyleSheet.create({
   },
   dayCell: {
     width: (width - 40) / 7,
-    height: 50,
+    height: 56,
     justifyContent: 'center',
     alignItems: 'center',
   },
   dayContent: {
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 18,
-    position: 'relative',
+    borderRadius: 12,
   },
   dayText: {
-    fontSize: 14,
+    fontSize: 15,
     color: Colors.text,
+    fontWeight: '500',
   },
-  selectedDay: {
-    backgroundColor: Colors.primary,
+  // 有记录 - 蓝色底色
+  hasRecordDay: {
+    backgroundColor: '#DBEAFE',
   },
-  selectedDayText: {
-    color: 'white',
-    fontWeight: 'bold',
+  hasRecordDayText: {
+    color: '#1E40AF',
+    fontWeight: '600',
   },
+  // 今天 - 蓝色边框圈起来
   today: {
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: Colors.primary,
+    backgroundColor: 'transparent',
   },
   todayText: {
     color: Colors.primary,
     fontWeight: 'bold',
+    fontSize: 16,
   },
-  recordDot: {
+  todayLabel: {
     position: 'absolute',
-    bottom: 2,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.primary,
+    bottom: -2,
+    fontSize: 8,
+    color: Colors.primary,
+    fontWeight: 'bold',
   },
-  todayDot: {
+  // 选中 - 主色填充
+  selectedDay: {
     backgroundColor: Colors.primary,
-    position: 'relative',
-    bottom: 0,
+    transform: [{ scale: 1.1 }],
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  selectedDayText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   legend: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 24,
-    marginTop: 16,
+    marginTop: 20,
     paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
@@ -304,16 +325,22 @@ const styles = StyleSheet.create({
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
-  legendDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  legendBox: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+  },
+  todayBox: {
+    borderWidth: 3,
+    borderColor: Colors.primary,
+    backgroundColor: 'transparent',
   },
   legendText: {
-    fontSize: 12,
+    fontSize: 13,
     color: Colors.textSecondary,
+    fontWeight: '500',
   },
   closeButton: {
     marginTop: 20,

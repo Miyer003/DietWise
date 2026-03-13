@@ -8,6 +8,15 @@ export interface CreateMealPlanRequest {
   flavorPrefs: string[];
 }
 
+export interface UpdateMealPlanRequest {
+  calorieTarget?: number;
+  mealCount?: number;
+  healthGoal?: string;
+  flavorPrefs?: string[];
+  updateDays?: boolean;
+  days?: any[];
+}
+
 export const MealPlanService = {
   // 获取当前激活的食谱
   getActivePlan: async (): Promise<ApiResponse<MealPlan>> => {
@@ -34,6 +43,11 @@ export const MealPlanService = {
   // 创建自定义食谱
   createPlan: async (data: CreateMealPlanRequest): Promise<ApiResponse<MealPlan>> => {
     return apiClient.post('/meal-plans', data);
+  },
+
+  // 更新食谱（支持部分更新）
+  updatePlan: async (id: string, data: UpdateMealPlanRequest): Promise<ApiResponse<MealPlan>> => {
+    return apiClient.patch(`/meal-plans/${id}`, data);
   },
 
   // 激活指定食谱

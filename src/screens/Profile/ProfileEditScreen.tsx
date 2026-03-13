@@ -35,11 +35,7 @@ export default function ProfileEditScreen({ navigation }: any) {
   const [targetWeightKg, setTargetWeightKg] = useState(profile?.targetWeightKg?.toString() || '');
   const [birthDate, setBirthDate] = useState(profile?.birthDate || '');
   const [showDatePicker, setShowDatePicker] = useState(false);
-  
-  // 饮食目标
-  const [healthGoal, setHealthGoal] = useState<'减脂' | '增肌' | '维持'>(profile?.healthGoal || '维持');
-  const [dailyCalorieGoal, setDailyCalorieGoal] = useState(profile?.dailyCalorieGoal?.toString() || '2000');
-  const [mealCount, setMealCount] = useState(profile?.mealCount?.toString() || '3');
+
 
   // 加载现有数据
   useEffect(() => {
@@ -54,9 +50,7 @@ export default function ProfileEditScreen({ navigation }: any) {
       setWeightKg(profile.weightKg?.toString() || '');
       setTargetWeightKg(profile.targetWeightKg?.toString() || '');
       setBirthDate(profile.birthDate || '');
-      setHealthGoal(profile.healthGoal || '维持');
-      setDailyCalorieGoal(profile.dailyCalorieGoal?.toString() || '2000');
-      setMealCount(profile.mealCount?.toString() || '3');
+
     }
   }, [user, profile]);
 
@@ -84,9 +78,6 @@ export default function ProfileEditScreen({ navigation }: any) {
       if (weightKg) profileData.weightKg = parseFloat(weightKg);
       if (targetWeightKg) profileData.targetWeightKg = parseFloat(targetWeightKg);
       if (birthDate) profileData.birthDate = birthDate;
-      if (healthGoal !== profile?.healthGoal) profileData.healthGoal = healthGoal;
-      if (dailyCalorieGoal) profileData.dailyCalorieGoal = parseInt(dailyCalorieGoal);
-      if (mealCount) profileData.mealCount = parseInt(mealCount);
       
       if (Object.keys(profileData).length > 0) {
         await updateProfile(profileData);
@@ -271,57 +262,6 @@ export default function ProfileEditScreen({ navigation }: any) {
                 >
                   <Text style={[styles.genderText, gender === 'other' && styles.genderTextActive]}>其他</Text>
                 </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* 饮食目标 */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>饮食目标</Text>
-          <View style={styles.card}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>健康目标</Text>
-              <View style={styles.goalContainer}>
-                {(['减脂', '增肌', '维持'] as const).map((goal) => (
-                  <TouchableOpacity 
-                    key={goal}
-                    style={[styles.goalBtn, healthGoal === goal && styles.goalBtnActive]}
-                    onPress={() => setHealthGoal(goal)}
-                    disabled={isSaving}
-                  >
-                    <Text style={[styles.goalText, healthGoal === goal && styles.goalTextActive]}>
-                      {goal}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-            
-            <View style={styles.rowInputs}>
-              <View style={[styles.inputGroup, { flex: 1, marginRight: 12 }]}>
-                <Text style={styles.inputLabel}>每日热量目标 (kcal)</Text>
-                <TextInput 
-                  style={styles.input}
-                  value={dailyCalorieGoal}
-                  onChangeText={setDailyCalorieGoal}
-                  placeholder="2000"
-                placeholderTextColor={Colors.textMuted}
-                  keyboardType="numeric"
-                  editable={!isSaving}
-                />
-              </View>
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.inputLabel}>每日餐数</Text>
-                <TextInput 
-                  style={styles.input}
-                  value={mealCount}
-                  onChangeText={setMealCount}
-                  placeholder="3"
-                placeholderTextColor={Colors.textMuted}
-                  keyboardType="numeric"
-                  editable={!isSaving}
-                />
               </View>
             </View>
           </View>

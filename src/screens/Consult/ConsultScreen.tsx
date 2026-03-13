@@ -34,7 +34,7 @@ export default function ConsultScreen({ navigation }: any) {
           {/* 智能生成食谱 */}
           <TouchableOpacity 
             style={styles.featureCard}
-            onPress={() => navigation.navigate('MealPlan')}
+            onPress={() => navigation.navigate('AIGeneratePlanInput')}
           >
             <View style={[styles.iconContainer, { backgroundColor: Colors.warning }]}>
               <Text style={styles.iconText}>🥡</Text>

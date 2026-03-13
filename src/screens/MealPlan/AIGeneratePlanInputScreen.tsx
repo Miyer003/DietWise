@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   TextInput,
   Switch,
   Alert,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -56,10 +57,14 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
   const params = route.params || {};
 
   // 基础设置
-  const [calories, setCalories] = useState(params.initialCalories || profile?.dailyCalorieGoal || 2000);
+  const [calories, setCalories] = useState<number>(params.initialCalories || profile?.dailyCalorieGoal || 2000);
   const [mealCount, setMealCount] = useState(params.initialMealCount || profile?.mealCount || 3);
   const [goal, setGoal] = useState<HealthGoal>((params.initialGoal as HealthGoal) || (profile?.healthGoal as HealthGoal) || '维持');
   const [preferences, setPreferences] = useState<string[]>(params.initialPreferences || profile?.flavorPrefs || []);
+
+  // 热量输入弹窗
+  const [showCalorieModal, setShowCalorieModal] = useState(false);
+  const [tempCalories, setTempCalories] = useState(String(calories));
 
   // 高级设置
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -83,6 +88,23 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
       setRestrictions([...restrictions, restriction]);
     }
   };
+
+  // 打开热量输入弹窗
+  const openCalorieModal = useCallback(() => {
+    setTempCalories(String(calories));
+    setShowCalorieModal(true);
+  }, [calories]);
+
+  // 确认热量输入
+  const confirmCalorieInput = useCallback(() => {
+    const value = parseInt(tempCalories, 10);
+    if (isNaN(value) || value < 1200 || value > 3500) {
+      Alert.alert('输入错误', '请输入 1200-3500 之间的数值');
+      return;
+    }
+    setCalories(value);
+    setShowCalorieModal(false);
+  }, [tempCalories]);
 
   const handleGenerate = () => {
     // 构建请求参数
@@ -139,7 +161,11 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
           <View style={styles.card}>
             <View style={styles.sliderHeader}>
               <Text style={styles.sliderLabel}>每日热量目标</Text>
-              <Text style={styles.sliderValue}>{calories} kcal</Text>
+              <TouchableOpacity style={styles.calorieInputBtn} onPress={openCalorieModal}>
+                <Text style={styles.calorieInputValue}>{calories}</Text>
+                <Text style={styles.calorieInputUnit}>kcal</Text>
+                <Ionicons name="pencil" size={14} color={Colors.primary} style={{ marginLeft: 4 }} />
+              </TouchableOpacity>
             </View>
             <View style={styles.sliderContainer}>
               <Text style={styles.sliderMin}>1200</Text>
@@ -329,6 +355,44 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* 热量输入弹窗 */}
+      <Modal
+        visible={showCalorieModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowCalorieModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>设置每日热量</Text>
+            <Text style={styles.modalDesc}>范围：1200 - 3500 kcal</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={tempCalories}
+              onChangeText={setTempCalories}
+              keyboardType="number-pad"
+              maxLength={4}
+              autoFocus
+              placeholder="2000"
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={styles.modalBtnCancel}
+                onPress={() => setShowCalorieModal(false)}
+              >
+                <Text style={styles.modalBtnCancelText}>取消</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.modalBtnConfirm}
+                onPress={confirmCalorieInput}
+              >
+                <Text style={styles.modalBtnConfirmText}>确定</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -644,5 +708,95 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  // 热量输入按钮
+  calorieInputBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  calorieInputValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  calorieInputUnit: {
+    fontSize: 14,
+    color: Colors.primary,
+    marginLeft: 2,
+  },
+  // 弹窗样式
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 320,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  modalDesc: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginBottom: 20,
+  },
+  modalInput: {
+    width: '100%',
+    height: 56,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 24,
+    fontWeight: '600',
+    color: Colors.text,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalBtnCancel: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+  },
+  modalBtnCancelText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+  },
+  modalBtnConfirm: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+  },
+  modalBtnConfirmText: {
+    fontSize: 16,
+    color: 'white',
+    fontWeight: '600',
   },
 });
