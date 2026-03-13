@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { 
   View, 
   Text, 
@@ -199,20 +200,29 @@ const ChatScreen: React.FC = ({ route }: any) => {
   }, [route.params]);
 
   // 加载今日数据
-  useEffect(() => {
-    const loadDailyData = async () => {
-      try {
-        const today = new Date().toISOString().split('T')[0];
-        const res = await DietService.getDailySummary(today);
-        if (res.code === 0 && res.data) {
-          setDailySummary(res.data);
-        }
-      } catch (error) {
-        console.error('加载每日数据失败:', error);
+  const loadDailyData = useCallback(async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const res = await DietService.getDailySummary(today);
+      if (res.code === 0 && res.data) {
+        setDailySummary(res.data);
       }
-    };
-    loadDailyData();
+    } catch (error) {
+      console.error('加载每日数据失败:', error);
+    }
   }, []);
+
+  // 初始加载
+  useEffect(() => {
+    loadDailyData();
+  }, [loadDailyData]);
+
+  // 页面获得焦点时刷新数据
+  useFocusEffect(
+    useCallback(() => {
+      loadDailyData();
+    }, [loadDailyData])
+  );
 
   // 添加欢迎消息
   useEffect(() => {

@@ -2,16 +2,22 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 开发环境使用本地后端，生产环境使用线上地址
-// 注意：使用手机测试时需要使用电脑的局域网 IP，不能用 localhost
-// 获取本机 IP: macOS: ifconfig | grep "inet "  Windows: ipconfig
+// 
+// 手机调试有两种方式：
+// 1. 使用局域网 IP: 手机和电脑在同一WiFi下，使用电脑的局域网 IP
+//    获取本机 IP: macOS: ifconfig | grep "inet "  Windows: ipconfig
+//
+// 2. 使用 adb reverse: 运行 adb reverse tcp:3000 tcp:3000
+//    然后使用 localhost，手机会通过 USB 连接访问电脑
+//
 const API_BASE_URL = __DEV__ 
-  ? 'http://10.133.50.211:3000/v1'  // 请替换为你的电脑局域网 IP
+  ? 'http://localhost:3000/v1'  // 🔌 USB 连接：使用 localhost（需要 adb reverse）
   : 'https://api.dietwise.cn/v1';
 
 // 创建 axios 实例
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 120000,  // 默认120秒，AI生成食谱可能需要较长时间
   headers: {
     'Content-Type': 'application/json',
   },

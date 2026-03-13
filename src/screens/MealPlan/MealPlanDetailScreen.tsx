@@ -1,15 +1,17 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../../constants/Colors';
 import { MealPlan } from '../../types';
+import { MealPlanService } from '../../services/api';
 
 interface MealPlanDetailScreenProps {
   navigation: any;
   route: {
     params: {
-      mealPlan: MealPlan;
+      planId?: string;
+      mealPlan?: MealPlan;  // 兼容旧的方式
     };
   };
 }
@@ -17,10 +19,39 @@ interface MealPlanDetailScreenProps {
 const WEEK_DAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
 export default function MealPlanDetailScreen({ navigation, route }: MealPlanDetailScreenProps) {
-  const { mealPlan } = route.params;
+  const { planId, mealPlan: initialMealPlan } = route.params || {};
+  
+  const [mealPlan, setMealPlan] = useState<MealPlan | null>(initialMealPlan || null);
+  const [isLoading, setIsLoading] = useState(!initialMealPlan && !!planId);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // 如果没有传入 mealPlan 但有 planId，则获取详情
+    if (!initialMealPlan && planId) {
+      loadPlanDetail();
+    }
+  }, [planId, initialMealPlan]);
+
+  const loadPlanDetail = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const res = await MealPlanService.getPlanById(planId!);
+      if (res.code === 0 && res.data) {
+        setMealPlan(res.data);
+      } else {
+        setError('获取食谱详情失败');
+      }
+    } catch (err) {
+      console.error('获取食谱详情失败:', err);
+      setError('获取食谱详情失败');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getDayData = (dayOfWeek: number) => {
-    return mealPlan.days?.filter(d => d.dayOfWeek === dayOfWeek) || [];
+    return mealPlan?.days?.filter(d => d.dayOfWeek === dayOfWeek) || [];
   };
 
   const getMealTypeName = (type: string) => {
@@ -32,6 +63,30 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
     };
     return names[type] || type;
   };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>加载中...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error || !mealPlan) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error || '食谱不存在'}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={loadPlanDetail}>
+            <Text style={styles.retryBtnText}>重试</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -149,6 +204,38 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: Colors.textSecondary,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: Colors.danger,
+    marginBottom: 16,
+  },
+  retryBtn: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryBtnText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '500',
   },
   overviewCard: {
     backgroundColor: Colors.card,

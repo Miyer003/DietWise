@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { 
   View, 
   Text, 
@@ -130,7 +131,11 @@ const AICard: React.FC<{
 };
 
 // 时间线项目
-const TimelineItem: React.FC<{ record: DietRecord; isLast?: boolean }> = ({ record, isLast }) => {
+const TimelineItem: React.FC<{ 
+  record: DietRecord; 
+  isLast?: boolean;
+  onDelete?: (id: string) => void;
+}> = ({ record, isLast, onDelete }) => {
   const getMealIcon = (type: string) => {
     switch(type) {
       case 'breakfast': return '🍳';
@@ -173,7 +178,21 @@ const TimelineItem: React.FC<{ record: DietRecord; isLast?: boolean }> = ({ reco
         <View style={styles.timelineInfo}>
           <View style={styles.timelineHeader}>
             <Text style={styles.timelineMealType}>{getMealName(record.mealType)}</Text>
-            <Text style={styles.timelineTime}>{formatTime(record.createdAt)}</Text>
+            <View style={styles.timelineHeaderRight}>
+              <Text style={styles.timelineTime}>{formatTime(record.createdAt)}</Text>
+              {onDelete && (
+                <TouchableOpacity 
+                  style={styles.deleteButton}
+                  onPress={() => {
+                    console.log('删除按钮被点击:', record.id);
+                    onDelete(record.id);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.deleteButtonText}>🗑️</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
           <Text style={styles.timelineFood} numberOfLines={1}>{getFoodNames(record)}</Text>
           <Text style={styles.timelineCalories}>{Math.round(record.totalCalories)} kcal</Text>
@@ -192,6 +211,15 @@ export default function HomeScreen({ navigation }: any) {
   const [isTipLoading, setIsTipLoading] = useState(false);
 
   const today = format(new Date(), 'yyyy-MM-dd');
+  const currentHour = new Date().getHours();
+  
+  // 根据时间获取问候语
+  const getGreeting = () => {
+    if (currentHour < 12) return '早上好';
+    if (currentHour < 14) return '中午好';
+    if (currentHour < 18) return '下午好';
+    return '晚上好';
+  };
 
   // 加载每日数据
   const loadDailyData = useCallback(async () => {
@@ -263,12 +291,77 @@ export default function HomeScreen({ navigation }: any) {
     loadAll();
   }, [loadDailyData, loadAiTip]);
 
+  // 页面获得焦点时刷新数据（如从其他页面返回）
+  useFocusEffect(
+    useCallback(() => {
+      loadDailyData();
+    }, [loadDailyData])
+  );
+
   // 下拉刷新
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
     await Promise.all([loadDailyData(), loadAiTip()]);
     setIsRefreshing(false);
   }, [loadDailyData, loadAiTip]);
+
+  // 删除记录
+  const handleDeleteRecord = useCallback(async (recordId: string) => {
+    console.log('handleDeleteRecord 被调用:', recordId);
+    
+    // Web 端使用 window.confirm
+    if (typeof window !== 'undefined' && window.confirm) {
+      const confirmed = window.confirm('确定要删除这条记录吗？');
+      if (confirmed) {
+        try {
+          console.log('开始删除记录:', recordId);
+          const response = await DietService.deleteRecord(recordId);
+          console.log('删除响应:', response);
+          if (response.code === 0) {
+            // 重新加载数据
+            await loadDailyData();
+            console.log('删除成功，数据已刷新');
+          } else {
+            alert('删除失败: ' + (response.message || '请重试'));
+          }
+        } catch (error) {
+          console.error('删除记录失败:', error);
+          alert('删除失败: 网络错误，请重试');
+        }
+      }
+      return;
+    }
+    
+    // 移动端使用 Alert
+    Alert.alert(
+      '确认删除',
+      '确定要删除这条记录吗？',
+      [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              console.log('开始删除记录:', recordId);
+              const response = await DietService.deleteRecord(recordId);
+              console.log('删除响应:', response);
+              if (response.code === 0) {
+                // 重新加载数据
+                await loadDailyData();
+                console.log('删除成功，数据已刷新');
+              } else {
+                Alert.alert('删除失败', response.message || '请重试');
+              }
+            } catch (error) {
+              console.error('删除记录失败:', error);
+              Alert.alert('删除失败', '网络错误，请重试');
+            }
+          },
+        },
+      ]
+    );
+  }, [loadDailyData]);
 
   const progress = dailyData && dailyData.calorieGoal > 0
     ? (dailyData.calorieConsumed / dailyData.calorieGoal) * 100 
@@ -294,7 +387,7 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={styles.dateText}>
               {format(new Date(), 'M月d日 EEEE', { locale: zhCN })}
             </Text>
-            <Text style={styles.greeting}>早上好，{user?.nickname || 'User'} 👋</Text>
+            <Text style={styles.greeting}>{getGreeting()}，{user?.nickname || 'User'} 👋</Text>
           </View>
           <TouchableOpacity 
             style={styles.avatarButton}
@@ -362,6 +455,7 @@ export default function HomeScreen({ navigation }: any) {
                   key={record.id} 
                   record={record} 
                   isLast={index === dailyData.mealRecords.length - 1}
+                  onDelete={handleDeleteRecord}
                 />
               ))
             ) : (
@@ -654,6 +748,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 4,
+  },
+  timelineHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  deleteButton: {
+    padding: 8,
+    minWidth: 40,
+    minHeight: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteButtonText: {
+    fontSize: 16,
   },
   timelineMealType: {
     fontSize: 16,

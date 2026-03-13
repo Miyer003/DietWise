@@ -8,11 +8,13 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import Colors from '../../constants/Colors';
 import { AIService, DietService } from '../../services/api';
 import { NutritionAnalysisResult, MealType } from '../../types';
@@ -45,17 +47,23 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
 
   // 拍照
   const takePicture = async () => {
-    if (!cameraRef.current) return;
+    if (!cameraRef.current) {
+      console.log('相机引用为空');
+      return;
+    }
 
     try {
+      console.log('正在拍照...');
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
         base64: true,
       });
+      console.log('拍照成功:', photo?.uri?.substring(0, 50) + '...');
       if (photo) {
         setCapturedImage(photo.uri);
       }
     } catch (error) {
+      console.error('拍照失败:', error);
       Alert.alert('错误', '拍照失败，请重试');
     }
   };
@@ -78,40 +86,70 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
     }
   };
 
-  // 分析图片
+  // 将图片转为 base64（支持 Web 和移动端）
+  const imageToBase64 = async (uri: string): Promise<string> => {
+    try {
+      // Web 端处理
+      if (uri.startsWith('data:')) {
+        // 已经是 base64 data URL
+        return uri.split(',')[1];
+      }
+      
+      if (uri.startsWith('http') || uri.startsWith('blob:')) {
+        // 网络图片或 blob URL，使用 fetch
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = (reader.result as string).split(',')[1];
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      }
+      
+      // 移动端本地文件，使用 expo-file-system
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      return base64;
+    } catch (error) {
+      console.error('图片转 base64 失败:', error);
+      throw new Error('图片处理失败: ' + (error as Error).message);
+    }
+  };
+
+  // 分析图片（使用 base64，不经过 MinIO）
   const analyzeImage = async () => {
-    if (!capturedImage) return;
+    // 强制弹出 alert 确认按钮被点击（Web 调试用）
+    if (typeof window !== 'undefined') {
+      console.log('=== analyzeImage 按钮被点击 ===');
+    }
+    
+    if (!capturedImage) {
+      Alert.alert('错误', '请先拍照');
+      return;
+    }
 
     setIsAnalyzing(true);
     try {
-      // 1. 获取上传URL
-      const filename = capturedImage.split('/').pop() || 'image.jpg';
-      const uploadRes = await DietService.getUploadUrl(filename);
+      console.log('=== BASE64 VERSION v3 ===');  // 版本标记
+      console.log('开始分析图片:', capturedImage);
+      console.log('图片 URI 类型:', capturedImage.substring(0, 30) + '...');
+      
+      // 1. 将图片转为 base64
+      const base64Image = await imageToBase64(capturedImage);
+      console.log('Base64 转换成功，长度:', base64Image.length);
 
-      if (uploadRes.code !== 0 || !uploadRes.data) {
-        throw new Error('获取上传链接失败');
-      }
-
-      const { uploadUrl, objectName } = uploadRes.data;
-
-      // 2. 上传图片到 MinIO
-      const imageResponse = await fetch(capturedImage);
-      const blob = await imageResponse.blob();
-
-      await fetch(uploadUrl, {
-        method: 'PUT',
-        body: blob,
-        headers: {
-          'Content-Type': 'image/jpeg',
-        },
-      });
-
-      // 3. 调用 AI 分析
-      const imageUrl = uploadUrl.split('?')[0]; // 去掉预签名参数
+      // 2. 调用 AI 分析（直接传 base64）
       const analyzeRes = await AIService.analyzeNutrition({
         type: 'image',
-        imageUrl: imageUrl,
+        imageBase64: base64Image,
       });
+      
+      console.log('AI 分析结果:', analyzeRes);
 
       if (analyzeRes.code === 0 && analyzeRes.data) {
         setAnalysisResult(analyzeRes.data);
@@ -119,6 +157,7 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
         throw new Error(analyzeRes.message || '分析失败');
       }
     } catch (error: any) {
+      console.error('分析失败:', error);
       Alert.alert('分析失败', error.message || '请重试');
     } finally {
       setIsAnalyzing(false);
@@ -127,9 +166,12 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
 
   // 保存记录
   const saveRecord = async (result: NutritionAnalysisResult) => {
+    console.log('=== saveRecord 被调用 ===', result);
     try {
       const today = new Date().toISOString().split('T')[0];
-      const recordRes = await DietService.createRecord({
+      console.log('准备保存记录:', { today, mealType, result });
+      
+      const requestData = {
         recordDate: today,
         mealType: mealType,
         inputMethod: 'photo',
@@ -146,23 +188,41 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
             aiConfidence: result.confidence,
           },
         ],
-      });
+      };
+      console.log('请求数据:', JSON.stringify(requestData, null, 2));
+      
+      const recordRes = await DietService.createRecord(requestData);
+      console.log('保存响应:', recordRes);
 
       if (recordRes.code === 0) {
-        Alert.alert('成功', '记录已保存', [
-          {
-            text: '继续记录',
-            onPress: () => {
-              setCapturedImage(null);
-              setAnalysisResult(null);
+        console.log('保存成功!');
+        
+        // Web 端使用 window.confirm
+        if (typeof window !== 'undefined' && window.confirm) {
+          const goHome = window.confirm('记录已保存!\n\n点击"确定"返回首页，点击"取消"继续记录');
+          if (goHome) {
+            navigation.navigate('Main');
+          } else {
+            setCapturedImage(null);
+            setAnalysisResult(null);
+          }
+        } else {
+          // 移动端使用 Alert
+          Alert.alert('成功', '记录已保存', [
+            {
+              text: '继续记录',
+              onPress: () => {
+                setCapturedImage(null);
+                setAnalysisResult(null);
+              },
             },
-          },
-          {
-            text: '返回首页',
-            onPress: () => navigation.navigate('Main'),
-            style: 'cancel',
-          },
-        ]);
+            {
+              text: '返回首页',
+              onPress: () => navigation.navigate('Main'),
+              style: 'cancel',
+            },
+          ]);
+        }
       } else {
         throw new Error(recordRes.message || '保存失败');
       }
@@ -190,13 +250,14 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
 
   // 显示分析结果
   if (analysisResult) {
+    console.log('显示分析结果页面:', analysisResult);
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Ionicons name="close" size={28} color={Colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>识别结果</Text>
+          <Text style={styles.headerTitle}>识别结果 - {analysisResult.foodName}</Text>
           <View style={{ width: 28 }} />
         </View>
 
@@ -243,7 +304,11 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.saveBtn}
-              onPress={() => saveRecord(analysisResult)}
+              onPress={() => {
+                console.log('保存记录按钮被点击', analysisResult);
+                saveRecord(analysisResult);
+              }}
+              activeOpacity={0.7}
             >
               <Text style={styles.saveBtnText}>保存记录</Text>
             </TouchableOpacity>
@@ -274,16 +339,20 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.analyzeBtn, isAnalyzing && styles.analyzeBtnDisabled]}
-              onPress={analyzeImage}
+              onPress={() => {
+                console.log('AI识别按钮被点击');
+                analyzeImage();
+              }}
               disabled={isAnalyzing}
+              activeOpacity={0.7}
             >
               {isAnalyzing ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <>
+                <View style={styles.analyzeBtnContent}>
                   <Ionicons name="scan" size={20} color="white" />
                   <Text style={styles.analyzeBtnText}>AI识别</Text>
-                </>
+                </View>
               )}
             </TouchableOpacity>
           </View>
@@ -493,11 +562,22 @@ const styles = StyleSheet.create({
   analyzeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     backgroundColor: Colors.primary,
     paddingHorizontal: 32,
     paddingVertical: 12,
     borderRadius: 8,
+    cursor: 'pointer',
+    ...Platform.select({
+      web: {
+        cursor: 'pointer',
+        userSelect: 'none',
+      },
+    }),
+  },
+  analyzeBtnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   analyzeBtnDisabled: {
     opacity: 0.7,
@@ -585,6 +665,11 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: 'row',
     gap: 12,
+    ...Platform.select({
+      web: {
+        display: 'flex',
+      },
+    }),
   },
   saveBtn: {
     flex: 1,
@@ -592,6 +677,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
+    ...Platform.select({
+      web: {
+        cursor: 'pointer',
+        userSelect: 'none',
+      },
+    }),
   },
   saveBtnText: {
     color: 'white',

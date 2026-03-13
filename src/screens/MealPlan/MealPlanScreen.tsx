@@ -19,7 +19,7 @@ import { MealPlan } from '../../types';
 type HealthGoal = '减脂' | '增肌' | '维持';
 
 export default function MealPlanScreen({ navigation }: any) {
-  const { profile } = useAuth();
+  const { profile, refreshUser } = useAuth();
   
   const [activePlan, setActivePlan] = useState<MealPlan | null>(null);
   const [hasActivePlan, setHasActivePlan] = useState(false);
@@ -89,6 +89,8 @@ export default function MealPlanScreen({ navigation }: any) {
       });
       
       if (res.code === 0) {
+        // 刷新用户profile以获取最新的每日热量目标
+        await refreshUser();
         Alert.alert('保存成功', '您的食谱设置已保存');
         await loadActivePlan();
       } else {
@@ -99,7 +101,7 @@ export default function MealPlanScreen({ navigation }: any) {
     } finally {
       setIsSaving(false);
     }
-  }, [calories, mealCount, goal, preferences, loadActivePlan]);
+  }, [calories, mealCount, goal, preferences, loadActivePlan, refreshUser]);
 
   const handleAIGenerate = useCallback(async () => {
     setIsGeneratingAI(true);
@@ -113,6 +115,8 @@ export default function MealPlanScreen({ navigation }: any) {
       });
       
       if (res.code === 0 && res.data) {
+        // 刷新用户profile以获取最新的每日热量目标
+        await refreshUser();
         Alert.alert('生成成功', 'AI已为您生成专属食谱');
         await loadActivePlan();
       } else {
@@ -123,7 +127,7 @@ export default function MealPlanScreen({ navigation }: any) {
     } finally {
       setIsGeneratingAI(false);
     }
-  }, [calories, mealCount, goal, preferences, loadActivePlan]);
+  }, [calories, mealCount, goal, preferences, loadActivePlan, refreshUser]);
 
   const getGoalDescription = (g: HealthGoal) => {
     const descriptions: Record<HealthGoal, string> = {

@@ -8,20 +8,17 @@ import {
   Dimensions,
   RefreshControl,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns/format';
 import { startOfWeek } from 'date-fns/startOfWeek';
-import { startOfMonth } from 'date-fns/startOfMonth';
-import { subMonths } from 'date-fns/subMonths';
-import { getWeek } from 'date-fns/getWeek';
-import { getMonth } from 'date-fns/getMonth';
-import { getYear } from 'date-fns/getYear';
 import { zhCN } from 'date-fns/locale';
 import Colors from '../../constants/Colors';
 import { DietService } from '../../services/api';
 import { DailySummary, WeeklySummary, MonthlySummary, DietRecord } from '../../types';
+import HistoryView from './HistoryView';
 
 const { width } = Dimensions.get('window');
 
@@ -68,7 +65,7 @@ const StatCard: React.FC<{ value: string; label: string; subtext?: string; color
   </View>
 );
 
-// 营养条（今日视图用）
+// 营养条
 const NutrientBar: React.FC<{ label: string; current: number; total: number; color: string; source?: string }> = ({
   label,
   current,
@@ -95,85 +92,15 @@ const NutrientBar: React.FC<{ label: string; current: number; total: number; col
   );
 };
 
-// 雷达图组件（本周/本月用）
-const RadarChart: React.FC<{ score: number }> = ({ score }) => {
-  return (
-    <View style={styles.radarContainer}>
-      <Svg width={200} height={200} viewBox="0 0 200 200">
-        <Polygon
-          points="100,20 180,60 180,140 100,180 20,140 20,60"
-          fill="none"
-          stroke="#E5E7EB"
-          strokeWidth="1"
-        />
-        <Polygon
-          points="100,40 160,70 160,130 100,160 40,130 40,70"
-          fill="none"
-          stroke="#E5E7EB"
-          strokeWidth="1"
-        />
-        <Polygon
-          points="100,60 140,80 140,120 100,140 60,120 60,80"
-          fill="none"
-          stroke="#E5E7EB"
-          strokeWidth="1"
-        />
-        <Polygon
-          points="100,45 155,75 165,130 100,155 40,130 35,75"
-          fill="rgba(16, 185, 129, 0.2)"
-          stroke={Colors.primary}
-          strokeWidth="2"
-        />
-        <SvgText x="100" y="15" textAnchor="middle" fill="#6B7280" fontSize="10">蛋白质</SvgText>
-        <SvgText x="190" y="55" textAnchor="middle" fill="#6B7280" fontSize="10">碳水</SvgText>
-        <SvgText x="190" y="145" textAnchor="middle" fill="#6B7280" fontSize="10">脂肪</SvgText>
-        <SvgText x="100" y="195" textAnchor="middle" fill="#6B7280" fontSize="10">维生素</SvgText>
-        <SvgText x="10" y="145" textAnchor="middle" fill="#6B7280" fontSize="10">纤维</SvgText>
-        <SvgText x="10" y="55" textAnchor="middle" fill="#6B7280" fontSize="10">矿物质</SvgText>
-      </Svg>
-      <View style={styles.radarScore}>
-        <Text style={styles.radarScoreValue}>{score}</Text>
-        <Text style={styles.radarScoreLabel}>评分</Text>
-      </View>
-    </View>
-  );
-};
-
-// 柱状图
-const BarChart: React.FC<{ data: number[]; labels: string[]; color?: string }> = ({ data, labels, color = Colors.primary }) => {
-  const max = Math.max(...data, 1);
-  
-  return (
-    <View style={styles.chartContainer}>
-      <View style={styles.barsContainer}>
-        {data.map((value, index) => (
-          <TouchableOpacity key={index} style={styles.barColumn}>
-            <View style={styles.barWrapper}>
-              <View 
-                style={[
-                  styles.bar, 
-                  { 
-                    height: `${(value / max) * 100}%`,
-                    backgroundColor: index === data.length - 1 ? color : '#E5E7EB'
-                  }
-                ]} 
-              />
-              <Text style={styles.barValue}>{Math.round(value)}</Text>
-            </View>
-            <Text style={styles.barLabel}>{labels[index]}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
-  );
-};
-
-// 引入 SVG 组件
-import Svg, { Polygon, Text as SvgText } from 'react-native-svg';
-
 export default function AnalyticsScreen({ navigation, route }: any) {
-  const [activeTab, setActiveTab] = useState(route.params?.initialTab || 0); // 0:今日, 1:本周, 2:本月, 3:历史
+  // 标签页状态：0=今日, 1=本周, 2=本月, 3=历史
+  const [activeTab, setActiveTab] = useState(route.params?.initialTab || 0);
   const tabs = ['今日', '本周', '本月', '历史'];
+  
+  // 当前显示的具体日期/周/月
+  const [displayDate, setDisplayDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
+  const [displayWeek, setDisplayWeek] = useState<string>(format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'));
+  const [displayMonth, setDisplayMonth] = useState<string>(format(new Date(), 'yyyy-MM'));
   
   // 数据状态
   const [dailySummary, setDailySummary] = useState<DailySummary | null>(null);
@@ -183,85 +110,135 @@ export default function AnalyticsScreen({ navigation, route }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // 加载今日数据
-  const loadDailyData = useCallback(async () => {
+  // 加载指定日期的数据
+  const loadDailyData = useCallback(async (date: string) => {
+    console.log('[Analytics] 加载日期数据:', date);
     try {
-      const today = format(new Date(), 'yyyy-MM-dd');
       const [summaryRes, recordsRes] = await Promise.all([
-        DietService.getDailySummary(today),
-        DietService.getRecords({ date: today }),
+        DietService.getDailySummary(date),
+        DietService.getRecords({ date }),
       ]);
       
       if (summaryRes.code === 0 && summaryRes.data) {
         setDailySummary(summaryRes.data);
+        setDisplayDate(date);  // 更新当前显示的日期
       }
       
       if (recordsRes.code === 0 && recordsRes.data) {
         setTodayRecords(recordsRes.data.records || []);
       }
     } catch (error) {
-      console.error('加载今日数据失败:', error);
+      console.error('加载每日数据失败:', error);
     }
   }, []);
 
-  // 加载本周数据
-  const loadWeeklyData = useCallback(async () => {
+  // 加载指定周的数据
+  const loadWeeklyData = useCallback(async (weekStart: string) => {
+    console.log('[Analytics] 加载周数据:', weekStart);
     try {
-      const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
       const res = await DietService.getWeeklySummary(weekStart);
       if (res.code === 0 && res.data) {
         setWeeklySummary(res.data);
+        setDisplayWeek(weekStart);  // 更新当前显示的周
       }
     } catch (error) {
-      console.error('加载本周数据失败:', error);
+      console.error('加载周数据失败:', error);
     }
   }, []);
 
-  // 加载本月数据
-  const loadMonthlyData = useCallback(async () => {
+  // 加载指定月的数据
+  const loadMonthlyData = useCallback(async (month: string) => {
+    console.log('[Analytics] 加载月数据:', month);
     try {
-      const month = format(new Date(), 'yyyy-MM');
       const res = await DietService.getMonthlySummary(month);
       if (res.code === 0 && res.data) {
         setMonthlySummary(res.data);
+        setDisplayMonth(month);  // 更新当前显示的月
       }
     } catch (error) {
-      console.error('加载本月数据失败:', error);
+      console.error('加载月数据失败:', error);
     }
   }, []);
 
-  // 根据选中标签加载数据
-  const loadDataByTab = useCallback(async (tabIndex: number) => {
+  // 加载当前标签的数据
+  const loadCurrentTabData = useCallback(async () => {
+    if (activeTab === 3) return; // 历史标签不加载
+    
     setIsLoading(true);
-    switch (tabIndex) {
+    switch (activeTab) {
       case 0:
-        await loadDailyData();
+        await loadDailyData(displayDate);
         break;
       case 1:
-        await loadWeeklyData();
+        await loadWeeklyData(displayWeek);
         break;
       case 2:
-        await loadMonthlyData();
+        await loadMonthlyData(displayMonth);
         break;
     }
     setIsLoading(false);
-  }, [loadDailyData, loadWeeklyData, loadMonthlyData]);
+  }, [activeTab, displayDate, displayWeek, displayMonth, loadDailyData, loadWeeklyData, loadMonthlyData]);
 
-  // 初始加载
+  // 初始加载和标签切换时加载数据
   useEffect(() => {
-    loadDataByTab(activeTab);
-  }, [activeTab, loadDataByTab]);
+    loadCurrentTabData();
+  }, [activeTab]);
 
   // 下拉刷新
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    await loadDataByTab(activeTab);
+    await loadCurrentTabData();
     setIsRefreshing(false);
-  }, [activeTab, loadDataByTab]);
+  }, [loadCurrentTabData]);
 
-  // 根据选中标签渲染不同内容
+  // 从历史记录跳转
+  const handleNavigateFromHistory = useCallback((tabIndex: number, params?: any) => {
+    console.log('[Analytics] 历史记录跳转:', tabIndex, params);
+    
+    if (tabIndex === 0 && params?.date) {
+      setDisplayDate(params.date);
+    } else if (tabIndex === 1 && params?.weekStart) {
+      setDisplayWeek(params.weekStart);
+    } else if (tabIndex === 2 && params?.month) {
+      setDisplayMonth(params.month);
+    }
+    
+    // 切换到对应标签，useEffect 会自动加载数据
+    setActiveTab(tabIndex);
+  }, []);
+
+  // 删除记录
+  const handleDeleteRecord = useCallback(async (recordId: string) => {
+    Alert.alert(
+      '确认删除',
+      '确定要删除这条记录吗？',
+      [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const response = await DietService.deleteRecord(recordId);
+              if (response.code === 0) {
+                // 重新加载当前日期的数据
+                await loadDailyData(displayDate);
+              } else {
+                Alert.alert('删除失败', response.message || '请重试');
+              }
+            } catch (error) {
+              console.error('删除记录失败:', error);
+              Alert.alert('删除失败', '网络错误，请重试');
+            }
+          },
+        },
+      ]
+    );
+  }, [displayDate, loadDailyData]);
+
+  // 渲染内容
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading && activeTab !== 3) {
       return (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
@@ -270,20 +247,22 @@ export default function AnalyticsScreen({ navigation, route }: any) {
     }
 
     switch(activeTab) {
-      case 0: // 今日视图
+      case 0:
         return (
           <TodayView 
             navigation={navigation} 
             summary={dailySummary}
             records={todayRecords}
+            displayDate={displayDate}
+            onDelete={handleDeleteRecord}
           />
         );
-      case 1: // 本周视图
-        return <WeekView summary={weeklySummary} />;
-      case 2: // 本月视图
-        return <MonthView summary={monthlySummary} />;
-      case 3: // 历史视图
-        return <HistoryView />;
+      case 1:
+        return <WeekView summary={weeklySummary} displayWeek={displayWeek} />;
+      case 2:
+        return <MonthView summary={monthlySummary} displayMonth={displayMonth} />;
+      case 3:
+        return <HistoryView navigation={navigation} onNavigateToTab={handleNavigateFromHistory} />;
       default:
         return null;
     }
@@ -303,7 +282,12 @@ export default function AnalyticsScreen({ navigation, route }: any) {
         <View style={styles.header}>
           <View>
             <Text style={styles.headerTitle}>饮食分析</Text>
-            <Text style={styles.headerSubtitle}>{tabs[activeTab]}数据详情</Text>
+            <Text style={styles.headerSubtitle}>
+              {activeTab === 0 && `${displayDate} 数据`}
+              {activeTab === 1 && `${displayWeek} 当周数据`}
+              {activeTab === 2 && `${displayMonth} 当月数据`}
+              {activeTab === 3 && '历史记录'}
+            </Text>
           </View>
           <View style={styles.headerIcon}>
             <Text style={{ fontSize: 24 }}>📊</Text>
@@ -333,18 +317,21 @@ const TodayView: React.FC<{
   navigation: any; 
   summary: DailySummary | null;
   records: DietRecord[];
-}> = ({ navigation, summary, records }) => {
+  displayDate: string;
+  onDelete?: (id: string) => void;
+}> = ({ navigation, summary, records, displayDate, onDelete }) => {
   const calorieGoal = summary?.calorieGoal || 2000;
   const calorieConsumed = summary?.calorieConsumed || 0;
   const calorieRemaining = Math.max(0, calorieGoal - calorieConsumed);
   const healthScore = summary?.healthScore || 0;
   
-  // 计算营养素目标和实际摄入
-  const proteinGoal = calorieGoal * 0.2 / 4; // 蛋白质占20%热量
-  const carbsGoal = calorieGoal * 0.5 / 4;   // 碳水占50%热量
-  const fatGoal = calorieGoal * 0.3 / 9;     // 脂肪占30%热量
+  const proteinGoal = calorieGoal * 0.2 / 4;
+  const carbsGoal = calorieGoal * 0.5 / 4;
+  const fatGoal = calorieGoal * 0.3 / 9;
   const fiberGoal = 25;
-  const vitaminCGoal = 100;
+
+  const isToday = displayDate === format(new Date(), 'yyyy-MM-dd');
+  const dateLabel = isToday ? '今日' : displayDate;
 
   const getMealIcon = (type: string) => {
     switch(type) {
@@ -372,30 +359,20 @@ const TodayView: React.FC<{
     }
   };
 
-  // 获取主要营养来源
-  const getMainSource = (nutrient: 'protein' | 'carbs' | 'fat') => {
-    if (records.length === 0) return undefined;
-    
-    const sources = records.flatMap(r => r.items || []);
-    if (sources.length === 0) return undefined;
-    
-    // 按营养素排序找主要来源
-    const sorted = [...sources].sort((a, b) => {
-      if (nutrient === 'protein') return b.proteinG - a.proteinG;
-      if (nutrient === 'carbs') return b.carbsG - a.carbsG;
-      return b.fatG - a.fatG;
-    });
-    
-    return sorted.slice(0, 2).map(s => s.foodName).join('、');
-  };
-
   return (
     <>
+      {/* 如果不是今天，显示日期提示 */}
+      {!isToday && (
+        <View style={styles.dateBanner}>
+          <Text style={styles.dateBannerText}>查看历史数据：{displayDate}</Text>
+        </View>
+      )}
+
       {/* 概览卡片 */}
       <View style={styles.statsGrid}>
         <StatCard 
           value={calorieConsumed.toLocaleString()} 
-          label="今日摄入" 
+          label={`${dateLabel}摄入`} 
           subtext={`剩余 ${Math.round(calorieRemaining)}`} 
           color={calorieConsumed > calorieGoal ? Colors.danger : Colors.text} 
         />
@@ -417,39 +394,16 @@ const TodayView: React.FC<{
       <View style={styles.card}>
         <Text style={styles.cardTitle}>🥜 营养成分分析</Text>
         <View style={styles.nutrientsList}>
-          <NutrientBar 
-            label="蛋白质" 
-            current={summary?.proteinG || 0} 
-            total={proteinGoal} 
-            color={Colors.primary} 
-            source={getMainSource('protein')}
-          />
-          <NutrientBar 
-            label="碳水化合物" 
-            current={summary?.carbsG || 0} 
-            total={carbsGoal} 
-            color={Colors.warning} 
-            source={getMainSource('carbs')}
-          />
-          <NutrientBar 
-            label="脂肪" 
-            current={summary?.fatG || 0} 
-            total={fatGoal} 
-            color="#F97316" 
-            source={getMainSource('fat')}
-          />
-          <NutrientBar 
-            label="膳食纤维" 
-            current={summary?.fiberG || 0} 
-            total={fiberGoal} 
-            color={Colors.danger} 
-          />
+          <NutrientBar label="蛋白质" current={summary?.proteinG || 0} total={proteinGoal} color={Colors.primary} />
+          <NutrientBar label="碳水化合物" current={summary?.carbsG || 0} total={carbsGoal} color={Colors.warning} />
+          <NutrientBar label="脂肪" current={summary?.fatG || 0} total={fatGoal} color="#F97316" />
+          <NutrientBar label="膳食纤维" current={summary?.fiberG || 0} total={fiberGoal} color={Colors.danger} />
         </View>
       </View>
 
-      {/* 今日餐次记录 */}
+      {/* 餐次记录 */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>🍽️ 今日餐次记录</Text>
+        <Text style={styles.sectionTitle}>🍽️ {dateLabel}餐次记录</Text>
         
         {records.length > 0 ? (
           records.map((record, index) => (
@@ -470,261 +424,82 @@ const TodayView: React.FC<{
                   </Text>
                   <Text style={styles.calorieUnit}>kcal</Text>
                 </View>
-              </View>
-              <View style={styles.mealNutrients}>
-                <Text style={styles.nutrientTag}>蛋白质 {Math.round(record.totalProtein)}g</Text>
-                <Text style={styles.nutrientTag}>碳水 {Math.round(record.totalCarbs)}g</Text>
-                <Text style={styles.nutrientTag}>脂肪 {Math.round(record.totalFat)}g</Text>
+                {onDelete && (
+                  <TouchableOpacity style={styles.deleteButton} onPress={() => onDelete(record.id)}>
+                    <Text style={styles.deleteButtonText}>🗑️</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           ))
         ) : (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>今天还没有记录哦</Text>
+            <Text style={styles.emptyText}>{dateLabel}还没有记录哦</Text>
           </View>
         )}
-
-        <TouchableOpacity 
-          style={[styles.mealCard, styles.addMealCard]}
-          onPress={() => navigation.navigate('Main', { screen: 'RecordTab' })}
-        >
-          <View style={styles.addMealContent}>
-            <Ionicons name="add" size={24} color={Colors.textMuted} />
-            <Text style={styles.addMealText}>添加饮食记录</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-
-      {/* AI建议 */}
-      <View style={[styles.card, styles.aiCard]}>
-        <View style={styles.aiHeader}>
-          <Text style={{ fontSize: 24, marginRight: 8 }}>🤖</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.aiTitle}>今日饮食建议</Text>
-            <Text style={styles.aiContent}>
-              {calorieConsumed < calorieGoal * 0.5 
-                ? '您今日的热量摄入偏低，建议适当增加营养摄入，保持均衡饮食。'
-                : calorieConsumed > calorieGoal
-                ? '您今日的热量摄入已超标，建议晚餐清淡一些，多吃蔬菜水果。'
-                : '您今日的热量摄入合理，继续保持良好的饮食习惯！'}
-            </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Chat')}>
-              <Text style={styles.aiLink}>咨询AI获取建议 →</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
       </View>
     </>
   );
 };
 
 // 本周视图组件
-const WeekView: React.FC<{ summary: WeeklySummary | null }> = ({ summary }) => {
+const WeekView: React.FC<{ summary: WeeklySummary | null; displayWeek: string }> = ({ summary, displayWeek }) => {
   const avgCalories = summary?.avgDailyCalories || 0;
   const healthScore = summary?.healthScore || 0;
   const compliantDays = summary?.compliantDays || 0;
-  const totalDays = summary?.totalDays || 7;
-  const complianceRate = totalDays > 0 ? Math.round((compliantDays / totalDays) * 100) : 0;
   
-  // 生成趋势数据
-  const trendData = summary?.dailyTrends?.map(d => d.calories) || [0, 0, 0, 0, 0, 0, 0];
-  const trendLabels = summary?.dailyTrends?.map((d, i) => 
-    ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][i] || `第${i+1}天`
-  ) || ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-
   return (
     <>
+      <View style={styles.dateBanner}>
+        <Text style={styles.dateBannerText}>周开始：{displayWeek}</Text>
+      </View>
+      
       <View style={styles.statsGrid}>
-        <StatCard 
-          value={Math.round(avgCalories).toLocaleString()} 
-          label="平均日摄入" 
-          subtext={avgCalories > 2500 ? '偏高' : avgCalories < 1200 ? '偏低' : '合理范围'} 
-          color={Colors.text} 
-        />
-        <StatCard 
-          value={healthScore.toString()} 
-          label="周健康评分" 
-          subtext={healthScore >= 80 ? '良好' : healthScore >= 60 ? '一般' : '需改善'} 
-          color={healthScore >= 80 ? Colors.success : healthScore >= 60 ? Colors.warning : Colors.danger} 
-        />
-        <StatCard 
-          value={`${compliantDays}/${totalDays}`} 
-          label="合规天数" 
-          subtext={`达标率 ${complianceRate}%`} 
-          color={complianceRate >= 70 ? Colors.success : Colors.warning} 
-        />
+        <StatCard value={Math.round(avgCalories).toString()} label="平均日摄入" subtext="kcal" color={Colors.text} />
+        <StatCard value={healthScore.toString()} label="周健康评分" subtext={healthScore >= 80 ? '良好' : '需改善'} color={healthScore >= 80 ? Colors.success : Colors.warning} />
+        <StatCard value={`${compliantDays}/7`} label="合规天数" subtext="达标天数" color={compliantDays >= 5 ? Colors.success : Colors.warning} />
       </View>
 
       <View style={styles.card}>
-        <Text style={[styles.cardTitle, { textAlign: 'center' }]}>🎯 本周营养均衡度</Text>
-        <RadarChart score={healthScore} />
-      </View>
-
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>📈 每日热量趋势</Text>
-          <Text style={styles.cardSubtitle}>本周数据</Text>
-        </View>
-        <BarChart 
-          data={trendData.length > 0 ? trendData : [1650, 1950, 1350, 2100, 2400, 1500, 1200]} 
-          labels={trendLabels} 
-        />
-      </View>
-
-      <View style={[styles.card, styles.aiCard]}>
-        <Text style={{ fontSize: 24, marginRight: 8 }}>🤖</Text>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.aiTitle}>本周饮食分析</Text>
-          <Text style={styles.aiContent}>
-            {complianceRate >= 80 
-              ? '本周整体饮食非常健康，保持良好的饮食习惯！'
-              : complianceRate >= 50
-              ? '本周饮食较为健康，但仍有改善空间，建议控制高热量食物的摄入。'
-              : '本周饮食需要改善，建议制定合理的饮食计划，保持规律用餐。'}
-          </Text>
-        </View>
+        <Text style={styles.cardTitle}>📈 每日热量趋势</Text>
+        {summary?.dailyTrends?.map((day, index) => (
+          <View key={index} style={styles.trendItem}>
+            <Text style={styles.trendDate}>{day.date}</Text>
+            <Text style={[styles.trendCalories, day.isCompliant ? styles.compliant : styles.notCompliant]}>
+              {Math.round(day.calories)} kcal
+            </Text>
+          </View>
+        ))}
       </View>
     </>
   );
 };
 
 // 本月视图组件
-const MonthView: React.FC<{ summary: MonthlySummary | null }> = ({ summary }) => {
+const MonthView: React.FC<{ summary: MonthlySummary | null; displayMonth: string }> = ({ summary, displayMonth }) => {
   const avgCalories = summary?.avgDailyCalories || 0;
   const healthScore = summary?.healthScore || 0;
-  const compliantDays = summary?.compliantDays || 0;
-  const totalDays = summary?.totalDays || 30;
-  const complianceRate = totalDays > 0 ? Math.round((compliantDays / totalDays) * 100) : 0;
   
-  // 生成周趋势数据
-  const weeklyData = summary?.weeklyTrends?.map(w => w.avgCalories) || [0, 0, 0, 0];
-  const weeklyLabels = summary?.weeklyTrends?.map((w, i) => `第${w.week}周`) || ['第1周', '第2周', '第3周', '第4周'];
-
   return (
     <>
+      <View style={styles.dateBanner}>
+        <Text style={styles.dateBannerText}>月份：{displayMonth}</Text>
+      </View>
+      
       <View style={styles.statsGrid}>
-        <StatCard 
-          value={Math.round(avgCalories).toLocaleString()} 
-          label="平均日摄入" 
-          subtext={avgCalories > 2500 ? '↑ 偏高' : avgCalories < 1200 ? '↓ 偏低' : '→ 稳定'} 
-          color={Colors.text} 
-        />
-        <StatCard 
-          value={healthScore.toString()} 
-          label="月健康评分" 
-          subtext={healthScore >= 80 ? '良好' : healthScore >= 60 ? '一般' : '需改善'} 
-          color={healthScore >= 80 ? Colors.success : healthScore >= 60 ? Colors.warning : Colors.danger} 
-        />
-        <StatCard 
-          value={`${compliantDays}/${totalDays}`} 
-          label="合规天数" 
-          subtext={`达标率 ${complianceRate}%`} 
-          color={complianceRate >= 70 ? Colors.success : Colors.warning} 
-        />
+        <StatCard value={Math.round(avgCalories).toString()} label="平均日摄入" subtext="kcal" color={Colors.text} />
+        <StatCard value={healthScore.toString()} label="月健康评分" subtext={healthScore >= 80 ? '良好' : '需改善'} color={healthScore >= 80 ? Colors.success : Colors.warning} />
+        <StatCard value={`${summary?.compliantDays || 0}`} label="合规天数" subtext="达标天数" color={Colors.text} />
       </View>
 
       <View style={styles.card}>
-        <Text style={[styles.cardTitle, { textAlign: 'center' }]}>🎯 本月营养均衡度</Text>
-        <RadarChart score={healthScore} />
-      </View>
-
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>📈 每周热量趋势</Text>
-          <Text style={styles.cardSubtitle}>周均值</Text>
-        </View>
-        <BarChart 
-          data={weeklyData.length > 0 ? weeklyData : [1850, 1920, 2100, 1780]} 
-          labels={weeklyLabels} 
-        />
-      </View>
-    </>
-  );
-};
-
-// 历史视图组件
-const HistoryView: React.FC = () => {
-  // 这里应该从后端获取真实的历史统计数据
-  // 目前使用模拟数据，显示0而不是"加载中"
-  const historyStats = {
-    totalDays: 0,
-    avgScore: 0,
-    complianceRate: 0,
-    hasData: false,
-  };
-
-  // 生成最近3个月的历史数据
-  const months = [
-    { label: format(new Date(), 'yyyy年M月'), value: new Date(), hasData: false },
-    { label: format(subMonths(new Date(), 1), 'yyyy年M月'), value: subMonths(new Date(), 1), hasData: false },
-    { label: format(subMonths(new Date(), 2), 'yyyy年M月'), value: subMonths(new Date(), 2), hasData: false },
-  ];
-
-  // 检查是否有数据的月份
-  const monthsWithData = months.filter(m => m.hasData);
-
-  return (
-    <>
-      {/* 按日查看 */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📅 按日查看</Text>
-        <View style={styles.emptyStateCard}>
-          <Text style={styles.emptyStateText}>暂无数据</Text>
-          <Text style={styles.emptyStateSubtext}>记录饮食后将显示每日统计</Text>
-        </View>
-      </View>
-
-      {/* 按周查看 */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📊 按周查看</Text>
-        <View style={styles.emptyStateCard}>
-          <Text style={styles.emptyStateText}>暂无数据</Text>
-          <Text style={styles.emptyStateSubtext}>记录饮食后将显示周统计</Text>
-        </View>
-      </View>
-
-      {/* 按月查看 - 只显示有数据的月份 */}
-      {monthsWithData.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📅 按月查看</Text>
-          {monthsWithData.map((month, index) => (
-            <TouchableOpacity key={index} style={styles.historyCard}>
-              <View style={styles.historyIcon}>
-                <Text style={{ fontSize: 20 }}>📅</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.historyTitle}>{month.label}</Text>
-                <Text style={styles.historySubtitle}>点击查看详情</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-
-      {/* 历史统计概览 */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📈 历史统计概览</Text>
-        <View style={styles.statsGrid}>
-          <StatCard 
-            value={historyStats.totalDays.toString()} 
-            label="总记录天数" 
-            subtext="累计记录" 
-            color={Colors.text} 
-          />
-          <StatCard 
-            value={historyStats.avgScore.toString()} 
-            label="历史均分" 
-            subtext="平均分" 
-            color={Colors.text} 
-          />
-          <StatCard 
-            value={`${historyStats.complianceRate}%`} 
-            label="历史达标率" 
-            subtext="达标天数占比" 
-            color={Colors.text} 
-          />
-        </View>
+        <Text style={styles.cardTitle}>📈 每周趋势</Text>
+        {summary?.weeklyTrends?.map((week, index) => (
+          <View key={index} style={styles.trendItem}>
+            <Text style={styles.trendDate}>第{week.week}周</Text>
+            <Text style={styles.trendCalories}>{week.avgCalories} kcal/天</Text>
+          </View>
+        ))}
       </View>
     </>
   );
@@ -804,6 +579,20 @@ const styles = StyleSheet.create({
   segmentTextActive: {
     color: Colors.primary,
   },
+  dateBanner: {
+    backgroundColor: Colors.primaryLight,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  dateBannerText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
   statsGrid: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -842,25 +631,12 @@ const styles = StyleSheet.create({
     padding: 16,
     marginHorizontal: 16,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    elevation: 2,
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: Colors.text,
     marginBottom: 16,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  cardSubtitle: {
-    fontSize: 12,
-    color: Colors.textMuted,
   },
   nutrientsList: {
     gap: 16,
@@ -912,31 +688,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    elevation: 2,
-  },
-  addMealCard: {
-    borderStyle: 'dashed',
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
-    backgroundColor: 'transparent',
-  },
-  addMealContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  addMealText: {
-    color: Colors.textMuted,
-    fontSize: 14,
   },
   mealHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
   },
   mealIcon: {
     width: 48,
@@ -972,151 +727,43 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textMuted,
   },
-  mealNutrients: {
-    flexDirection: 'row',
-    gap: 16,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
+  deleteButton: {
+    padding: 8,
+    marginLeft: 8,
   },
-  nutrientTag: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+  deleteButtonText: {
+    fontSize: 16,
   },
   emptyCard: {
     backgroundColor: Colors.card,
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
-    marginBottom: 12,
   },
   emptyText: {
     fontSize: 14,
     color: Colors.textMuted,
   },
-  aiCard: {
-    backgroundColor: '#ECFDF5',
-    borderWidth: 1,
-    borderColor: '#D1FAE5',
-    flexDirection: 'row',
-  },
-  aiHeader: {
-    flexDirection: 'row',
-  },
-  aiTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: Colors.primaryDark,
-    marginBottom: 4,
-  },
-  aiContent: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    lineHeight: 18,
-    marginBottom: 8,
-  },
-  aiLink: {
-    fontSize: 13,
-    color: Colors.primary,
-    fontWeight: '500',
-  },
-  radarContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 220,
-  },
-  radarScore: {
-    position: 'absolute',
-    alignItems: 'center',
-  },
-  radarScoreValue: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: Colors.primary,
-  },
-  radarScoreLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-  },
-  chartContainer: {
-    height: 200,
-    justifyContent: 'flex-end',
-  },
-  barsContainer: {
+  trendItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    height: 180,
-    paddingTop: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
   },
-  barColumn: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  barWrapper: {
-    width: '60%',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    height: 150,
-  },
-  bar: {
-    width: '100%',
-    borderRadius: 6,
-    minHeight: 4,
-  },
-  barValue: {
-    position: 'absolute',
-    top: -20,
-    fontSize: 11,
+  trendDate: {
+    fontSize: 14,
     color: Colors.textSecondary,
   },
-  barLabel: {
-    marginTop: 8,
-    fontSize: 12,
-    color: Colors.textSecondary,
-  },
-  historyCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-  },
-  historyIcon: {
-    width: 48,
-    height: 48,
-    backgroundColor: '#ECFDF5',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  historyTitle: {
-    fontSize: 15,
+  trendCalories: {
+    fontSize: 14,
     fontWeight: '600',
     color: Colors.text,
   },
-  historySubtitle: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginTop: 2,
+  compliant: {
+    color: Colors.success,
   },
-  emptyStateCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyStateText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.textMuted,
-  },
-  emptyStateSubtext: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginTop: 8,
+  notCompliant: {
+    color: Colors.danger,
   },
 });

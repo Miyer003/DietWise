@@ -54,7 +54,8 @@ export const DietService = {
   },
 
   // 删除记录
-  deleteRecord: async (id: string): Promise<ApiResponse<null>> => {
+  deleteRecord: async (id: string): Promise<ApiResponse<{ message: string }>> => {
+    console.log('[DietService] 删除记录请求开始, id:', id);
     return apiClient.delete(`/diet/records/${id}`);
   },
 
@@ -78,6 +79,27 @@ export const DietService = {
     uploadUrl: string;
     objectName: string;
   }>> => {
-    return apiClient.post('/diet/upload-image', null, { params: { filename } });
+    return apiClient.post('/diet/upload-image', {}, { params: { filename } });
+  },
+
+  // 获取有记录的所有日期列表
+  getDatesWithRecords: async (limit?: number): Promise<ApiResponse<{
+    dates: { date: string; hasRecord: boolean }[];
+  }>> => {
+    return apiClient.get('/diet/history/dates', { params: { limit } });
+  },
+
+  // 获取有记录的所有周列表
+  getWeeksWithRecords: async (limit?: number): Promise<ApiResponse<{
+    weeks: { weekStart: string; weekEnd: string; hasRecord: boolean; recordCount: number }[];
+  }>> => {
+    return apiClient.get('/diet/history/weeks', { params: { limit } });
+  },
+
+  // 获取有记录的所有月列表
+  getMonthsWithRecords: async (limit?: number): Promise<ApiResponse<{
+    months: { month: string; label: string; hasRecord: boolean }[];
+  }>> => {
+    return apiClient.get('/diet/history/months', { params: { limit } });
   },
 };
