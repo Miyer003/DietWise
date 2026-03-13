@@ -22,6 +22,8 @@ import MealPlanScreen from '../screens/MealPlan/MealPlanScreen';
 import MealPlanDetailScreen from '../screens/MealPlan/MealPlanDetailScreen';
 import AIGeneratePlanInputScreen from '../screens/MealPlan/AIGeneratePlanInputScreen';
 import AIGeneratePlanPreviewScreen from '../screens/MealPlan/AIGeneratePlanPreviewScreen';
+import HistoryMealPlanListScreen from '../screens/MealPlan/HistoryMealPlanListScreen';
+import HistoryMealPlanDetailScreen from '../screens/MealPlan/HistoryMealPlanDetailScreen';
 import NotificationSettings from '../screens/Settings/NotificationSettings';
 import TipLibraryScreen from '../screens/Settings/TipLibraryScreen';
 import FeedbackScreen from '../screens/Settings/FeedbackScreen';
@@ -207,6 +209,16 @@ function AppStackNavigator() {
       <MainStack.Screen 
         name="AIGeneratePlanPreview" 
         component={AIGeneratePlanPreviewScreen}
+        options={{ headerShown: false }}
+      />
+      <MainStack.Screen 
+        name="HistoryMealPlanList" 
+        component={HistoryMealPlanListScreen}
+        options={{ headerShown: false }}
+      />
+      <MainStack.Screen 
+        name="HistoryMealPlanDetail" 
+        component={HistoryMealPlanDetailScreen}
         options={{ headerShown: false }}
       />
       

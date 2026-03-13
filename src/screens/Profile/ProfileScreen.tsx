@@ -25,7 +25,6 @@ export default function ProfileScreen({ navigation }: any) {
   const menuItems = [
     { icon: '👤', title: '个人画像', color: '#818CF8', screen: 'ProfileEdit', isTab: false },
     { icon: '🥡', title: '我的食谱', color: Colors.warning, screen: 'MealPlan', isTab: false },
-    { icon: '📊', title: '详细数据报告', color: '#60A5FA', screen: 'AnalyticsTab', params: { initialTab: 3 }, isTab: true },
     { icon: '💡', title: '个性化提示库', color: '#F472B6', screen: 'TipLibrary', isTab: false },
     { icon: '🔔', title: '提醒设置', color: Colors.warning, screen: 'NotificationSettings', isTab: false },
   ];

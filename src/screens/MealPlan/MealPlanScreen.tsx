@@ -290,6 +290,15 @@ export default function MealPlanScreen({ navigation }: any) {
       >
         {/* 状态卡片 */}
         <View style={[styles.statusCard, hasActivePlan ? { backgroundColor: '#D1FAE5', borderColor: '#34D399' } : { backgroundColor: '#FFEDD5', borderColor: '#FED7AA' }]}>
+          {/* 历史按钮 - 右上角 */}
+          <TouchableOpacity 
+            style={styles.historyBtnCorner}
+            onPress={() => navigation.navigate('HistoryMealPlanList')}
+          >
+            <Ionicons name="time-outline" size={14} color={Colors.textSecondary} />
+            <Text style={styles.historyBtnCornerText}>历史</Text>
+          </TouchableOpacity>
+
           <View style={styles.statusHeader}>
             <View style={[styles.statusIcon, { backgroundColor: hasActivePlan ? Colors.primary : Colors.warning }]}>
               <Text style={{ fontSize: 24 }}>{hasActivePlan ? '🥗' : '🥡'}</Text>
@@ -678,6 +687,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  // 历史按钮 - 卡片右上角
+  historyBtnCorner: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 2,
+  },
+  historyBtnCornerText: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -700,6 +726,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
+    position: 'relative',
   },
   statusHeader: {
     flexDirection: 'row',
