@@ -1,19 +1,24 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// 🔧 开发环境配置
-// 方式1: USB调试 + adb reverse: http://localhost:3000/v1
-// 方式2: 局域网调试（手机开热点）: http://192.168.x.x:3000/v1 （电脑的局域网IP）
+/**
+ * API 基础配置
+ * 
+ * 环境变量优先级:
+ * 1. EXPO_PUBLIC_API_URL - 自定义 API 地址（开发/测试用）
+ * 2. 根据 __DEV__ 自动选择:
+ *    - 开发模式: http://localhost:3000/v1
+ *    - 生产模式: https://api.dietwise.cn/v1
+ * 
+ * 生产环境部署时，请确保域名已备案并配置 HTTPS
+ */
 const DEV_API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/v1';
-console.log('API URL:', DEV_API_URL);
-
-// 生产环境地址
 const PROD_API_URL = 'https://api.dietwise.cn/v1';
 
-// 自动判断：__DEV__ 是 React Native 内置变量，开发时为 true
 const API_BASE_URL = __DEV__ ? DEV_API_URL : PROD_API_URL;
 
 console.log('📡 API Base URL:', API_BASE_URL);
+console.log('🌍 Environment:', __DEV__ ? 'Development' : 'Production');
 
 // 创建 axios 实例
 const apiClient: AxiosInstance = axios.create({
