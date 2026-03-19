@@ -9,6 +9,7 @@ import {
   Dimensions,
   RefreshControl,
   Alert,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
@@ -393,7 +394,11 @@ export default function HomeScreen({ navigation }: any) {
             style={styles.avatarButton}
             onPress={() => navigation.navigate('Main', { screen: 'ProfileTab' })}
           >
-            <Text style={styles.avatarEmoji}>{user?.avatarEmoji || '😊'}</Text>
+            {user?.avatarUrl ? (
+              <Image source={{ uri: user.avatarUrl }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarEmoji}>{user?.avatarEmoji || '😊'}</Text>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -521,6 +526,11 @@ const styles = StyleSheet.create({
   },
   avatarEmoji: {
     fontSize: 20,
+  },
+  avatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   progressContainer: {
     alignItems: 'center',

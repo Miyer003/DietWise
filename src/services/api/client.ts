@@ -1,8 +1,11 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// 🔧 USB 调试模式：用 localhost + adb reverse
-const DEV_API_URL = 'http://localhost:3000/v1';
+// 🔧 开发环境配置
+// 方式1: USB调试 + adb reverse: http://localhost:3000/v1
+// 方式2: 局域网调试（手机开热点）: http://192.168.x.x:3000/v1 （电脑的局域网IP）
+const DEV_API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/v1';
+console.log('API URL:', DEV_API_URL);
 
 // 生产环境地址
 const PROD_API_URL = 'https://api.dietwise.cn/v1';

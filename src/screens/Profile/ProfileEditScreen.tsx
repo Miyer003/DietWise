@@ -9,10 +9,14 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system';
 import Colors from '../../constants/Colors';
 import { useAuth } from '../../store/AuthContext';
 import { UserService } from '../../services/api';
@@ -22,9 +26,11 @@ const avatars = ['😊', '😄', '🤔', '😎', '🤬', '😍', '🤓', '💪',
 export default function ProfileEditScreen({ navigation }: any) {
   const { user, profile, updateUser, updateProfile } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   
   // 基本信息
   const [selectedAvatar, setSelectedAvatar] = useState(user?.avatarEmoji || '😊');
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
   const [nickname, setNickname] = useState(user?.nickname || '');
   const [bio, setBio] = useState(profile?.bio || '');
   
@@ -41,6 +47,7 @@ export default function ProfileEditScreen({ navigation }: any) {
   useEffect(() => {
     if (user) {
       setSelectedAvatar(user.avatarEmoji || '😊');
+      setAvatarUrl(user.avatarUrl || '');
       setNickname(user.nickname || '');
     }
     if (profile) {
@@ -63,11 +70,13 @@ export default function ProfileEditScreen({ navigation }: any) {
     setIsSaving(true);
     try {
       // 保存用户信息
-      if (nickname !== user?.nickname || selectedAvatar !== user?.avatarEmoji) {
-        await updateUser({
-          nickname: nickname.trim(),
-          avatarEmoji: selectedAvatar,
-        });
+      const userUpdate: any = {};
+      if (nickname !== user?.nickname) userUpdate.nickname = nickname.trim();
+      if (selectedAvatar !== user?.avatarEmoji) userUpdate.avatarEmoji = selectedAvatar;
+      if (avatarUrl !== user?.avatarUrl) userUpdate.avatarUrl = avatarUrl;
+      
+      if (Object.keys(userUpdate).length > 0) {
+        await updateUser(userUpdate);
       }
       
       // 保存用户画像
@@ -92,6 +101,89 @@ export default function ProfileEditScreen({ navigation }: any) {
     }
   };
 
+  // 选择图片并上传
+  const handlePickImage = async () => {
+    try {
+      console.log('[头像上传] 开始选择图片...');
+      
+      // 请求权限
+      const permissionResult = await (ImagePicker as any).requestMediaLibraryPermissionsAsync();
+      console.log('[头像上传] 权限结果:', permissionResult.status);
+      if (permissionResult.status !== 'granted') {
+        Alert.alert('提示', '需要访问相册权限才能选择头像');
+        return;
+      }
+
+      // 选择图片 - 用户自己裁剪
+      console.log('[头像上传] 打开图片选择器...');
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.9,
+      } as any);
+      console.log('[头像上传] 选择结果:', result.canceled ? '取消' : '已选择');
+
+      if (result.canceled || !result.assets || result.assets.length === 0) {
+        return;
+      }
+
+      const selectedAsset = result.assets[0];
+      console.log('[头像上传] 选择的图片 URI:', selectedAsset.uri.substring(0, 50) + '...');
+      setIsUploading(true);
+
+      // 压缩图片
+      console.log('[头像上传] 开始压缩图片...');
+      const manipulatedImage = await ImageManipulator.manipulateAsync(
+        selectedAsset.uri,
+        [{ resize: { width: 800, height: 800 } }],
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+      );
+      console.log('[头像上传] 压缩后 URI:', manipulatedImage.uri.substring(0, 50) + '...');
+
+      // 获取上传URL
+      console.log('[头像上传] 获取上传 URL...');
+      const uploadRes = await UserService.getAvatarUploadUrl(`${Date.now()}.jpg`);
+      console.log('[头像上传] 上传 URL 响应:', uploadRes.code === 0 ? '成功' : '失败');
+      if (uploadRes.code !== 0) {
+        throw new Error(uploadRes.message || '获取上传地址失败');
+      }
+
+      const { uploadUrl, avatarUrl: newAvatarUrl } = uploadRes.data;
+      console.log('[头像上传] 预签名 URL:', uploadUrl.substring(0, 60) + '...');
+
+      // 读取文件
+      console.log('[头像上传] 读取文件...');
+      const fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri);
+      console.log('[头像上传] 文件信息:', fileInfo);
+      
+      // 使用 FileSystem.uploadAsync 上传（更稳定）
+      console.log('[头像上传] 开始上传...');
+      const uploadResult = await FileSystem.uploadAsync(uploadUrl, manipulatedImage.uri, {
+        httpMethod: 'PUT',
+        headers: {
+          'Content-Type': 'image/jpeg',
+        },
+        uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+      });
+      console.log('[头像上传] 上传结果状态:', uploadResult.status);
+
+      if (uploadResult.status < 200 || uploadResult.status >= 300) {
+        throw new Error(`上传失败: HTTP ${uploadResult.status}`);
+      }
+
+      // 更新本地状态
+      console.log('[头像上传] 上传成功，更新状态...');
+      setAvatarUrl(newAvatarUrl);
+      Alert.alert('上传成功', '头像已更新，请保存修改');
+    } catch (error: any) {
+      console.error('[头像上传] 失败:', error);
+      Alert.alert('上传失败', error.message || '请重试');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView 
@@ -101,10 +193,23 @@ export default function ProfileEditScreen({ navigation }: any) {
       >
         {/* 头像选择 */}
         <View style={styles.avatarSection}>
-          <View style={styles.avatarContainer}>
-            <Text style={styles.avatarEmoji}>{selectedAvatar}</Text>
-          </View>
-          <Text style={styles.avatarHint}>点击头像更换</Text>
+          <TouchableOpacity 
+            style={styles.avatarContainer}
+            onPress={handlePickImage}
+            disabled={isUploading}
+          >
+            {isUploading ? (
+              <ActivityIndicator size="large" color={Colors.primary} />
+            ) : avatarUrl ? (
+              <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarEmoji}>{selectedAvatar}</Text>
+            )}
+            <View style={styles.avatarOverlay}>
+              <Ionicons name="camera" size={20} color="white" />
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.avatarHint}>点击更换头像</Text>
         </View>
 
         {/* 表情选择器 */}
@@ -320,6 +425,22 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 14,
     color: Colors.textSecondary,
+  },
+  avatarImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  avatarOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   section: {
     paddingHorizontal: 16,

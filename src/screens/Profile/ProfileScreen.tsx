@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../../constants/Colors';
@@ -185,7 +185,11 @@ export default function ProfileScreen({ navigation }: any) {
         <View style={styles.headerCard}>
           <View style={styles.headerContent}>
             <View style={styles.avatarContainer}>
-              <Text style={styles.avatarEmoji}>{user?.avatarEmoji || '😊'}</Text>
+              {user?.avatarUrl ? (
+                <Image source={{ uri: user.avatarUrl }} style={styles.avatarImage} />
+              ) : (
+                <Text style={styles.avatarEmoji}>{user?.avatarEmoji || '😊'}</Text>
+              )}
             </View>
             <View style={styles.userInfo}>
               <Text style={styles.nickname}>{user?.nickname || '膳智用户'}</Text>
@@ -327,6 +331,11 @@ const styles = StyleSheet.create({
   },
   avatarEmoji: {
     fontSize: 40,
+  },
+  avatarImage: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
   },
   userInfo: {
     flex: 1,

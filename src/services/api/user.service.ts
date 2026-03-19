@@ -64,4 +64,15 @@ export const UserService = {
   deleteAccount: async (): Promise<ApiResponse<null>> => {
     return apiClient.delete('/users/me');
   },
+
+  // 获取头像上传预签名URL
+  getAvatarUploadUrl: async (filename: string): Promise<ApiResponse<{
+    uploadUrl: string;
+    objectName: string;
+    avatarUrl: string;
+  }>> => {
+    return apiClient.post('/users/me/avatar/upload-url', null, {
+      params: { filename },
+    });
+  },
 };

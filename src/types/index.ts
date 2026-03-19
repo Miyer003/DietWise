@@ -6,6 +6,7 @@ export interface User {
   id: string;
   nickname: string;
   avatarEmoji: string;
+  avatarUrl?: string;  // 自定义头像URL
   phone: string;
   role: 'user' | 'admin';
 }
