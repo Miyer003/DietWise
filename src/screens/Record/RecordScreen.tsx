@@ -61,8 +61,7 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
         navigation.navigate('FoodSearch', { mealType });
         break;
       case 'voice':
-        // 语音功能暂不可用提示
-        Alert.alert('提示', '语音速记功能即将上线，敬请期待！');
+        navigation.navigate('VoiceRecord', { mealType });
         break;
     }
     setSelectedMethod(null);
@@ -124,9 +123,7 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
               <Text style={styles.methodTitle}>语音速记</Text>
               <Text style={styles.methodDesc}>按住说话，自动解析食物名称</Text>
             </View>
-            <View style={styles.comingSoonBadge}>
-              <Text style={styles.comingSoonText}>即将上线</Text>
-            </View>
+            <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
           </TouchableOpacity>
 
           {/* 手动输入 */}

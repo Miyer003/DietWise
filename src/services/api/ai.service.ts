@@ -9,12 +9,23 @@ import {
 } from '../../types';
 
 export interface AnalyzeNutritionRequest {
-  type: 'image' | 'text';
+  type: 'image' | 'text' | 'voice';
   imageUrl?: string;
   imageBase64?: string;  // 新增：支持 base64 图片
   imageHash?: string;
   description?: string;
   quantityG?: number;
+}
+
+export interface AnalyzeVoiceRequest {
+  audioBase64: string;
+  mimeType?: string;
+}
+
+export interface AnalyzeVoiceResponse {
+  transcribedText: string;
+  analysisResult: NutritionAnalysisResult;
+  isGuessed?: boolean;
 }
 
 export interface ChatRequest {
@@ -41,6 +52,11 @@ export const AIService = {
   // 营养分析
   analyzeNutrition: async (data: AnalyzeNutritionRequest): Promise<ApiResponse<NutritionAnalysisResult>> => {
     return apiClient.post('/ai/analyze-nutrition', data);
+  },
+
+  // 语音分析（语音识别 + 营养分析）
+  analyzeVoice: async (data: AnalyzeVoiceRequest): Promise<ApiResponse<AnalyzeVoiceResponse>> => {
+    return apiClient.post('/ai/analyze-voice', data, { timeout: 30000 });
   },
 
   // AI对话（非流式）

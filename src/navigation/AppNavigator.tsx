@@ -13,6 +13,7 @@ import RecordScreen from '../screens/Record/RecordScreen';
 import CameraScreen from '../screens/Record/CameraScreen';
 import FoodSearchScreen from '../screens/Record/FoodSearchScreen';
 import FoodAIInputScreen from '../screens/Record/FoodAIInputScreen';
+import VoiceRecordScreen from '../screens/Record/VoiceRecordScreen';
 import AnalyticsScreen from '../screens/Analytics/AnalyticsScreen';
 import ConsultScreen from '../screens/Consult/ConsultScreen';
 import ChatScreen from '../screens/Consult/ChatScreen';
@@ -174,6 +175,11 @@ function AppStackNavigator() {
         name="FoodAIInput" 
         component={FoodAIInputScreen}
         options={{ headerShown: true, title: 'AI 智能分析' }}
+      />
+      <MainStack.Screen 
+        name="VoiceRecord" 
+        component={VoiceRecordScreen}
+        options={{ headerShown: false }}
       />
       
       {/* 咨询页面 */}
