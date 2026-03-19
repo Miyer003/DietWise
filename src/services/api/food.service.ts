@@ -1,5 +1,5 @@
 import apiClient from './client';
-import { ApiResponse, FoodItem, FoodCategory } from '../../types';
+import { ApiResponse, FoodItem, FoodCategory, RecentFoodItem } from '../../types';
 
 export const FoodService = {
   // 搜索食物（支持中文+拼音模糊搜索）
@@ -27,7 +27,7 @@ export const FoodService = {
   },
 
   // 获取最近常吃的食物
-  getRecentFoods: async (limit?: number): Promise<ApiResponse<FoodItem[]>> => {
+  getRecentFoods: async (limit?: number): Promise<ApiResponse<RecentFoodItem[]>> => {
     return apiClient.get('/foods/recent', { params: { limit: limit || 10 } });
   },
 };

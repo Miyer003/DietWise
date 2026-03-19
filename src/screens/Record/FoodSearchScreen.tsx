@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../../constants/Colors';
 import { FoodService, DietService, AIService } from '../../services/api';
-import { FoodItem, MealType } from '../../types';
+import { FoodItem, MealType, RecentFoodItem } from '../../types';
 
 interface FoodSearchScreenProps {
   navigation: any;
@@ -31,7 +31,7 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('全部');
   const [foods, setFoods] = useState<FoodItem[]>([]);
-  const [recentFoods, setRecentFoods] = useState<FoodItem[]>([]);
+  const [recentFoods, setRecentFoods] = useState<RecentFoodItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [quantity, setQuantity] = useState(100);
@@ -365,8 +365,30 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
           <Text style={styles.sectionTitle}>最近常吃</Text>
           <FlatList
             data={recentFoods}
-            keyExtractor={(item) => item.id}
-            renderItem={renderFoodItem}
+            keyExtractor={(item) => item.id || item.name}
+            renderItem={({ item }: { item: RecentFoodItem }) => (
+              <TouchableOpacity
+                style={styles.foodItem}
+                onPress={() => {
+                  setSelectedFood(item as FoodItem);
+                  setQuantity(item.defaultPortionG || 100);
+                }}
+              >
+                <View style={styles.foodInfo}>
+                  <Text style={styles.foodName}>{item.name}</Text>
+                  <View style={styles.foodMetaRow}>
+                    <Text style={styles.foodCategory}>{item.category}</Text>
+                    {item.recordCount > 0 && (
+                      <Text style={styles.foodCount}>吃过{item.recordCount}次</Text>
+                    )}
+                  </View>
+                </View>
+                <View style={styles.foodCalories}>
+                  <Text style={styles.calorieValue}>{item.caloriesPer100g}</Text>
+                  <Text style={styles.calorieUnit}>kcal/100g</Text>
+                </View>
+              </TouchableOpacity>
+            )}
             contentContainerStyle={[styles.listContainer, { flexGrow: 1, paddingBottom: 40 }]}
             showsVerticalScrollIndicator={true}
             ListEmptyComponent={
@@ -494,7 +516,21 @@ const styles = StyleSheet.create({
   foodCategory: {
     fontSize: 12,
     color: Colors.textMuted,
+  },
+  foodMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginTop: 4,
+  },
+  foodCount: {
+    fontSize: 11,
+    color: Colors.primary,
+    fontWeight: '500',
+    backgroundColor: Colors.primaryLight,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
   },
   foodCalories: {
     alignItems: 'flex-end',

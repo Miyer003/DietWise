@@ -147,6 +147,25 @@ export interface FoodItem {
 
 export type FoodCategory = '主食' | '肉类' | '蔬菜' | '水果' | '饮品' | '其他';
 
+// 最近常吃的食物（包含统计信息）
+// id 可能为空（AI识别的自定义食物不在食物库中）
+export interface RecentFoodItem {
+  id?: string;
+  name: string;
+  namePinyin?: string;
+  nameAliases?: string[];
+  category: FoodCategory;
+  caloriesPer100g: number;
+  proteinPer100g: number;
+  carbsPer100g: number;
+  fatPer100g: number;
+  fiberPer100g?: number;
+  sodiumPer100g?: number;
+  defaultPortionG?: number;
+  recordCount: number;
+  lastRecordedAt?: string;
+}
+
 // ============================================
 // 食谱规划类型
 // ============================================

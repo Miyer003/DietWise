@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -10,9 +10,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import Colors from '../../constants/Colors';
-import { FoodService } from '../../services/api';
-import { FoodItem, MealType } from '../../types';
+import { FoodService, DietService } from '../../services/api';
+import { MealType, RecentFoodItem } from '../../types';
 
 interface RecordScreenProps {
   navigation: any;
@@ -26,22 +27,32 @@ const MEAL_TYPES: { type: MealType; name: string; icon: string; color: string }[
 ];
 
 export default function RecordScreen({ navigation }: RecordScreenProps) {
-  const [recentFoods, setRecentFoods] = useState<FoodItem[]>([]);
+  const [recentFoods, setRecentFoods] = useState<RecentFoodItem[]>([]);
   const [showMealSelector, setShowMealSelector] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState<'camera' | 'voice' | 'manual' | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<'camera' | 'voice' | 'manual' | 'quick' | null>(null);
+  const [selectedFood, setSelectedFood] = useState<RecentFoodItem | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    loadRecentFoods();
-  }, []);
+  // 每次页面获得焦点时都刷新数据
+  useFocusEffect(
+    useCallback(() => {
+      loadRecentFoods();
+    }, [])
+  );
 
   const loadRecentFoods = async () => {
     try {
+      console.log('[最近常吃] 开始加载...');
       const response = await FoodService.getRecentFoods(6);
+      console.log('[最近常吃] 响应:', JSON.stringify(response, null, 2));
       if (response.code === 0 && response.data) {
+        console.log('[最近常吃] 数据条数:', response.data.length);
         setRecentFoods(response.data);
+      } else {
+        console.warn('[最近常吃] 响应异常:', response);
       }
     } catch (error) {
-      console.error('加载最近食物失败:', error);
+      console.error('[最近常吃] 加载失败:', error);
     }
   };
 
@@ -63,14 +74,115 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
       case 'voice':
         navigation.navigate('VoiceRecord', { mealType });
         break;
+      case 'quick':
+        saveQuickRecord(mealType);
+        break;
     }
-    setSelectedMethod(null);
+    if (selectedMethod !== 'quick') {
+      setSelectedMethod(null);
+    }
   };
 
-  const handleQuickAdd = (food: FoodItem) => {
+  const handleQuickAdd = (food: RecentFoodItem) => {
     // 快捷添加时选择餐次
-    setSelectedMethod('manual');
+    setSelectedMethod('quick');
+    setSelectedFood(food);
     setShowMealSelector(true);
+  };
+
+  // 验证 UUID 格式
+  const isValidUUID = (id: string): boolean => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(id);
+  };
+
+  // 快速保存记录（最近常吃）
+  const saveQuickRecord = async (mealType: MealType) => {
+    console.log('[快速添加] 开始保存, 食物:', selectedFood?.name, '餐次:', mealType);
+    if (!selectedFood || isSaving) {
+      console.log('[快速添加] 条件不满足, 取消保存');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const quantity = selectedFood.defaultPortionG || 100;
+      const ratio = quantity / 100;
+      
+      console.log('[快速添加] 计算参数:', { today, quantity, ratio, food: selectedFood });
+
+      // 构建保存的数据项
+      const item: any = {
+        foodName: selectedFood.name,
+        quantityG: quantity,
+        calories: Math.round(selectedFood.caloriesPer100g * ratio),
+        proteinG: Math.round(selectedFood.proteinPer100g * ratio * 10) / 10,
+        carbsG: Math.round(selectedFood.carbsPer100g * ratio * 10) / 10,
+        fatG: Math.round(selectedFood.fatPer100g * ratio * 10) / 10,
+        fiberG: selectedFood.fiberPer100g ? 
+          Math.round(selectedFood.fiberPer100g * ratio * 10) / 10 : 0,
+        sodiumMg: selectedFood.sodiumPer100g ?
+          Math.round(selectedFood.sodiumPer100g * ratio) : 0,
+      };
+      
+      // 如果有有效的 foodItemId，也一起传
+      if (selectedFood.id && isValidUUID(selectedFood.id)) {
+        item.foodItemId = selectedFood.id;
+      }
+
+      console.log('[快速添加] 发送请求...');
+      const response = await DietService.createRecord({
+        recordDate: today,
+        mealType: mealType,
+        inputMethod: 'manual',
+        items: [item],
+      });
+      console.log('[快速添加] 响应:', response);
+
+      if (response.code === 0) {
+        Alert.alert(
+          '添加成功',
+          `已将 ${selectedFood.name} 添加到${MEAL_TYPES.find(m => m.type === mealType)?.name}`,
+          [
+            { text: '继续添加', style: 'default' },
+            { 
+              text: '返回首页', 
+              onPress: () => navigation.navigate('Home'),
+              style: 'cancel'
+            },
+          ]
+        );
+        // 刷新最近常吃列表
+        loadRecentFoods();
+      } else {
+        throw new Error(response.message || '保存失败');
+      }
+    } catch (error: any) {
+      console.error('[快速添加] 错误:', error);
+      Alert.alert('保存失败', error.message || '请重试');
+    } finally {
+      setIsSaving(false);
+      setSelectedFood(null);
+      setSelectedMethod(null);
+    }
+  };
+
+  // 格式化相对时间
+  const formatRelativeTime = (dateString?: string): string => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return '刚刚';
+    if (diffMins < 60) return `${diffMins}分钟前`;
+    if (diffHours < 24) return `${diffHours}小时前`;
+    if (diffDays < 7) return `${diffDays}天前`;
+    return `${Math.floor(diffDays / 7)}周前`;
   };
 
   return (
@@ -149,11 +261,25 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
             {recentFoods.length > 0 ? (
               recentFoods.map((food) => (
                 <TouchableOpacity 
-                  key={food.id} 
-                  style={styles.tag}
+                  key={food.id || food.name} 
+                  style={styles.foodCard}
                   onPress={() => handleQuickAdd(food)}
+                  disabled={isSaving}
                 >
-                  <Text style={styles.tagText}>🍽️ {food.name}</Text>
+                  <View style={styles.foodCardContent}>
+                    <Text style={styles.foodCardName}>{food.name}</Text>
+                    <View style={styles.foodCardMeta}>
+                      {food.recordCount > 0 && (
+                        <Text style={styles.foodCardCount}>吃过{food.recordCount}次</Text>
+                      )}
+                      {food.lastRecordedAt && (
+                        <Text style={styles.foodCardTime}>
+                          {formatRelativeTime(food.lastRecordedAt)}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  <Ionicons name="add-circle" size={20} color={Colors.primary} />
                 </TouchableOpacity>
               ))
             ) : (
@@ -300,18 +426,44 @@ const styles = StyleSheet.create({
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 10,
+  },
+  foodCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minWidth: 140,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  foodCardContent: {
+    flex: 1,
+  },
+  foodCardName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  foodCardMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
-  tag: {
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  tagText: {
-    color: Colors.primaryDark,
-    fontSize: 14,
+  foodCardCount: {
+    fontSize: 11,
+    color: Colors.primary,
     fontWeight: '500',
+  },
+  foodCardTime: {
+    fontSize: 11,
+    color: Colors.textMuted,
   },
   emptyText: {
     fontSize: 14,
