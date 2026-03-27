@@ -8,12 +8,15 @@ import {
   FlatList,
   ActivityIndicator,
   Alert,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../../constants/Colors';
 import { FoodService, DietService, AIService } from '../../services/api';
-import { FoodItem, MealType, RecentFoodItem } from '../../types';
+import { FoodItem, MealType } from '../../types';
 
 interface FoodSearchScreenProps {
   navigation: any;
@@ -31,39 +34,29 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('全部');
   const [foods, setFoods] = useState<FoodItem[]>([]);
-  const [recentFoods, setRecentFoods] = useState<RecentFoodItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [quantity, setQuantity] = useState(100);
 
-  // 加载最近常吃的食物
+  // 初始化加载全部食物
   useEffect(() => {
-    loadRecentFoods();
+    loadFoodsByCategory();
   }, []);
 
-  // 搜索防抖
+  // 搜索防抖 & 分类筛选
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchQuery) {
+        // 有搜索词时进行搜索
         searchFoods();
       } else {
-        setFoods([]);
+        // 无搜索词时，根据分类加载食物（全部分类则加载所有）
+        loadFoodsByCategory();
       }
     }, 300);
 
     return () => clearTimeout(timer);
   }, [searchQuery, selectedCategory]);
-
-  const loadRecentFoods = async () => {
-    try {
-      const response = await FoodService.getRecentFoods(10);
-      if (response.code === 0 && response.data) {
-        setRecentFoods(response.data);
-      }
-    } catch (error) {
-      console.error('加载最近食物失败:', error);
-    }
-  };
 
   const searchFoods = async () => {
     setIsLoading(true);
@@ -75,10 +68,27 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
         limit: 20,
       });
       if (response.code === 0 && response.data) {
-        setFoods(response.data.items);
+        setFoods(response.data);
       }
     } catch (error) {
       console.error('搜索食物失败:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 按分类加载食物
+  const loadFoodsByCategory = async () => {
+    setIsLoading(true);
+    try {
+      // 全部分类时传入 undefined，其他分类传入具体分类名
+      const category = selectedCategory === '全部' ? undefined : selectedCategory;
+      const response = await FoodService.getFoodsByCategory(category, 50);
+      if (response.code === 0 && response.data) {
+        setFoods(response.data);
+      }
+    } catch (error) {
+      console.error('加载分类食物失败:', error);
     } finally {
       setIsLoading(false);
     }
@@ -111,15 +121,15 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
           {
             foodItemId: selectedFood.id,
             foodName: selectedFood.name,
-            quantityG: quantity,
-            calories: nutrition.calories,
-            proteinG: nutrition.protein,
-            carbsG: nutrition.carbs,
-            fatG: nutrition.fat,
+            quantityG: Number(quantity),
+            calories: Number(nutrition.calories),
+            proteinG: Number(nutrition.protein),
+            carbsG: Number(nutrition.carbs),
+            fatG: Number(nutrition.fat),
             fiberG: selectedFood.fiberPer100g ? 
-              Math.round(selectedFood.fiberPer100g * (quantity / 100) * 10) / 10 : 0,
+              Math.round(Number(selectedFood.fiberPer100g) * (Number(quantity) / 100) * 10) / 10 : 0,
             sodiumMg: selectedFood.sodiumPer100g ?
-              Math.round(selectedFood.sodiumPer100g * (quantity / 100)) : 0,
+              Math.round(Number(selectedFood.sodiumPer100g) * (Number(quantity) / 100)) : 0,
           },
         ],
       });
@@ -182,91 +192,104 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
           <View style={{ width: 24 }} />
         </View>
 
-        <View style={styles.confirmContainer}>
-          <View style={styles.selectedFoodCard}>
-            <Text style={styles.selectedFoodName}>{selectedFood.name}</Text>
-            <View style={styles.selectedFoodTags}>
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>{selectedFood.category}</Text>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <ScrollView 
+            style={styles.confirmContainer}
+            contentContainerStyle={styles.confirmContentContainer}
+            showsVerticalScrollIndicator={true}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.selectedFoodCard}>
+              <Text style={styles.selectedFoodName}>{selectedFood.name}</Text>
+              <View style={styles.selectedFoodTags}>
+                <View style={styles.tag}>
+                  <Text style={styles.tagText}>{selectedFood.category}</Text>
+                </View>
               </View>
             </View>
-          </View>
 
-          {/* 份量选择 */}
-          <View style={styles.quantityCard}>
-            <Text style={styles.sectionTitle}>份量 (克)</Text>
-            <View style={styles.quantityDisplay}>
-              <Text style={styles.quantityValue}>{quantity}</Text>
-              <Text style={styles.quantityUnit}>g</Text>
-            </View>
+            {/* 份量选择 */}
+            <View style={styles.quantityCard}>
+              <Text style={styles.sectionTitle}>份量 (克)</Text>
+              <View style={styles.quantityDisplay}>
+                <Text style={styles.quantityValue}>{quantity}</Text>
+                <Text style={styles.quantityUnit}>g</Text>
+              </View>
 
-            {/* 快捷按钮 */}
-            <View style={styles.quickQuantities}>
-              {[50, 100, 150, 200, 250].map((q) => (
+              {/* 快捷按钮 */}
+              <View style={styles.quickQuantities}>
+                {[50, 100, 150, 200, 250].map((q) => (
+                  <TouchableOpacity
+                    key={q}
+                    style={[styles.quickBtn, quantity === q && styles.quickBtnActive]}
+                    onPress={() => setQuantity(q)}
+                  >
+                    <Text style={[styles.quickBtnText, quantity === q && styles.quickBtnTextActive]}>
+                      {q}g
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* 滑块 */}
+              <View style={styles.sliderContainer}>
                 <TouchableOpacity
-                  key={q}
-                  style={[styles.quickBtn, quantity === q && styles.quickBtnActive]}
-                  onPress={() => setQuantity(q)}
+                  style={styles.sliderBtn}
+                  onPress={() => setQuantity(Math.max(10, quantity - 10))}
                 >
-                  <Text style={[styles.quickBtnText, quantity === q && styles.quickBtnTextActive]}>
-                    {q}g
-                  </Text>
+                  <Ionicons name="remove" size={20} color={Colors.text} />
                 </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* 滑块 */}
-            <View style={styles.sliderContainer}>
-              <TouchableOpacity
-                style={styles.sliderBtn}
-                onPress={() => setQuantity(Math.max(10, quantity - 10))}
-              >
-                <Ionicons name="remove" size={20} color={Colors.text} />
-              </TouchableOpacity>
-              <View style={styles.sliderTrack}>
-                <View
-                  style={[
-                    styles.sliderFill,
-                    { width: `${Math.min((quantity / 500) * 100, 100)}%` },
-                  ]}
-                />
-              </View>
-              <TouchableOpacity
-                style={styles.sliderBtn}
-                onPress={() => setQuantity(Math.min(1000, quantity + 10))}
-              >
-                <Ionicons name="add" size={20} color={Colors.text} />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* 营养预览 */}
-          <View style={styles.nutritionCard}>
-            <Text style={styles.sectionTitle}>营养含量预览</Text>
-            <View style={styles.nutritionRow}>
-              <View style={styles.nutritionItem}>
-                <Text style={styles.nutritionValue}>{nutrition.calories}</Text>
-                <Text style={styles.nutritionLabel}>千卡</Text>
-              </View>
-              <View style={styles.nutritionItem}>
-                <Text style={styles.nutritionValue}>{nutrition.protein}g</Text>
-                <Text style={styles.nutritionLabel}>蛋白质</Text>
-              </View>
-              <View style={styles.nutritionItem}>
-                <Text style={styles.nutritionValue}>{nutrition.carbs}g</Text>
-                <Text style={styles.nutritionLabel}>碳水</Text>
-              </View>
-              <View style={styles.nutritionItem}>
-                <Text style={styles.nutritionValue}>{nutrition.fat}g</Text>
-                <Text style={styles.nutritionLabel}>脂肪</Text>
+                <View style={styles.sliderTrack}>
+                  <View
+                    style={[
+                      styles.sliderFill,
+                      { width: `${Math.min((quantity / 500) * 100, 100)}%` },
+                    ]}
+                  />
+                </View>
+                <TouchableOpacity
+                  style={styles.sliderBtn}
+                  onPress={() => setQuantity(Math.min(1000, quantity + 10))}
+                >
+                  <Ionicons name="add" size={20} color={Colors.text} />
+                </TouchableOpacity>
               </View>
             </View>
-          </View>
 
-          <TouchableOpacity style={styles.saveBtn} onPress={saveRecord}>
-            <Text style={styles.saveBtnText}>保存记录</Text>
-          </TouchableOpacity>
-        </View>
+            {/* 营养预览 */}
+            <View style={styles.nutritionCard}>
+              <Text style={styles.sectionTitle}>营养含量预览</Text>
+              <View style={styles.nutritionRow}>
+                <View style={styles.nutritionItem}>
+                  <Text style={styles.nutritionValue}>{nutrition.calories}</Text>
+                  <Text style={styles.nutritionLabel}>千卡</Text>
+                </View>
+                <View style={styles.nutritionItem}>
+                  <Text style={styles.nutritionValue}>{nutrition.protein}g</Text>
+                  <Text style={styles.nutritionLabel}>蛋白质</Text>
+                </View>
+                <View style={styles.nutritionItem}>
+                  <Text style={styles.nutritionValue}>{nutrition.carbs}g</Text>
+                  <Text style={styles.nutritionLabel}>碳水</Text>
+                </View>
+                <View style={styles.nutritionItem}>
+                  <Text style={styles.nutritionValue}>{nutrition.fat}g</Text>
+                  <Text style={styles.nutritionLabel}>脂肪</Text>
+                </View>
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.saveBtn} onPress={saveRecord}>
+              <Text style={styles.saveBtnText}>保存记录</Text>
+            </TouchableOpacity>
+            
+            {/* 底部留白，确保可以滚动到底部 */}
+            <View style={{ height: 40 }} />
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     );
   }
@@ -341,63 +364,24 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
         />
       </View>
 
-      {/* 搜索结果 */}
+      {/* 食物库列表 */}
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
         </View>
-      ) : searchQuery ? (
+      ) : (
         <FlatList
           data={foods}
           keyExtractor={(item) => item.id}
           renderItem={renderFoodItem}
-          contentContainerStyle={[styles.listContainer, { flexGrow: 1 }]}
+          contentContainerStyle={[styles.listContainer, { flexGrow: 1, paddingBottom: 40 }]}
           showsVerticalScrollIndicator={true}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>未找到相关食物</Text>
+              <Text style={styles.emptyText}>暂无食物数据</Text>
             </View>
           }
         />
-      ) : (
-        // 最近常吃
-        <View style={styles.recentContainer}>
-          <Text style={styles.sectionTitle}>最近常吃</Text>
-          <FlatList
-            data={recentFoods}
-            keyExtractor={(item) => item.id || item.name}
-            renderItem={({ item }: { item: RecentFoodItem }) => (
-              <TouchableOpacity
-                style={styles.foodItem}
-                onPress={() => {
-                  setSelectedFood(item as FoodItem);
-                  setQuantity(item.defaultPortionG || 100);
-                }}
-              >
-                <View style={styles.foodInfo}>
-                  <Text style={styles.foodName}>{item.name}</Text>
-                  <View style={styles.foodMetaRow}>
-                    <Text style={styles.foodCategory}>{item.category}</Text>
-                    {item.recordCount > 0 && (
-                      <Text style={styles.foodCount}>吃过{item.recordCount}次</Text>
-                    )}
-                  </View>
-                </View>
-                <View style={styles.foodCalories}>
-                  <Text style={styles.calorieValue}>{item.caloriesPer100g}</Text>
-                  <Text style={styles.calorieUnit}>kcal/100g</Text>
-                </View>
-              </TouchableOpacity>
-            )}
-            contentContainerStyle={[styles.listContainer, { flexGrow: 1, paddingBottom: 40 }]}
-            showsVerticalScrollIndicator={true}
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>暂无记录</Text>
-              </View>
-            }
-          />
-        </View>
       )}
     </SafeAreaView>
   );
@@ -565,7 +549,10 @@ const styles = StyleSheet.create({
   // 确认页样式
   confirmContainer: {
     flex: 1,
+  },
+  confirmContentContainer: {
     padding: 16,
+    paddingBottom: 32,
   },
   selectedFoodCard: {
     backgroundColor: Colors.card,

@@ -1,102 +1,112 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
   ScrollView,
+  TextInput,
   Alert,
-  ActivityIndicator,
+  ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../../constants/Colors';
 import { FeedbackService } from '../../services/api';
 
-type FeedbackType = 'bug' | 'feature' | 'data_error' | 'other';
-
-interface FeedbackTypeOption {
-  value: FeedbackType;
-  label: string;
-  icon: string;
-}
-
-const FEEDBACK_TYPES: FeedbackTypeOption[] = [
-  { value: 'bug', label: '功能异常', icon: '🐛' },
-  { value: 'feature', label: '功能建议', icon: '💡' },
-  { value: 'data_error', label: '数据错误', icon: '📊' },
-  { value: 'other', label: '其他问题', icon: '📝' },
+const FEEDBACK_TYPES = [
+  { key: 'bug', label: '问题反馈', icon: 'bug', color: '#EF4444' },
+  { key: 'feature', label: '功能建议', icon: 'bulb', color: '#F59E0B' },
+  { key: 'data_error', label: '数据错误', icon: 'warning', color: '#3B82F6' },
+  { key: 'other', label: '其他', icon: 'chatbubbles', color: '#10B981' },
 ];
 
-export default function FeedbackScreen({ navigation }: any) {
-  const [type, setType] = useState<FeedbackType>('bug');
+export default function FeedbackScreen() {
+  const [selectedType, setSelectedType] = useState<string>('bug');
   const [content, setContent] = useState('');
   const [contact, setContact] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async () => {
+  const submitFeedback = async () => {
     if (!content.trim()) {
       Alert.alert('提示', '请输入反馈内容');
       return;
     }
 
-    if (content.trim().length < 10) {
-      Alert.alert('提示', '反馈内容至少需要10个字');
-      return;
-    }
-
-    setIsSubmitting(true);
+    setLoading(true);
     try {
       const response = await FeedbackService.submitFeedback({
-        type,
+        type: selectedType,
         content: content.trim(),
         contactInfo: contact.trim() || undefined,
       });
 
       if (response.code === 0) {
-        Alert.alert('提交成功', '感谢您的反馈，我们会尽快处理！', [
-          {
-            text: '确定',
-            onPress: () => navigation.goBack(),
-          },
-        ]);
+        Alert.alert(
+          '提交成功',
+          '感谢您的反馈，我们会尽快处理！',
+          [{ text: '确定', onPress: () => {
+            setContent('');
+            setContact('');
+          }}]
+        );
       } else {
         throw new Error(response.message || '提交失败');
       }
     } catch (error: any) {
       Alert.alert('提交失败', error.message || '请稍后重试');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView 
-        style={styles.scrollView} 
+        style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={true}
         keyboardShouldPersistTaps="handled"
       >
+        {/* 说明卡片 */}
+        <View style={[styles.card, styles.infoCard]}>
+          <View style={styles.infoHeader}>
+            <Text style={{ fontSize: 24, marginRight: 8 }}>💬</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.infoTitle}>意见反馈</Text>
+              <Text style={styles.infoDesc}>
+                遇到问题或有好的建议？欢迎告诉我们，我们会认真阅读每一条反馈。
+              </Text>
+            </View>
+          </View>
+        </View>
+
         {/* 反馈类型选择 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>反馈类型</Text>
-          <View style={styles.typeGrid}>
-            {FEEDBACK_TYPES.map((item) => (
+          <View style={styles.typeContainer}>
+            {FEEDBACK_TYPES.map((type) => (
               <TouchableOpacity
-                key={item.value}
-                style={[styles.typeBtn, type === item.value && styles.typeBtnActive]}
-                onPress={() => setType(item.value)}
+                key={type.key}
+                style={[
+                  styles.typeItem,
+                  selectedType === type.key && { 
+                    backgroundColor: type.color + '20',
+                    borderColor: type.color,
+                  }
+                ]}
+                onPress={() => setSelectedType(type.key)}
               >
-                <Text style={styles.typeIcon}>{item.icon}</Text>
-                <Text
-                  style={[
-                    styles.typeText,
-                    type === item.value && styles.typeTextActive,
-                  ]}
-                >
-                  {item.label}
+                <Ionicons 
+                  name={type.icon as any} 
+                  size={20} 
+                  color={selectedType === type.key ? type.color : Colors.textMuted} 
+                />
+                <Text style={[
+                  styles.typeText,
+                  selectedType === type.key && { color: type.color, fontWeight: '600' }
+                ]}>
+                  {type.label}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -105,17 +115,17 @@ export default function FeedbackScreen({ navigation }: any) {
 
         {/* 反馈内容 */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>反馈内容</Text>
-          <View style={styles.inputCard}>
+          <Text style={styles.sectionTitle}>反馈内容 <Text style={styles.required}>*</Text></Text>
+          <View style={styles.card}>
             <TextInput
               style={styles.contentInput}
               multiline
               numberOfLines={6}
-              placeholder="请详细描述您遇到的问题或建议..."
-              textAlignVertical="top"
+              placeholder="请详细描述您遇到的问题或建议，帮助我们更好地改进..."
               value={content}
               onChangeText={setContent}
               maxLength={500}
+              textAlignVertical="top"
             />
             <Text style={styles.charCount}>{content.length}/500</Text>
           </View>
@@ -124,10 +134,10 @@ export default function FeedbackScreen({ navigation }: any) {
         {/* 联系方式 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>联系方式（选填）</Text>
-          <View style={styles.inputCard}>
+          <View style={styles.card}>
             <TextInput
               style={styles.contactInput}
-              placeholder="手机号/邮箱/微信，方便我们联系您"
+              placeholder="手机号/邮箱/微信，方便我们与您联系"
               value={contact}
               onChangeText={setContact}
               maxLength={100}
@@ -135,26 +145,21 @@ export default function FeedbackScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* 提示信息 */}
-        <View style={styles.tipCard}>
-          <Ionicons name="information-circle" size={20} color={Colors.info} />
-          <Text style={styles.tipText}>
-            您的反馈对我们非常重要，我们会认真阅读每一条建议。如有紧急问题，请联系客服：400-xxx-xxxx
-          </Text>
-        </View>
-
         {/* 提交按钮 */}
-        <TouchableOpacity
-          style={[styles.submitBtn, isSubmitting && styles.submitBtnDisabled]}
-          onPress={handleSubmit}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text style={styles.submitBtnText}>提交反馈</Text>
-          )}
-        </TouchableOpacity>
+        <View style={styles.section}>
+          <TouchableOpacity 
+            style={[styles.submitBtn, (!content.trim() || loading) && styles.submitBtnDisabled]}
+            onPress={submitFeedback}
+            disabled={!content.trim() || loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.submitBtnText}>提交反馈</Text>
+            )}
+          </TouchableOpacity>
+          <Text style={styles.tipText}>提交后可在后台管理查看处理进度</Text>
+        </View>
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -174,8 +179,35 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 40,
   },
-  section: {
+  card: {
+    backgroundColor: Colors.card,
+    borderRadius: 12,
     padding: 16,
+    marginHorizontal: 16,
+  },
+  infoCard: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    margin: 16,
+  },
+  infoHeader: {
+    flexDirection: 'row',
+  },
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1E40AF',
+    marginBottom: 4,
+  },
+  infoDesc: {
+    fontSize: 13,
+    color: '#3B82F6',
+    lineHeight: 18,
+  },
+  section: {
+    paddingHorizontal: 16,
+    marginTop: 20,
   },
   sectionTitle: {
     fontSize: 16,
@@ -183,47 +215,40 @@ const styles = StyleSheet.create({
     color: Colors.text,
     marginBottom: 12,
   },
-  typeGrid: {
+  required: {
+    color: Colors.danger,
+  },
+  typeContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
   },
-  typeBtn: {
+  typeItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
     backgroundColor: Colors.card,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    gap: 8,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  typeBtnActive: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primaryLight,
-  },
-  typeIcon: {
-    fontSize: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   typeText: {
     fontSize: 14,
-    color: Colors.text,
-    fontWeight: '500',
-  },
-  typeTextActive: {
-    color: Colors.primary,
-  },
-  inputCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    padding: 16,
+    color: Colors.textSecondary,
   },
   contentInput: {
-    fontSize: 15,
+    fontSize: 14,
     color: Colors.text,
-    lineHeight: 22,
+    lineHeight: 20,
     minHeight: 120,
+    paddingTop: 4,
+  },
+  contactInput: {
+    fontSize: 14,
+    color: Colors.text,
+    height: 44,
   },
   charCount: {
     fontSize: 12,
@@ -231,42 +256,24 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: 8,
   },
-  contactInput: {
-    fontSize: 15,
-    color: Colors.text,
-  },
-  tipCard: {
-    flexDirection: 'row',
-    backgroundColor: '#EFF6FF',
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
-    gap: 12,
-  },
-  tipText: {
-    flex: 1,
-    fontSize: 13,
-    color: '#1E40AF',
-    lineHeight: 18,
-  },
   submitBtn: {
     backgroundColor: Colors.primary,
-    margin: 16,
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
   submitBtnDisabled: {
-    opacity: 0.7,
+    opacity: 0.5,
   },
   submitBtnText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
+  },
+  tipText: {
+    fontSize: 12,
+    color: Colors.textMuted,
+    textAlign: 'center',
+    marginTop: 12,
   },
 });

@@ -2,12 +2,20 @@ import apiClient from './client';
 import { ApiResponse, FoodItem, FoodCategory, RecentFoodItem } from '../../types';
 
 export const FoodService = {
+  // 获取食物列表（支持分类筛选）
+  getFoodsByCategory: async (
+    category?: string,
+    limit?: number
+  ): Promise<ApiResponse<FoodItem[]>> => {
+    return apiClient.get('/foods', { params: { category, limit: limit || 50 } });
+  },
+
   // 搜索食物（支持中文+拼音模糊搜索）
   searchFoods: async (params: {
     q: string;
     category?: FoodCategory;
     limit?: number;
-  }): Promise<ApiResponse<{ items: FoodItem[]; total: number }>> => {
+  }): Promise<ApiResponse<FoodItem[]>> => {
     return apiClient.get('/foods/search', { params });
   },
 

@@ -26,9 +26,9 @@ import AIGeneratePlanPreviewScreen from '../screens/MealPlan/AIGeneratePlanPrevi
 import HistoryMealPlanListScreen from '../screens/MealPlan/HistoryMealPlanListScreen';
 import HistoryMealPlanDetailScreen from '../screens/MealPlan/HistoryMealPlanDetailScreen';
 import NotificationSettings from '../screens/Settings/NotificationSettings';
-import TipLibraryScreen from '../screens/Settings/TipLibraryScreen';
 import FeedbackScreen from '../screens/Settings/FeedbackScreen';
 import AboutScreen from '../screens/Settings/AboutScreen';
+import AchievementsScreen from '../screens/Profile/AchievementsScreen';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import RegisterScreen from '../screens/Auth/RegisterScreen';
 
@@ -235,11 +235,6 @@ function AppStackNavigator() {
         options={{ headerShown: true, title: '提醒设置' }}
       />
       <MainStack.Screen 
-        name="TipLibrary" 
-        component={TipLibraryScreen} 
-        options={{ headerShown: true, title: '个性化提示库' }}
-      />
-      <MainStack.Screen 
         name="Feedback" 
         component={FeedbackScreen}
         options={{ headerShown: true, title: '意见反馈' }}
@@ -248,6 +243,13 @@ function AppStackNavigator() {
         name="About" 
         component={AboutScreen}
         options={{ headerShown: true, title: '关于膳智' }}
+      />
+      
+      {/* 成就页面 */}
+      <MainStack.Screen 
+        name="Achievements" 
+        component={AchievementsScreen}
+        options={{ headerShown: true, title: '我的成就' }}
       />
     </MainStack.Navigator>
   );

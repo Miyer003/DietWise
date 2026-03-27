@@ -25,7 +25,7 @@ export default function ProfileScreen({ navigation }: any) {
   const menuItems = [
     { icon: '👤', title: '个人画像', color: '#818CF8', screen: 'ProfileEdit', isTab: false },
     { icon: '🥡', title: '我的食谱', color: Colors.warning, screen: 'MealPlan', isTab: false },
-    { icon: '💡', title: '个性化提示库', color: '#F472B6', screen: 'TipLibrary', isTab: false },
+    { icon: '💬', title: '意见反馈', color: '#F472B6', screen: 'Feedback', isTab: false },
     { icon: '🔔', title: '提醒设置', color: Colors.warning, screen: 'NotificationSettings', isTab: false },
   ];
 
@@ -228,10 +228,17 @@ export default function ProfileScreen({ navigation }: any) {
         </View>
 
         {/* 成就徽章 */}
-        <View style={styles.section}>
+        <TouchableOpacity 
+          style={styles.section}
+          onPress={() => navigation.navigate('Achievements')}
+          activeOpacity={0.8}
+        >
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>🏆 成就徽章</Text>
-            <Text style={styles.badgeCount}>{achievements.length}/12</Text>
+            <View style={styles.sectionHeaderRight}>
+              <Text style={styles.badgeCount}>{achievements.length}/12</Text>
+              <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+            </View>
           </View>
           {achievements.length > 0 ? (
             <View style={styles.badgesContainer}>
@@ -239,6 +246,9 @@ export default function ProfileScreen({ navigation }: any) {
                 <View key={index} style={styles.badgeItem}>
                   <View style={[styles.badgeIcon, { backgroundColor: achievement.iconColor || '#FCD34D' }]}>
                     <Text style={styles.badgeEmoji}>{achievement.iconEmoji}</Text>
+                    {achievement.isNew && (
+                      <View style={styles.badgeNewIndicator} />
+                    )}
                   </View>
                   <Text style={styles.badgeName}>{achievement.badgeName}</Text>
                 </View>
@@ -258,7 +268,8 @@ export default function ProfileScreen({ navigation }: any) {
               <Text style={styles.emptyBadgesText}>还没有解锁任何徽章，快去记录饮食吧！</Text>
             </View>
           )}
-        </View>
+          <Text style={styles.viewAllText}>查看全部徽章 →</Text>
+        </TouchableOpacity>
 
         {/* 功能菜单 */}
         <View style={styles.menuContainer}>
@@ -426,6 +437,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  sectionHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -474,6 +490,24 @@ const styles = StyleSheet.create({
   },
   badgeNameLocked: {
     color: Colors.textMuted,
+  },
+  badgeNewIndicator: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 12,
+    height: 12,
+    backgroundColor: Colors.danger,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  viewAllText: {
+    fontSize: 13,
+    color: Colors.primary,
+    textAlign: 'center',
+    marginTop: 12,
+    fontWeight: '500',
   },
   emptyBadges: {
     padding: 20,
