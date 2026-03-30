@@ -1,61 +1,259 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
   ScrollView,
-  Switch 
+  Switch,
+  Alert,
+  ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import * as Notifications from 'expo-notifications';
+import { Ionicons } from '@expo/vector-icons';
 import Colors from '../../constants/Colors';
+import { NotificationService } from '../../services/api';
+import { NotificationSettings as NotificationSettingsType } from '../../types';
 
-interface ReminderSetting {
-  enabled: boolean;
-  time?: string;
-  label: string;
+// 默认设置
+const DEFAULT_SETTINGS: NotificationSettingsType = {
+  masterEnabled: true,
+  breakfastEnabled: true,
+  breakfastTime: '07:30',
+  lunchEnabled: true,
+  lunchTime: '12:00',
+  dinnerEnabled: true,
+  dinnerTime: '18:00',
+  waterEnabled: false,
+  waterIntervalH: 2,
+  waterStartTime: '08:00',
+  waterEndTime: '22:00',
+  recordRemind: true,
+  bedtimeRemind: false,
+  bedtimeTime: '21:30',
+};
+
+// 时间选择器包装组件
+function TimePickerButton({
+  time,
+  onChange,
+  disabled = false,
+}: {
+  time: string;
+  onChange: (time: string) => void;
+  disabled?: boolean;
+}) {
+  const [show, setShow] = useState(false);
+
+  const parseTime = (t: string): Date => {
+    const [hours, minutes] = t.split(':').map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes, 0, 0);
+    return date;
+  };
+
+  const handleChange = (event: any, selectedDate?: Date) => {
+    setShow(false);
+    if (selectedDate && event.type !== 'dismissed') {
+      const hours = selectedDate.getHours().toString().padStart(2, '0');
+      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+      onChange(`${hours}:${minutes}`);
+    }
+  };
+
+  return (
+    <>
+      <TouchableOpacity
+        style={[styles.timeBtn, disabled && styles.timeBtnDisabled]}
+        onPress={() => !disabled && setShow(true)}
+        disabled={disabled}
+      >
+        <Text style={[styles.timeText, disabled && styles.timeTextDisabled]}>
+          {time}
+        </Text>
+      </TouchableOpacity>
+      {show && (
+        <DateTimePicker
+          value={parseTime(time)}
+          mode="time"
+          is24Hour={true}
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleChange}
+        />
+      )}
+    </>
+  );
+}
+
+// 设置项行组件
+function SettingRow({
+  icon,
+  title,
+  subtitle,
+  enabled,
+  onToggle,
+  children,
+  masterEnabled = true,
+}: {
   icon: string;
-  desc?: string;
+  title: string;
+  subtitle?: string;
+  enabled: boolean;
+  onToggle: (value: boolean) => void;
+  children?: React.ReactNode;
+  masterEnabled?: boolean;
+}) {
+  return (
+    <View style={[styles.settingItem, !masterEnabled && styles.settingItemDisabled]}>
+      <View style={styles.settingHeader}>
+        <Text style={[styles.settingIcon, !masterEnabled && styles.settingIconDisabled]}>
+          {icon}
+        </Text>
+        <View style={styles.settingInfo}>
+          <Text style={[styles.settingTitle, !masterEnabled && styles.settingTitleDisabled]}>
+            {title}
+          </Text>
+          {subtitle && (
+            <Text style={[styles.settingSubtitle, !masterEnabled && styles.settingSubtitleDisabled]}>
+              {subtitle}
+            </Text>
+          )}
+        </View>
+        <Switch
+          value={enabled}
+          onValueChange={onToggle}
+          trackColor={{ false: '#E5E7EB', true: Colors.primary }}
+          thumbColor="white"
+          disabled={!masterEnabled}
+        />
+      </View>
+      {enabled && children && (
+        <View style={styles.settingDetail}>{children}</View>
+      )}
+    </View>
+  );
 }
 
 export default function NotificationSettings() {
-  const [masterEnabled, setMasterEnabled] = useState(true);
-  const [breakfast, setBreakfast] = useState<ReminderSetting>({ enabled: true, time: '07:30', label: '早餐提醒', icon: '🍳' });
-  const [lunch, setLunch] = useState<ReminderSetting>({ enabled: true, time: '12:00', label: '午餐提醒', icon: '🍱' });
-  const [dinner, setDinner] = useState<ReminderSetting>({ enabled: true, time: '18:00', label: '晚餐提醒', icon: '🌙' });
-  const [water, setWater] = useState({ enabled: false, interval: '2小时', start: '08:00', end: '22:00', label: '饮水提醒', icon: '💧' });
-  const [record, setRecord] = useState({ enabled: true, label: '记录提醒', icon: '✍️', desc: '用餐后30分钟提醒' });
-  const [bedtime, setBedtime] = useState<ReminderSetting>({ enabled: false, time: '21:30', label: '睡前提醒', icon: '😴', desc: '复盘当日饮食' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [settings, setSettings] = useState<NotificationSettingsType>(DEFAULT_SETTINGS);
 
-  const ToggleRow: React.FC<{
-    icon: string;
-    title: string;
-    subtitle?: string;
-    value: boolean;
-    onValueChange: (value: boolean) => void;
-    children?: React.ReactNode;
-  }> = ({ icon, title, subtitle, value, onValueChange, children }) => (
-    <View style={styles.settingItem}>
-      <View style={styles.settingHeader}>
-        <Text style={styles.settingIcon}>{icon}</Text>
-        <View style={styles.settingInfo}>
-          <Text style={styles.settingTitle}>{title}</Text>
-          {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
-        </View>
-        <Switch
-          value={value}
-          onValueChange={onValueChange}
-          trackColor={{ false: '#E5E7EB', true: Colors.primary }}
-          thumbColor="white"
-        />
-      </View>
-      {value && children && <View style={styles.settingDetail}>{children}</View>}
-    </View>
+  // 加载设置
+  const loadSettings = useCallback(async () => {
+    try {
+      const response = await NotificationService.getSettings();
+      if (response.code === 0 && response.data) {
+        setSettings({ ...DEFAULT_SETTINGS, ...response.data });
+      }
+    } catch (error) {
+      console.error('加载提醒设置失败:', error);
+      Alert.alert('加载失败', '无法加载提醒设置，使用默认设置');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // 初始加载
+  useEffect(() => {
+    loadSettings();
+    requestNotificationPermission();
+  }, [loadSettings]);
+
+  // 请求通知权限并注册Push Token
+  const requestNotificationPermission = async () => {
+    try {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus === 'granted' && Platform.OS !== 'web') {
+        // 获取 Expo Push Token（仅在原生平台）
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const notificationsAny = Notifications as any;
+          const tokenResponse = await notificationsAny.getExpoPushTokenAsync();
+          const token = tokenResponse.data as string;
+          console.log('Expo Push Token:', token);
+          
+          // 注册到后端
+          await NotificationService.registerPushToken(token);
+          console.log('Push Token 已注册到服务器');
+        } catch (tokenError: any) {
+          // Android 需要 FCM 配置，如果未配置会报错，这里静默处理
+          console.log('获取 Push Token 失败:', tokenError.message || tokenError);
+          if (Platform.OS === 'android') {
+            console.log('提示：Android 需要配置 FCM 才能接收推送通知');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('获取通知权限失败:', error);
+    }
+  };
+
+  // 保存设置（防抖）
+  const saveSettings = useCallback(
+    async (newSettings: NotificationSettingsType) => {
+      setSaving(true);
+      try {
+        const response = await NotificationService.patchSettings(newSettings);
+        if (response.code !== 0) {
+          throw new Error(response.message);
+        }
+      } catch (error: any) {
+        console.error('保存提醒设置失败:', error);
+        Alert.alert('保存失败', error.message || '请稍后重试');
+      } finally {
+        setSaving(false);
+      }
+    },
+    []
   );
+
+  // 更新单个设置字段
+  const updateSetting = <K extends keyof NotificationSettingsType>(
+    key: K,
+    value: NotificationSettingsType[K]
+  ) => {
+    const newSettings = { ...settings, [key]: value };
+    setSettings(newSettings);
+    saveSettings(newSettings);
+  };
+
+  // 更新饮水间隔
+  const updateWaterInterval = (increment: number) => {
+    const newInterval = Math.max(1, Math.min(4, settings.waterIntervalH + increment));
+    updateSetting('waterIntervalH', newInterval);
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+        <Text style={styles.loadingText}>加载中...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
+      {/* 保存状态指示器 */}
+      {saving && (
+        <View style={styles.savingIndicator}>
+          <ActivityIndicator size="small" color="white" />
+          <Text style={styles.savingText}>保存中...</Text>
+        </View>
+      )}
+
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={true}
@@ -70,8 +268,8 @@ export default function NotificationSettings() {
             <Text style={styles.masterSubtitle}>打开后才会接收下面的提醒</Text>
           </View>
           <Switch
-            value={masterEnabled}
-            onValueChange={setMasterEnabled}
+            value={settings.masterEnabled}
+            onValueChange={(v) => updateSetting('masterEnabled', v)}
             trackColor={{ false: '#E5E7EB', true: Colors.primary }}
             thumbColor="white"
           />
@@ -79,131 +277,197 @@ export default function NotificationSettings() {
 
         {/* 餐次提醒 */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>提醒项设置</Text>
-          
-          <ToggleRow
+          <Text style={[styles.sectionTitle, !settings.masterEnabled && styles.sectionTitleDisabled]}>
+            提醒项设置
+          </Text>
+
+          {/* 早餐提醒 */}
+          <SettingRow
             icon="🍳"
             title="早餐提醒"
-            value={breakfast.enabled}
-            onValueChange={(v) => setBreakfast({ ...breakfast, enabled: v })}
+            enabled={settings.breakfastEnabled}
+            onToggle={(v) => updateSetting('breakfastEnabled', v)}
+            masterEnabled={settings.masterEnabled}
           >
             <View style={styles.timeSelector}>
               <Text style={styles.timeLabel}>每天</Text>
-              <TouchableOpacity style={styles.timeBtn}>
-                <Text style={styles.timeText}>{breakfast.time}</Text>
-              </TouchableOpacity>
+              <TimePickerButton
+                time={settings.breakfastTime}
+                onChange={(t) => updateSetting('breakfastTime', t)}
+                disabled={!settings.masterEnabled}
+              />
               <Text style={styles.timeLabel}>提醒我吃早餐</Text>
             </View>
-          </ToggleRow>
+          </SettingRow>
 
-          <ToggleRow
+          {/* 午餐提醒 */}
+          <SettingRow
             icon="🍱"
             title="午餐提醒"
-            value={lunch.enabled}
-            onValueChange={(v) => setLunch({ ...lunch, enabled: v })}
+            enabled={settings.lunchEnabled}
+            onToggle={(v) => updateSetting('lunchEnabled', v)}
+            masterEnabled={settings.masterEnabled}
           >
             <View style={styles.timeSelector}>
               <Text style={styles.timeLabel}>每天</Text>
-              <TouchableOpacity style={styles.timeBtn}>
-                <Text style={styles.timeText}>{lunch.time}</Text>
-              </TouchableOpacity>
+              <TimePickerButton
+                time={settings.lunchTime}
+                onChange={(t) => updateSetting('lunchTime', t)}
+                disabled={!settings.masterEnabled}
+              />
               <Text style={styles.timeLabel}>提醒我吃午餐</Text>
             </View>
-          </ToggleRow>
+          </SettingRow>
 
-          <ToggleRow
+          {/* 晚餐提醒 */}
+          <SettingRow
             icon="🌙"
             title="晚餐提醒"
-            value={dinner.enabled}
-            onValueChange={(v) => setDinner({ ...dinner, enabled: v })}
+            enabled={settings.dinnerEnabled}
+            onToggle={(v) => updateSetting('dinnerEnabled', v)}
+            masterEnabled={settings.masterEnabled}
           >
             <View style={styles.timeSelector}>
               <Text style={styles.timeLabel}>每天</Text>
-              <TouchableOpacity style={styles.timeBtn}>
-                <Text style={styles.timeText}>{dinner.time}</Text>
-              </TouchableOpacity>
+              <TimePickerButton
+                time={settings.dinnerTime}
+                onChange={(t) => updateSetting('dinnerTime', t)}
+                disabled={!settings.masterEnabled}
+              />
               <Text style={styles.timeLabel}>提醒我吃晚餐</Text>
             </View>
-          </ToggleRow>
+          </SettingRow>
 
-          <ToggleRow
+          {/* 饮水提醒 */}
+          <SettingRow
             icon="💧"
             title="饮水提醒"
-            value={water.enabled}
-            onValueChange={(v) => setWater({ ...water, enabled: v })}
+            enabled={settings.waterEnabled}
+            onToggle={(v) => updateSetting('waterEnabled', v)}
+            masterEnabled={settings.masterEnabled}
           >
             <View style={styles.waterSettings}>
-              <View style={styles.timeSelector}>
+              <View style={styles.waterIntervalRow}>
                 <Text style={styles.timeLabel}>每隔</Text>
-                <TouchableOpacity style={styles.timeBtn}>
-                  <Text style={styles.timeText}>{water.interval}</Text>
-                </TouchableOpacity>
+                <View style={styles.intervalControl}>
+                  <TouchableOpacity
+                    style={[styles.intervalBtn, !settings.masterEnabled && styles.intervalBtnDisabled]}
+                    onPress={() => updateWaterInterval(-1)}
+                    disabled={!settings.masterEnabled}
+                  >
+                    <Ionicons name="remove" size={16} color={settings.masterEnabled ? Colors.primary : Colors.textMuted} />
+                  </TouchableOpacity>
+                  <Text style={styles.intervalText}>{settings.waterIntervalH}小时</Text>
+                  <TouchableOpacity
+                    style={[styles.intervalBtn, !settings.masterEnabled && styles.intervalBtnDisabled]}
+                    onPress={() => updateWaterInterval(1)}
+                    disabled={!settings.masterEnabled}
+                  >
+                    <Ionicons name="add" size={16} color={settings.masterEnabled ? Colors.primary : Colors.textMuted} />
+                  </TouchableOpacity>
+                </View>
                 <Text style={styles.timeLabel}>提醒一次</Text>
               </View>
-              <Text style={styles.hint}>运行时间：{water.start} - {water.end}</Text>
+              <View style={styles.waterTimeRow}>
+                <TimePickerButton
+                  time={settings.waterStartTime}
+                  onChange={(t) => updateSetting('waterStartTime', t)}
+                  disabled={!settings.masterEnabled}
+                />
+                <Text style={styles.timeLabel}>至</Text>
+                <TimePickerButton
+                  time={settings.waterEndTime}
+                  onChange={(t) => updateSetting('waterEndTime', t)}
+                  disabled={!settings.masterEnabled}
+                />
+              </View>
             </View>
-          </ToggleRow>
+          </SettingRow>
 
-          <ToggleRow
+          {/* 记录提醒 */}
+          <SettingRow
             icon="✍️"
             title="记录提醒"
             subtitle="用餐后30分钟提醒记录饮食"
-            value={record.enabled}
-            onValueChange={(v) => setRecord({ ...record, enabled: v })}
-          >
-            <View style={styles.radioGroup}>
-              <Text style={styles.radioLabel}>提醒方式：</Text>
-              <View style={styles.radioRow}>
-                <TouchableOpacity style={styles.radio}>
-                  <View style={[styles.radioCircle, styles.radioSelected]} />
-                  <Text style={styles.radioText}>通知栏</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.radio}>
-                  <View style={styles.radioCircle} />
-                  <Text style={styles.radioText}>弹窗</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </ToggleRow>
+            enabled={settings.recordRemind}
+            onToggle={(v) => updateSetting('recordRemind', v)}
+            masterEnabled={settings.masterEnabled}
+          />
 
-          <ToggleRow
+          {/* 睡前提醒 */}
+          <SettingRow
             icon="😴"
             title="睡前提醒"
             subtitle="提醒明日饮食计划"
-            value={bedtime.enabled}
-            onValueChange={(v) => setBedtime({ ...bedtime, enabled: v })}
+            enabled={settings.bedtimeRemind}
+            onToggle={(v) => updateSetting('bedtimeRemind', v)}
+            masterEnabled={settings.masterEnabled}
           >
             <View style={styles.timeSelector}>
               <Text style={styles.timeLabel}>每天</Text>
-              <TouchableOpacity style={styles.timeBtn}>
-                <Text style={styles.timeText}>{bedtime.time}</Text>
-              </TouchableOpacity>
-              <Text style={styles.timeLabel}>提醒复盘</Text>
+              <TimePickerButton
+                time={settings.bedtimeTime}
+                onChange={(t) => updateSetting('bedtimeTime', t)}
+                disabled={!settings.masterEnabled}
+              />
+              <Text style={styles.timeLabel}>提醒复盘当日饮食</Text>
             </View>
-          </ToggleRow>
+          </SettingRow>
         </View>
 
-        {/* 提醒音设置 */}
+        {/* 测试推送 */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>提醒音设置</Text>
-          <View style={styles.card}>
-            <View style={styles.soundRow}>
-              <Text style={styles.soundLabel}>提醒音效果</Text>
-              <TouchableOpacity style={styles.soundSelector}>
-                <Text style={styles.soundText}>默认提示音</Text>
-                <Text style={styles.arrow}>›</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.divider} />
-            <View style={styles.soundRow}>
-              <Text style={styles.soundLabel}>震动</Text>
-              <Switch
-                value={true}
-                trackColor={{ false: '#E5E7EB', true: Colors.primary }}
-                thumbColor="white"
-              />
-            </View>
+          <TouchableOpacity
+            style={styles.testBtn}
+            onPress={async () => {
+              try {
+                const response = await NotificationService.testPush();
+                if (response.code === 0) {
+                  Alert.alert('测试通知已发送', '如果推送功能正常，您将在几秒后收到通知');
+                } else {
+                  throw new Error(response.message);
+                }
+              } catch (error: any) {
+                const isAndroidFCMError = Platform.OS === 'android' && 
+                  error.message?.includes('Push Token');
+                
+                if (isAndroidFCMError) {
+                  Alert.alert(
+                    'Android 推送需要配置', 
+                    'Android 设备需要配置 Firebase Cloud Messaging 才能接收推送通知。\n\n' +
+                    '如需完整推送功能，请:\n' +
+                    '1. 在 Firebase Console 创建项目\n' +
+                    '2. 下载 google-services.json\n' +
+                    '3. 放入 android/app/ 目录\n' +
+                    '4. 重新构建应用'
+                  );
+                } else {
+                  Alert.alert('发送失败', error.message || '请确保已开启通知权限并已注册设备');
+                }
+              }
+            }}
+          >
+            <Ionicons name="notifications-outline" size={18} color={Colors.primary} />
+            <Text style={styles.testBtnText}>发送测试通知</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Android FCM 提示 */}
+        {Platform.OS === 'android' && (
+          <View style={[styles.tipCard, { backgroundColor: '#FEF3C7' }]}>
+            <Ionicons name="warning" size={20} color="#F59E0B" />
+            <Text style={[styles.tipText, { color: '#B45309' }]}>
+              Android 设备需要配置 Firebase Cloud Messaging 才能接收推送通知。如需完整推送功能，请参考 Expo 文档进行配置。
+            </Text>
           </View>
+        )}
+
+        {/* 说明 */}
+        <View style={styles.tipCard}>
+          <Ionicons name="information-circle" size={20} color={Colors.primary} />
+          <Text style={styles.tipText}>
+            提醒设置会自动同步到云端，即使更换设备也不会丢失。请确保开启系统通知权限以正常接收提醒。
+          </Text>
         </View>
 
         <View style={{ height: 40 }} />
@@ -217,11 +481,37 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: Colors.textSecondary,
+  },
+  savingIndicator: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+    gap: 6,
+    zIndex: 100,
+  },
+  savingText: {
+    color: 'white',
+    fontSize: 13,
+    fontWeight: '500',
+  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    flexGrow: 1,
     paddingBottom: 40,
   },
   masterSwitch: {
@@ -265,11 +555,17 @@ const styles = StyleSheet.create({
     color: Colors.text,
     marginBottom: 12,
   },
+  sectionTitleDisabled: {
+    color: Colors.textMuted,
+  },
   settingItem: {
     backgroundColor: Colors.card,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
+  },
+  settingItemDisabled: {
+    opacity: 0.6,
   },
   settingHeader: {
     flexDirection: 'row',
@@ -280,6 +576,9 @@ const styles = StyleSheet.create({
     marginRight: 12,
     width: 32,
   },
+  settingIconDisabled: {
+    opacity: 0.5,
+  },
   settingInfo: {
     flex: 1,
   },
@@ -288,10 +587,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.text,
   },
+  settingTitleDisabled: {
+    color: Colors.textMuted,
+  },
   settingSubtitle: {
     fontSize: 13,
     color: Colors.textSecondary,
     marginTop: 2,
+  },
+  settingSubtitleDisabled: {
+    color: Colors.textMuted,
   },
   settingDetail: {
     marginTop: 12,
@@ -302,6 +607,8 @@ const styles = StyleSheet.create({
   timeSelector: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   timeLabel: {
     fontSize: 14,
@@ -309,86 +616,85 @@ const styles = StyleSheet.create({
   },
   timeBtn: {
     backgroundColor: '#F3F4F6',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 8,
-    marginHorizontal: 8,
+    minWidth: 64,
+    alignItems: 'center',
+  },
+  timeBtnDisabled: {
+    backgroundColor: '#E5E7EB',
   },
   timeText: {
     fontSize: 14,
     color: Colors.text,
     fontWeight: '500',
   },
+  timeTextDisabled: {
+    color: Colors.textMuted,
+  },
   waterSettings: {
+    gap: 12,
+  },
+  waterIntervalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
-  hint: {
-    fontSize: 12,
-    color: Colors.textMuted,
-  },
-  radioGroup: {
-    gap: 8,
-  },
-  radioLabel: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-  },
-  radioRow: {
-    flexDirection: 'row',
-    gap: 16,
-    marginTop: 4,
-  },
-  radio: {
+  intervalControl: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 12,
   },
-  radioCircle: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: Colors.textMuted,
-  },
-  radioSelected: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primary,
-  },
-  radioText: {
-    fontSize: 14,
-    color: Colors.text,
-  },
-  card: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 16,
-  },
-  soundRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  soundLabel: {
-    fontSize: 15,
-    color: Colors.text,
-  },
-  soundSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  soundText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
-  arrow: {
-    fontSize: 18,
-    color: Colors.textMuted,
-    marginLeft: 4,
-  },
-  divider: {
-    height: 1,
+  intervalBtn: {
+    width: 32,
+    height: 32,
     backgroundColor: '#F3F4F6',
-    marginVertical: 12,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  intervalBtnDisabled: {
+    backgroundColor: '#E5E7EB',
+  },
+  intervalText: {
+    fontSize: 14,
+    color: Colors.text,
+    fontWeight: '500',
+    minWidth: 48,
+    textAlign: 'center',
+  },
+  waterTimeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  tipCard: {
+    flexDirection: 'row',
+    backgroundColor: '#EFF6FF',
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 16,
+    gap: 12,
+  },
+  tipText: {
+    flex: 1,
+    fontSize: 13,
+    color: Colors.primary,
+    lineHeight: 18,
+  },
+  testBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    paddingVertical: 14,
+    gap: 8,
+  },
+  testBtnText: {
+    fontSize: 15,
+    color: Colors.primary,
+    fontWeight: '500',
   },
 });

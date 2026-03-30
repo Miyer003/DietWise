@@ -21,4 +21,9 @@ export const NotificationService = {
   registerPushToken: async (token: string): Promise<ApiResponse<null>> => {
     return apiClient.post('/notifications/push-token', { expoPushToken: token });
   },
+
+  // 发送测试推送通知
+  testPush: async (): Promise<ApiResponse<{ success: boolean }>> => {
+    return apiClient.post('/notifications/test', {});
+  },
 };
