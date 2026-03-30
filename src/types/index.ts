@@ -378,4 +378,6 @@ export interface Feedback {
   screenshots?: string[];
   status?: 'pending' | 'processing' | 'resolved' | 'rejected';
   adminReply?: string;
+  createdAt?: string;
+  resolvedAt?: string;
 }

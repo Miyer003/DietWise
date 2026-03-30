@@ -27,6 +27,7 @@ import HistoryMealPlanListScreen from '../screens/MealPlan/HistoryMealPlanListSc
 import HistoryMealPlanDetailScreen from '../screens/MealPlan/HistoryMealPlanDetailScreen';
 import NotificationSettings from '../screens/Settings/NotificationSettings';
 import FeedbackScreen from '../screens/Settings/FeedbackScreen';
+import MyFeedbacksScreen from '../screens/Settings/MyFeedbacksScreen';
 import AboutScreen from '../screens/Settings/AboutScreen';
 import AchievementsScreen from '../screens/Profile/AchievementsScreen';
 import LoginScreen from '../screens/Auth/LoginScreen';
@@ -238,6 +239,11 @@ function AppStackNavigator() {
         name="Feedback" 
         component={FeedbackScreen}
         options={{ headerShown: true, title: '意见反馈' }}
+      />
+      <MainStack.Screen 
+        name="MyFeedbacks" 
+        component={MyFeedbacksScreen}
+        options={{ headerShown: true, title: '我的反馈' }}
       />
       <MainStack.Screen 
         name="About" 

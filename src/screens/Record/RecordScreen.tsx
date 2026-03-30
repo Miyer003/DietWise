@@ -148,7 +148,7 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
             { text: '继续添加', style: 'default' },
             { 
               text: '返回首页', 
-              onPress: () => navigation.navigate('Home'),
+              onPress: () => navigation.navigate('Main', { screen: 'HomeTab' }),
               style: 'cancel'
             },
           ]

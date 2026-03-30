@@ -21,8 +21,10 @@ const FEEDBACK_TYPES = [
   { key: 'other', label: '其他', icon: 'chatbubbles', color: '#10B981' },
 ];
 
-export default function FeedbackScreen() {
-  const [selectedType, setSelectedType] = useState<string>('bug');
+type FeedbackType = 'bug' | 'feature' | 'data_error' | 'other';
+
+export default function FeedbackScreen({ navigation }: any) {
+  const [selectedType, setSelectedType] = useState<FeedbackType>('bug');
   const [content, setContent] = useState('');
   const [contact, setContact] = useState('');
   const [loading, setLoading] = useState(false);
@@ -79,6 +81,16 @@ export default function FeedbackScreen() {
               </Text>
             </View>
           </View>
+          
+          {/* 查看我的反馈按钮 */}
+          <TouchableOpacity 
+            style={styles.myFeedbackBtn}
+            onPress={() => navigation.navigate('MyFeedbacks')}
+          >
+            <Ionicons name="document-text-outline" size={16} color={Colors.primary} />
+            <Text style={styles.myFeedbackText}>查看我的反馈</Text>
+            <Ionicons name="chevron-forward" size={16} color={Colors.primary} />
+          </TouchableOpacity>
         </View>
 
         {/* 反馈类型选择 */}
@@ -95,7 +107,7 @@ export default function FeedbackScreen() {
                     borderColor: type.color,
                   }
                 ]}
-                onPress={() => setSelectedType(type.key)}
+                onPress={() => setSelectedType(type.key as FeedbackType)}
               >
                 <Ionicons 
                   name={type.icon as any} 
@@ -158,7 +170,7 @@ export default function FeedbackScreen() {
               <Text style={styles.submitBtnText}>提交反馈</Text>
             )}
           </TouchableOpacity>
-          <Text style={styles.tipText}>提交后可在后台管理查看处理进度</Text>
+          <Text style={styles.tipText}>提交后可点击上方"查看我的反馈"了解处理进度</Text>
         </View>
 
         <View style={{ height: 40 }} />
@@ -204,6 +216,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#3B82F6',
     lineHeight: 18,
+  },
+  myFeedbackBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#DBEAFE',
+    gap: 6,
+  },
+  myFeedbackText: {
+    fontSize: 14,
+    color: Colors.primary,
+    fontWeight: '500',
   },
   section: {
     paddingHorizontal: 16,
