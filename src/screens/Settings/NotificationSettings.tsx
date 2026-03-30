@@ -98,7 +98,7 @@ function SettingRow({
   children,
   masterEnabled = true,
 }: {
-  icon: string;
+  icon: React.ComponentProps<typeof Ionicons>['name'];
   title: string;
   subtitle?: string;
   enabled: boolean;
@@ -109,9 +109,7 @@ function SettingRow({
   return (
     <View style={[styles.settingItem, !masterEnabled && styles.settingItemDisabled]}>
       <View style={styles.settingHeader}>
-        <Text style={[styles.settingIcon, !masterEnabled && styles.settingIconDisabled]}>
-          {icon}
-        </Text>
+        <Ionicons name={icon} size={24} color={masterEnabled ? Colors.primary : Colors.textMuted} style={styles.settingIcon} />
         <View style={styles.settingInfo}>
           <Text style={[styles.settingTitle, !masterEnabled && styles.settingTitleDisabled]}>
             {title}
@@ -261,7 +259,7 @@ export default function NotificationSettings() {
         {/* 主开关 */}
         <View style={styles.masterSwitch}>
           <View style={styles.masterIcon}>
-            <Text style={{ fontSize: 24 }}>🔔</Text>
+            <Ionicons name="notifications-outline" size={28} color={Colors.primary} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.masterTitle}>接收通知提醒</Text>
@@ -283,7 +281,7 @@ export default function NotificationSettings() {
 
           {/* 早餐提醒 */}
           <SettingRow
-            icon="🍳"
+            icon="sunny-outline"
             title="早餐提醒"
             enabled={settings.breakfastEnabled}
             onToggle={(v) => updateSetting('breakfastEnabled', v)}
@@ -302,7 +300,7 @@ export default function NotificationSettings() {
 
           {/* 午餐提醒 */}
           <SettingRow
-            icon="🍱"
+            icon="sunny"
             title="午餐提醒"
             enabled={settings.lunchEnabled}
             onToggle={(v) => updateSetting('lunchEnabled', v)}
@@ -321,7 +319,7 @@ export default function NotificationSettings() {
 
           {/* 晚餐提醒 */}
           <SettingRow
-            icon="🌙"
+            icon="moon-outline"
             title="晚餐提醒"
             enabled={settings.dinnerEnabled}
             onToggle={(v) => updateSetting('dinnerEnabled', v)}
@@ -340,7 +338,7 @@ export default function NotificationSettings() {
 
           {/* 饮水提醒 */}
           <SettingRow
-            icon="💧"
+            icon="water-outline"
             title="饮水提醒"
             enabled={settings.waterEnabled}
             onToggle={(v) => updateSetting('waterEnabled', v)}
@@ -386,7 +384,7 @@ export default function NotificationSettings() {
 
           {/* 记录提醒 */}
           <SettingRow
-            icon="✍️"
+            icon="create-outline"
             title="记录提醒"
             subtitle="用餐后30分钟提醒记录饮食"
             enabled={settings.recordRemind}
@@ -396,7 +394,7 @@ export default function NotificationSettings() {
 
           {/* 睡前提醒 */}
           <SettingRow
-            icon="😴"
+            icon="bed-outline"
             title="睡前提醒"
             subtitle="提醒明日饮食计划"
             enabled={settings.bedtimeRemind}

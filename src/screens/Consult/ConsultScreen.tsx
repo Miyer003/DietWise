@@ -25,7 +25,7 @@ export default function ConsultScreen({ navigation }: any) {
             <Text style={styles.subtitle}>AI助力您的饮食健康</Text>
           </View>
           <View style={styles.headerIcon}>
-            <Text style={{ fontSize: 24 }}>🤖</Text>
+            <Ionicons name="sparkles" size={28} color={Colors.primary} />
           </View>
         </View>
 
@@ -37,7 +37,7 @@ export default function ConsultScreen({ navigation }: any) {
             onPress={() => navigation.navigate('AIGeneratePlanInput')}
           >
             <View style={[styles.iconContainer, { backgroundColor: Colors.warning }]}>
-              <Text style={styles.iconText}>🥡</Text>
+              <Ionicons name="restaurant" size={24} color={Colors.textInverse} />
             </View>
             <View style={styles.featureInfo}>
               <Text style={styles.featureTitle}>智能生成食谱</Text>
@@ -52,7 +52,7 @@ export default function ConsultScreen({ navigation }: any) {
             onPress={() => navigation.navigate('Chat')}
           >
             <View style={[styles.iconContainer, { backgroundColor: Colors.primary }]}>
-              <Text style={styles.iconText}>🤖</Text>
+              <Ionicons name="chatbubbles" size={24} color={Colors.textInverse} />
             </View>
             <View style={styles.featureInfo}>
               <Text style={styles.featureTitle}>AI营养顾问</Text>

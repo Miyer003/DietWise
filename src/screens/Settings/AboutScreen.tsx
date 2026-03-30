@@ -28,7 +28,7 @@ export default function AboutScreen() {
         {/* Logo区域 */}
         <View style={styles.logoSection}>
           <View style={styles.logo}>
-            <Text style={styles.logoEmoji}>🥗</Text>
+            <Ionicons name="leaf" size={50} color={Colors.primary} />
           </View>
           <Text style={styles.appName}>膳智 DietWise</Text>
           <Text style={styles.version}>版本 {APP_VERSION} ({BUILD_NUMBER})</Text>
@@ -47,15 +47,15 @@ export default function AboutScreen() {
           <Text style={styles.sectionTitle}>核心功能</Text>
           <View style={styles.featuresGrid}>
             {[
-              { icon: '📷', title: 'AI拍照识菜', desc: '智能识别菜品与热量' },
-              { icon: '🎤', title: '语音速记', desc: '语音快速记录饮食' },
-              { icon: '📊', title: '营养分析', desc: '多维度数据分析' },
-              { icon: '🤖', title: 'AI顾问', desc: '个性化饮食建议' },
-              { icon: '🥡', title: '智能食谱', desc: 'AI定制一周食谱' },
-              { icon: '🏆', title: '成就系统', desc: '养成健康习惯' },
-            ].map((feature, index) => (
+              { icon: 'camera', title: 'AI拍照识菜', desc: '智能识别菜品与热量' },
+              { icon: 'mic', title: '语音速记', desc: '语音快速记录饮食' },
+              { icon: 'bar-chart', title: '营养分析', desc: '多维度数据分析' },
+              { icon: 'sparkles', title: 'AI顾问', desc: '个性化饮食建议' },
+              { icon: 'restaurant', title: '智能食谱', desc: 'AI定制一周食谱' },
+              { icon: 'trophy', title: '成就系统', desc: '养成健康习惯' },
+            ].map((feature: { icon: React.ComponentProps<typeof Ionicons>['name'], title: string, desc: string }, index: number) => (
               <View key={index} style={styles.featureItem}>
-                <Text style={styles.featureIcon}>{feature.icon}</Text>
+                <Ionicons name={feature.icon} size={28} color={Colors.primary} style={styles.featureIcon} />
                 <Text style={styles.featureTitle}>{feature.title}</Text>
                 <Text style={styles.featureDesc}>{feature.desc}</Text>
               </View>

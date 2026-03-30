@@ -213,7 +213,7 @@ export default function HistoryView({ navigation, onNavigateToTab }: HistoryView
     if (weeksWithRecords.length === 0) {
       return (
         <View style={styles.emptyStateCard}>
-          <Text style={styles.emptyStateIcon}>📊</Text>
+          <Ionicons name="bar-chart" size={48} color={Colors.textMuted} />
           <Text style={styles.emptyStateText}>暂无周记录</Text>
           <Text style={styles.emptyStateSubtext}>记录饮食后将显示周统计</Text>
         </View>
@@ -222,7 +222,7 @@ export default function HistoryView({ navigation, onNavigateToTab }: HistoryView
 
     return (
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📊 按周查看</Text>
+        <Text style={styles.sectionTitle}>按周查看</Text>
         {weeksWithRecords.map((week, index) => {
           const startDate = new Date(week.weekStart);
           const endDate = new Date(week.weekEnd);
@@ -235,7 +235,7 @@ export default function HistoryView({ navigation, onNavigateToTab }: HistoryView
               onPress={() => handleWeekSelect(week.weekStart)}
             >
               <View style={styles.historyIcon}>
-                <Text style={{ fontSize: 24 }}>📊</Text>
+                <Ionicons name="bar-chart" size={28} color={Colors.primary} />
               </View>
               <View style={styles.historyContent}>
                 <Text style={styles.historyTitle}>
@@ -276,7 +276,7 @@ export default function HistoryView({ navigation, onNavigateToTab }: HistoryView
             onPress={() => handleMonthSelect(month.month)}
           >
             <View style={styles.historyIcon}>
-              <Text style={{ fontSize: 24 }}>📅</Text>
+              <Ionicons name="calendar-outline" size={28} color={Colors.textMuted} />
             </View>
             <View style={styles.historyContent}>
               <Text style={styles.historyTitle}>{month.label}</Text>

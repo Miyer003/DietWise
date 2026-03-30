@@ -21,7 +21,7 @@ import Colors from '../../constants/Colors';
 import { useAuth } from '../../store/AuthContext';
 import { UserService } from '../../services/api';
 
-const avatars = ['😊', '😄', '🤔', '😎', '🤬', '😍', '🤓', '💪', '🌟', '🐼', '🌸', '🍎'];
+const avatars: React.ComponentProps<typeof Ionicons>['name'][] = ['happy-outline', 'sunny-outline', 'help-circle-outline', 'glasses-outline', 'flame-outline', 'heart-outline', 'book-outline', 'fitness-outline', 'star-outline', 'paw-outline', 'flower-outline', 'leaf-outline'];
 
 export default function ProfileEditScreen({ navigation }: any) {
   const { user, profile, updateUser, updateProfile } = useAuth();
@@ -29,7 +29,7 @@ export default function ProfileEditScreen({ navigation }: any) {
   const [isUploading, setIsUploading] = useState(false);
   
   // 基本信息
-  const [selectedAvatar, setSelectedAvatar] = useState(user?.avatarEmoji || '😊');
+  const [selectedAvatar, setSelectedAvatar] = useState<React.ComponentProps<typeof Ionicons>['name']>((user?.avatarEmoji as React.ComponentProps<typeof Ionicons>['name']) || 'happy-outline');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
   const [nickname, setNickname] = useState(user?.nickname || '');
   const [bio, setBio] = useState(profile?.bio || '');
@@ -46,7 +46,7 @@ export default function ProfileEditScreen({ navigation }: any) {
   // 加载现有数据
   useEffect(() => {
     if (user) {
-      setSelectedAvatar(user.avatarEmoji || '😊');
+      setSelectedAvatar((user.avatarEmoji as React.ComponentProps<typeof Ionicons>['name']) || 'happy-outline');
       setAvatarUrl(user.avatarUrl || '');
       setNickname(user.nickname || '');
     }
@@ -72,7 +72,7 @@ export default function ProfileEditScreen({ navigation }: any) {
       // 保存用户信息
       const userUpdate: any = {};
       if (nickname !== user?.nickname) userUpdate.nickname = nickname.trim();
-      if (selectedAvatar !== user?.avatarEmoji) userUpdate.avatarEmoji = selectedAvatar;
+      if (selectedAvatar !== user?.avatarEmoji) userUpdate.avatarEmoji = selectedAvatar as string;
       if (avatarUrl !== user?.avatarUrl) userUpdate.avatarUrl = avatarUrl;
       
       if (Object.keys(userUpdate).length > 0) {
@@ -203,7 +203,7 @@ export default function ProfileEditScreen({ navigation }: any) {
             ) : avatarUrl ? (
               <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
             ) : (
-              <Text style={styles.avatarEmoji}>{selectedAvatar}</Text>
+              <Ionicons name={selectedAvatar} size={40} color={Colors.primary} />
             )}
             <View style={styles.avatarOverlay}>
               <Ionicons name="camera" size={20} color="white" />
@@ -216,16 +216,16 @@ export default function ProfileEditScreen({ navigation }: any) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>选择头像</Text>
           <View style={styles.avatarGrid}>
-            {avatars.map((emoji, index) => (
+            {avatars.map((iconName, index) => (
               <TouchableOpacity 
                 key={index}
                 style={[
                   styles.avatarOption,
-                  selectedAvatar === emoji && styles.avatarOptionSelected
+                  selectedAvatar === iconName && styles.avatarOptionSelected
                 ]}
-                onPress={() => setSelectedAvatar(emoji)}
+                onPress={() => setSelectedAvatar(iconName)}
               >
-                <Text style={styles.avatarOptionText}>{emoji}</Text>
+                <Ionicons name={iconName} size={24} color={selectedAvatar === iconName ? Colors.primary : Colors.textSecondary} />
               </TouchableOpacity>
             ))}
           </View>

@@ -301,7 +301,7 @@ export default function MealPlanScreen({ navigation }: any) {
 
           <View style={styles.statusHeader}>
             <View style={[styles.statusIcon, { backgroundColor: hasActivePlan ? Colors.primary : Colors.warning }]}>
-              <Text style={{ fontSize: 24 }}>{hasActivePlan ? '🥗' : '🥡'}</Text>
+              <Ionicons name="book-outline" size={28} color="white" />
             </View>
             <View>
               <Text style={styles.statusTitle}>当前饮食计划</Text>
@@ -520,11 +520,13 @@ export default function MealPlanScreen({ navigation }: any) {
                     <View key={mealIndex} style={styles.mealSection}>
                       <View style={styles.mealHeader}>
                         <View style={styles.mealTitleRow}>
-                          <Text style={styles.mealIcon}>
-                            {meal.mealType === 'breakfast' ? '🌅' : 
-                             meal.mealType === 'lunch' ? '☀️' : 
-                             meal.mealType === 'dinner' ? '🌙' : '🍎'}
-                          </Text>
+                          <Ionicons 
+                            name={meal.mealType === 'breakfast' ? 'sunny-outline' : 
+                                   meal.mealType === 'lunch' ? 'sunny' : 
+                                   meal.mealType === 'dinner' ? 'moon-outline' : 'cafe-outline'}
+                            size={16}
+                            color={Colors.textSecondary}
+                          />
                           <Text style={styles.mealType}>{MEAL_TYPES[meal.mealType] || meal.mealType}</Text>
                         </View>
                         <Text style={styles.mealCalories}>{Math.round(parseFloat(meal.totalCalories) || 0)} kcal</Text>
@@ -599,7 +601,7 @@ export default function MealPlanScreen({ navigation }: any) {
             >
               <View style={styles.aiCardContent}>
                 <View style={[styles.aiIcon, { backgroundColor: Colors.primary }]}>
-                  <Text style={{ fontSize: 24 }}>🤖</Text>
+                  <Ionicons name="sparkles" size={24} color="white" />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.aiCardTitle}>AI智能生成食谱</Text>

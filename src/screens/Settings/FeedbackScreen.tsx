@@ -15,10 +15,10 @@ import Colors from '../../constants/Colors';
 import { FeedbackService } from '../../services/api';
 
 const FEEDBACK_TYPES = [
-  { key: 'bug', label: '问题反馈', icon: 'bug', color: '#EF4444' },
-  { key: 'feature', label: '功能建议', icon: 'bulb', color: '#F59E0B' },
-  { key: 'data_error', label: '数据错误', icon: 'warning', color: '#3B82F6' },
-  { key: 'other', label: '其他', icon: 'chatbubbles', color: '#10B981' },
+  { key: 'bug', label: '问题反馈', icon: 'bug-outline', color: Colors.danger },
+  { key: 'feature', label: '功能建议', icon: 'bulb-outline', color: Colors.warning },
+  { key: 'data_error', label: '数据错误', icon: 'alert-circle-outline', color: Colors.secondary },
+  { key: 'other', label: '其他', icon: 'chatbubble-outline', color: Colors.success },
 ];
 
 type FeedbackType = 'bug' | 'feature' | 'data_error' | 'other';
@@ -73,7 +73,9 @@ export default function FeedbackScreen({ navigation }: any) {
         {/* 说明卡片 */}
         <View style={[styles.card, styles.infoCard]}>
           <View style={styles.infoHeader}>
-            <Text style={{ fontSize: 24, marginRight: 8 }}>💬</Text>
+            <View style={styles.infoIcon}>
+              <Ionicons name="chatbubble-ellipses" size={28} color={Colors.primary} />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.infoTitle}>意见反馈</Text>
               <Text style={styles.infoDesc}>
@@ -198,23 +200,33 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   infoCard: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: Colors.primaryLight,
     borderWidth: 1,
-    borderColor: '#DBEAFE',
+    borderColor: Colors.alpha.primary20,
     margin: 16,
   },
   infoHeader: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  infoIcon: {
+    width: 48,
+    height: 48,
+    backgroundColor: Colors.alpha.primary10,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   infoTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1E40AF',
+    color: Colors.text,
     marginBottom: 4,
   },
   infoDesc: {
     fontSize: 13,
-    color: '#3B82F6',
+    color: Colors.textSecondary,
     lineHeight: 18,
   },
   myFeedbackBtn: {
@@ -224,7 +236,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#DBEAFE',
+    borderTopColor: Colors.alpha.primary10,
     gap: 6,
   },
   myFeedbackText: {
@@ -257,9 +269,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: Colors.card,
+    backgroundColor: Colors.surface,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: Colors.border,
   },
   typeText: {
     fontSize: 14,

@@ -107,14 +107,14 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
     return names[type] || type;
   };
 
-  const getMealIcon = (type: string) => {
-    const icons: Record<string, string> = {
-      breakfast: '🌅',
-      lunch: '☀️',
-      dinner: '🌙',
-      snack: '🍎',
+  const getMealIcon = (type: string): React.ComponentProps<typeof Ionicons>['name'] => {
+    const icons: Record<string, React.ComponentProps<typeof Ionicons>['name']> = {
+      breakfast: 'sunny-outline',
+      lunch: 'sunny',
+      dinner: 'moon-outline',
+      snack: 'cafe-outline',
     };
-    return icons[type] || '🍽️';
+    return icons[type] || 'restaurant-outline';
   };
 
   if (isLoading) {
@@ -158,7 +158,7 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
                 styles.planTypeText,
                 mealPlan.planType === 'ai' ? styles.aiBadgeText : styles.customBadgeText
               ]}>
-                {mealPlan.planType === 'ai' ? '🤖 AI生成' : '✏️ 自定义'}
+                {mealPlan.planType === 'ai' ? 'AI生成' : '自定义'}
               </Text>
             </View>
             <Text style={styles.planStatus}>
@@ -240,7 +240,7 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
                         {/* 餐次标题 */}
                         <View style={styles.mealHeader}>
                           <View style={styles.mealTitleRow}>
-                            <Text style={styles.mealIcon}>{getMealIcon(meal.mealType)}</Text>
+                            <Ionicons name={getMealIcon(meal.mealType)} size={16} color={Colors.textSecondary} />
                             <Text style={styles.mealType}>{getMealTypeName(meal.mealType || 'breakfast')}</Text>
                           </View>
                           <View style={styles.mealCalorieBadge}>

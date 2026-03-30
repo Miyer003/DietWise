@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
+import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import Colors from '../../constants/Colors';
@@ -41,7 +42,7 @@ const CircularProgress: React.FC<{ progress: number; consumed: number; goal: num
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#E5E7EB"
+          stroke={Colors.border}
           strokeWidth={strokeWidth}
           fill="transparent"
         />
@@ -84,7 +85,7 @@ const NutrientBar: React.FC<{ label: string; current: number; total: number; col
           <View style={[styles.dot, { backgroundColor: color }]} />
           <Text style={styles.nutrientName}>{label}</Text>
         </View>
-        <Text style={styles.nutrientValue}>{current}g / {total}g</Text>
+        <Text style={styles.nutrientValue}>{Math.round(current)}g / {Math.round(total)}g</Text>
       </View>
       <View style={styles.progressBar}>
         <View style={[styles.progressFill, { width: `${percent}%`, backgroundColor: color }]} />
@@ -105,11 +106,11 @@ const AICard: React.FC<{
     <View style={styles.aiCard}>
       <View style={styles.aiCardHeader}>
         <View style={styles.aiIcon}>
-          <Text style={styles.aiIconText}>🤖</Text>
+          <Ionicons name="sparkles" size={20} color={Colors.textInverse} />
         </View>
         <View style={styles.aiTitleContainer}>
           <Text style={styles.aiTitle}>
-            {tip?.type === 'user' ? '我的提示' : 'AI营养顾问建议'}
+            {tip?.type === 'user' ? '我的提示' : 'AI 营养建议'}
           </Text>
           <TouchableOpacity onPress={onRefresh} disabled={isLoading}>
             <Text style={[styles.aiTime, isLoading && { opacity: 0.5 }]}>
@@ -121,7 +122,7 @@ const AICard: React.FC<{
       <Text style={styles.aiContent}>{tip?.content || '正在获取建议...'}</Text>
       <View style={styles.aiActions}>
         <TouchableOpacity style={styles.aiButtonPrimary} onPress={onConsult}>
-          <Text style={styles.aiButtonPrimaryText}>咨询AI →</Text>
+          <Text style={styles.aiButtonPrimaryText}>咨询 AI</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.aiButtonSecondary} onPress={onDetail}>
           <Text style={styles.aiButtonSecondaryText}>详情</Text>
@@ -139,10 +140,10 @@ const TimelineItem: React.FC<{
 }> = ({ record, isLast, onDelete }) => {
   const getMealIcon = (type: string) => {
     switch(type) {
-      case 'breakfast': return '🍳';
-      case 'lunch': return '🍱';
-      case 'dinner': return '🌙';
-      default: return '🍽️';
+      case 'breakfast': return 'sunny-outline';
+      case 'lunch': return 'sunny';
+      case 'dinner': return 'moon-outline';
+      default: return 'cafe-outline';
     }
   };
 
@@ -152,6 +153,15 @@ const TimelineItem: React.FC<{
       case 'lunch': return '午餐';
       case 'dinner': return '晚餐';
       default: return '加餐';
+    }
+  };
+
+  const getMealColor = (type: string) => {
+    switch(type) {
+      case 'breakfast': return '#F59E0B';
+      case 'lunch': return '#10B981';
+      case 'dinner': return '#6366F1';
+      default: return '#8B5CF6';
     }
   };
 
@@ -165,7 +175,7 @@ const TimelineItem: React.FC<{
 
   const getFoodNames = (record: DietRecord) => {
     if (!record.items || record.items.length === 0) return '无记录';
-    return record.items.map(item => item.foodName).join(' + ');
+    return record.items.map(item => item.foodName).join('、');
   };
 
   return (
@@ -173,8 +183,8 @@ const TimelineItem: React.FC<{
       <View style={styles.timelineDot} />
       {!isLast && <View style={styles.timelineLine} />}
       <View style={styles.timelineContent}>
-        <View style={styles.timelineIcon}>
-          <Text style={styles.timelineIconText}>{getMealIcon(record.mealType)}</Text>
+        <View style={[styles.timelineIcon, { backgroundColor: getMealColor(record.mealType) + '20' }]}>
+          <Ionicons name={getMealIcon(record.mealType) as any} size={16} color={getMealColor(record.mealType)} />
         </View>
         <View style={styles.timelineInfo}>
           <View style={styles.timelineHeader}>
@@ -184,13 +194,10 @@ const TimelineItem: React.FC<{
               {onDelete && (
                 <TouchableOpacity 
                   style={styles.deleteButton}
-                  onPress={() => {
-                    console.log('删除按钮被点击:', record.id);
-                    onDelete(record.id);
-                  }}
+                  onPress={() => onDelete(record.id)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.deleteButtonText}>🗑️</Text>
+                  <Ionicons name="trash-outline" size={16} color={Colors.textMuted} />
                 </TouchableOpacity>
               )}
             </View>
@@ -214,7 +221,6 @@ export default function HomeScreen({ navigation }: any) {
   const today = format(new Date(), 'yyyy-MM-dd');
   const currentHour = new Date().getHours();
   
-  // 根据时间获取问候语
   const getGreeting = () => {
     if (currentHour < 12) return '早上好';
     if (currentHour < 14) return '中午好';
@@ -222,7 +228,6 @@ export default function HomeScreen({ navigation }: any) {
     return '晚上好';
   };
 
-  // 加载每日数据
   const loadDailyData = useCallback(async () => {
     try {
       const response = await DietService.getDailySummary(today);
@@ -234,11 +239,9 @@ export default function HomeScreen({ navigation }: any) {
     }
   }, [today]);
 
-  // 加载AI建议（带3秒超时）
   const loadAiTip = useCallback(async () => {
     setIsTipLoading(true);
     try {
-      // 先尝试获取用户自定义提示
       const tipsRes = await Promise.race([
         TipsService.getTips(),
         new Promise<{code: number, data?: any}>((_, reject) => 
@@ -247,7 +250,6 @@ export default function HomeScreen({ navigation }: any) {
       ]);
       
       if (tipsRes.code === 0 && tipsRes.data && tipsRes.data.length > 0) {
-        // 随机选择一个用户提示
         const randomTip = tipsRes.data[Math.floor(Math.random() * tipsRes.data.length)];
         setAiTip({
           id: randomTip.id,
@@ -256,7 +258,6 @@ export default function HomeScreen({ navigation }: any) {
           colorTheme: randomTip.colorTheme,
         });
       } else {
-        // 没有用户提示，获取AI生成的建议
         const aiRes = await Promise.race([
           AIService.generateTip(),
           new Promise<{code: number, data?: any}>((_, reject) => 
@@ -282,7 +283,6 @@ export default function HomeScreen({ navigation }: any) {
     }
   }, []);
 
-  // 初始加载
   useEffect(() => {
     const loadAll = async () => {
       setIsLoading(true);
@@ -292,48 +292,36 @@ export default function HomeScreen({ navigation }: any) {
     loadAll();
   }, [loadDailyData, loadAiTip]);
 
-  // 页面获得焦点时刷新数据（如从其他页面返回）
   useFocusEffect(
     useCallback(() => {
       loadDailyData();
     }, [loadDailyData])
   );
 
-  // 下拉刷新
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
     await Promise.all([loadDailyData(), loadAiTip()]);
     setIsRefreshing(false);
   }, [loadDailyData, loadAiTip]);
 
-  // 删除记录
   const handleDeleteRecord = useCallback(async (recordId: string) => {
-    console.log('handleDeleteRecord 被调用:', recordId);
-    
-    // Web 端使用 window.confirm
     if (typeof window !== 'undefined' && window.confirm) {
       const confirmed = window.confirm('确定要删除这条记录吗？');
       if (confirmed) {
         try {
-          console.log('开始删除记录:', recordId);
           const response = await DietService.deleteRecord(recordId);
-          console.log('删除响应:', response);
           if (response.code === 0) {
-            // 重新加载数据
             await loadDailyData();
-            console.log('删除成功，数据已刷新');
           } else {
             alert('删除失败: ' + (response.message || '请重试'));
           }
         } catch (error) {
-          console.error('删除记录失败:', error);
           alert('删除失败: 网络错误，请重试');
         }
       }
       return;
     }
     
-    // 移动端使用 Alert
     Alert.alert(
       '确认删除',
       '确定要删除这条记录吗？',
@@ -344,18 +332,13 @@ export default function HomeScreen({ navigation }: any) {
           style: 'destructive',
           onPress: async () => {
             try {
-              console.log('开始删除记录:', recordId);
               const response = await DietService.deleteRecord(recordId);
-              console.log('删除响应:', response);
               if (response.code === 0) {
-                // 重新加载数据
                 await loadDailyData();
-                console.log('删除成功，数据已刷新');
               } else {
                 Alert.alert('删除失败', response.message || '请重试');
               }
             } catch (error) {
-              console.error('删除记录失败:', error);
               Alert.alert('删除失败', '网络错误，请重试');
             }
           },
@@ -368,7 +351,6 @@ export default function HomeScreen({ navigation }: any) {
     ? (dailyData.calorieConsumed / dailyData.calorieGoal) * 100 
     : 0;
 
-  // 计算营养素目标（简化计算，实际应该从profile获取）
   const proteinGoal = profile?.weightKg ? profile.weightKg * 1.2 : 60;
   const carbsGoal = profile?.dailyCalorieGoal ? (profile.dailyCalorieGoal * 0.5) / 4 : 250;
   const fatGoal = profile?.dailyCalorieGoal ? (profile.dailyCalorieGoal * 0.3) / 9 : 65;
@@ -388,7 +370,7 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={styles.dateText}>
               {format(new Date(), 'M月d日 EEEE', { locale: zhCN })}
             </Text>
-            <Text style={styles.greeting}>{getGreeting()}，{user?.nickname || 'User'} 👋</Text>
+            <Text style={styles.greeting}>{getGreeting()}，{user?.nickname || 'User'}</Text>
           </View>
           <TouchableOpacity 
             style={styles.avatarButton}
@@ -396,8 +378,12 @@ export default function HomeScreen({ navigation }: any) {
           >
             {user?.avatarUrl ? (
               <Image source={{ uri: user.avatarUrl }} style={styles.avatarImage} />
+            ) : user?.avatarEmoji ? (
+              <Text style={styles.avatarEmoji}>{user.avatarEmoji}</Text>
             ) : (
-              <Text style={styles.avatarEmoji}>{user?.avatarEmoji || '😊'}</Text>
+              <Text style={styles.avatarText}>
+                {(user?.nickname || 'U').charAt(0).toUpperCase()}
+              </Text>
             )}
           </TouchableOpacity>
         </View>
@@ -420,7 +406,7 @@ export default function HomeScreen({ navigation }: any) {
             color={Colors.primary} 
           />
           <NutrientBar 
-            label="碳水" 
+            label="碳水化合物" 
             current={dailyData?.carbsG || 0} 
             total={carbsGoal} 
             color={Colors.warning} 
@@ -447,9 +433,12 @@ export default function HomeScreen({ navigation }: any) {
         {/* 今日记录时间线 */}
         <View style={styles.timelineSection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>📋 今日记录</Text>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="time-outline" size={20} color={Colors.text} />
+              <Text style={styles.sectionTitle}>今日记录</Text>
+            </View>
             <TouchableOpacity onPress={() => navigation.navigate('Main', { screen: 'AnalyticsTab' })}>
-              <Text style={styles.sectionLink}>查看全部 →</Text>
+              <Text style={styles.sectionLink}>查看全部</Text>
             </TouchableOpacity>
           </View>
 
@@ -465,24 +454,23 @@ export default function HomeScreen({ navigation }: any) {
               ))
             ) : (
               <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>今天还没有记录哦</Text>
+                <Ionicons name="restaurant-outline" size={32} color={Colors.textMuted} />
+                <Text style={styles.emptyStateText}>今天还没有记录</Text>
               </View>
             )}
             
-            {/* 添加记录入口 */}
             <TouchableOpacity 
               style={styles.addRecordItem}
               onPress={() => navigation.navigate('RecordTab')}
             >
               <View style={styles.addRecordIcon}>
-                <Text style={styles.addRecordPlus}>+</Text>
+                <Ionicons name="add" size={20} color={Colors.primary} />
               </View>
-              <Text style={styles.addRecordText}>点击添加记录...</Text>
+              <Text style={styles.addRecordText}>添加记录</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* 底部留白 */}
         <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>
@@ -500,41 +488,44 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    padding: 20,
-    backgroundColor: Colors.card,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
   },
   dateText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: 13,
+    color: Colors.textMuted,
     marginBottom: 4,
   },
   greeting: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: '600',
     color: Colors.text,
   },
   avatarButton: {
-    width: 40,
-    height: 40,
-    backgroundColor: Colors.primaryLight,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    backgroundColor: Colors.primary,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  avatarEmoji: {
-    fontSize: 20,
+  avatarText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.textInverse,
   },
   avatarImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
+  avatarEmoji: {
+    fontSize: 24,
   },
   progressContainer: {
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: 16,
   },
   progressRingContainer: {
     width: 160,
@@ -549,7 +540,7 @@ const styles = StyleSheet.create({
   },
   progressValue: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: Colors.text,
   },
   progressLabel: {
@@ -558,7 +549,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   progressPercent: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     marginTop: 4,
   },
@@ -567,7 +558,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   nutrientContainer: {
-    marginBottom: 12,
+    marginBottom: 14,
   },
   nutrientHeader: {
     flexDirection: 'row',
@@ -579,64 +570,62 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 8,
   },
   nutrientName: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.textSecondary,
   },
   nutrientValue: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '500',
     color: Colors.text,
   },
   progressBar: {
-    height: 8,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 4,
+    height: 6,
+    backgroundColor: Colors.border,
+    borderRadius: 3,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 3,
   },
   sectionPadding: {
     paddingHorizontal: 16,
   },
   aiCard: {
-    backgroundColor: '#ECFDF5',
+    backgroundColor: Colors.surface,
     borderRadius: 16,
-    padding: 16,
+    padding: 18,
     borderWidth: 1,
-    borderColor: '#D1FAE5',
+    borderColor: Colors.border,
   },
   aiCardHeader: {
     flexDirection: 'row',
     marginBottom: 12,
+    alignItems: 'center',
   },
   aiIcon: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     backgroundColor: Colors.primary,
-    borderRadius: 20,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
-  },
-  aiIconText: {
-    fontSize: 20,
   },
   aiTitleContainer: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   aiTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: Colors.text,
   },
@@ -648,37 +637,38 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textSecondary,
     lineHeight: 20,
-    marginBottom: 12,
+    marginBottom: 14,
   },
   aiActions: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
   aiButtonPrimary: {
     flex: 1,
     backgroundColor: Colors.primary,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
   },
   aiButtonPrimaryText: {
-    color: 'white',
+    color: Colors.textInverse,
     fontWeight: '600',
+    fontSize: 14,
   },
   aiButtonSecondary: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 10,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#D1FAE5',
+    backgroundColor: Colors.background,
+    borderRadius: 10,
   },
   aiButtonSecondaryText: {
-    color: Colors.primary,
-    fontWeight: '600',
+    color: Colors.text,
+    fontWeight: '500',
+    fontSize: 14,
   },
   timelineSection: {
     padding: 16,
+    marginTop: 8,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -686,70 +676,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 17,
+    fontWeight: '600',
     color: Colors.text,
   },
   sectionLink: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: Colors.primary,
+    fontWeight: '500',
   },
   timelineCard: {
-    backgroundColor: Colors.card,
+    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
-  },
-  emptyState: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  emptyStateText: {
-    fontSize: 14,
-    color: Colors.textMuted,
   },
   timelineItem: {
     flexDirection: 'row',
     marginBottom: 16,
+    position: 'relative',
   },
   timelineDot: {
     width: 8,
     height: 8,
-    backgroundColor: Colors.primary,
     borderRadius: 4,
-    marginRight: -4,
-    marginTop: 12,
-    zIndex: 1,
-    borderWidth: 2,
-    borderColor: 'white',
+    backgroundColor: Colors.primary,
+    marginRight: 12,
+    marginTop: 8,
   },
   timelineLine: {
     position: 'absolute',
-    left: 19,
+    left: 3,
     top: 20,
-    bottom: -16,
     width: 2,
-    backgroundColor: '#E5E7EB',
+    height: '100%',
+    backgroundColor: Colors.border,
   },
   timelineContent: {
     flex: 1,
     flexDirection: 'row',
-    paddingLeft: 16,
-    borderLeftWidth: 2,
-    borderLeftColor: '#E5E7EB',
-    marginLeft: 0,
   },
   timelineIcon: {
-    width: 48,
-    height: 48,
-    backgroundColor: Colors.primaryLight,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
-  },
-  timelineIconText: {
-    fontSize: 24,
   },
   timelineInfo: {
     flex: 1,
@@ -757,68 +735,64 @@ const styles = StyleSheet.create({
   timelineHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 4,
+  },
+  timelineMealType: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.text,
   },
   timelineHeaderRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  deleteButton: {
-    padding: 8,
-    minWidth: 40,
-    minHeight: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  deleteButtonText: {
-    fontSize: 16,
-  },
-  timelineMealType: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-  },
   timelineTime: {
-    fontSize: 12,
+    fontSize: 13,
     color: Colors.textMuted,
+  },
+  deleteButton: {
+    padding: 4,
   },
   timelineFood: {
     fontSize: 14,
     color: Colors.textSecondary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   timelineCalories: {
+    fontSize: 13,
+    color: Colors.primary,
+    fontWeight: '500',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
+  emptyStateText: {
     fontSize: 14,
-    color: Colors.secondary,
-    fontWeight: '600',
+    color: Colors.textMuted,
+    marginTop: 8,
   },
   addRecordItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: 16,
-    marginLeft: 0,
-    borderLeftWidth: 2,
-    borderLeftColor: 'transparent',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
   },
   addRecordIcon: {
-    width: 48,
-    height: 48,
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
-    borderStyle: 'dashed',
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: Colors.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  addRecordPlus: {
-    fontSize: 24,
-    color: Colors.textMuted,
-    fontWeight: '300',
-  },
   addRecordText: {
     fontSize: 14,
-    color: Colors.textMuted,
+    color: Colors.primary,
+    fontWeight: '500',
   },
 });

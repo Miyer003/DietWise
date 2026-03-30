@@ -290,7 +290,7 @@ export default function AnalyticsScreen({ navigation, route }: any) {
             </Text>
           </View>
           <View style={styles.headerIcon}>
-            <Text style={{ fontSize: 24 }}>📊</Text>
+            <Ionicons name="bar-chart" size={28} color={Colors.primary} />
           </View>
         </View>
 
@@ -335,10 +335,10 @@ const TodayView: React.FC<{
 
   const getMealIcon = (type: string) => {
     switch(type) {
-      case 'breakfast': return '🍳';
-      case 'lunch': return '🍱';
-      case 'dinner': return '🌙';
-      default: return '🍽️';
+      case 'breakfast': return 'sunny-outline';
+      case 'lunch': return 'sunny';
+      case 'dinner': return 'moon-outline';
+      default: return 'cafe-outline';
     }
   };
 
@@ -403,14 +403,14 @@ const TodayView: React.FC<{
 
       {/* 餐次记录 */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>🍽️ {dateLabel}餐次记录</Text>
+        <Text style={styles.sectionTitle}>{dateLabel}餐次记录</Text>
         
         {records.length > 0 ? (
           records.map((record, index) => (
             <View key={record.id || index} style={styles.mealCard}>
               <View style={styles.mealHeader}>
                 <View style={[styles.mealIcon, { backgroundColor: index % 2 === 0 ? '#FFEDD5' : '#FEE2E2' }]}>
-                  <Text style={{ fontSize: 24 }}>{getMealIcon(record.mealType)}</Text>
+                  <Ionicons name={getMealIcon(record.mealType)} size={24} color={index % 2 === 0 ? '#EA580C' : '#DC2626'} />
                 </View>
                 <View style={styles.mealInfo}>
                   <Text style={styles.mealType}>{getMealName(record.mealType)} {formatTime(record.createdAt)}</Text>
@@ -426,7 +426,7 @@ const TodayView: React.FC<{
                 </View>
                 {onDelete && (
                   <TouchableOpacity style={styles.deleteButton} onPress={() => onDelete(record.id)}>
-                    <Text style={styles.deleteButtonText}>🗑️</Text>
+                    <Ionicons name="trash-outline" size={20} color={Colors.danger} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -461,7 +461,7 @@ const WeekView: React.FC<{ summary: WeeklySummary | null; displayWeek: string }>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>📈 每日热量趋势</Text>
+        <Text style={styles.cardTitle}>每日热量趋势</Text>
         {summary?.dailyTrends?.map((day, index) => (
           <View key={index} style={styles.trendItem}>
             <Text style={styles.trendDate}>{day.date}</Text>
@@ -493,7 +493,7 @@ const MonthView: React.FC<{ summary: MonthlySummary | null; displayMonth: string
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>📈 每周趋势</Text>
+        <Text style={styles.cardTitle}>每周趋势</Text>
         {summary?.weeklyTrends?.map((week, index) => (
           <View key={index} style={styles.trendItem}>
             <Text style={styles.trendDate}>第{week.week}周</Text>

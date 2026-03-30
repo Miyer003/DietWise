@@ -118,7 +118,7 @@ export default function HistoryMealPlanListScreen({ navigation }: HistoryMealPla
                 <View style={styles.cardHeader}>
                   <View style={styles.typeBadge}>
                     <Text style={styles.typeText}>
-                      {(plan as any).type === 'ai' ? '🤖 AI生成' : '✏️ 自定义'}
+                      {(plan as any).type === 'ai' ? 'AI生成' : '自定义'}
                     </Text>
                   </View>
                   <View style={[

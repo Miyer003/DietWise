@@ -175,7 +175,7 @@ export default function HistoryMealPlanDetailScreen({ navigation, route }: Histo
         <View style={[styles.statusCard, { backgroundColor: '#F3F4F6', borderColor: '#E5E7EB' }]}>
           <View style={styles.statusHeader}>
             <View style={[styles.statusIcon, { backgroundColor: '#9CA3AF' }]}>
-              <Text style={{ fontSize: 24 }}>📦</Text>
+              <Ionicons name="cube-outline" size={28} color={Colors.textMuted} />
             </View>
             <View>
               <Text style={styles.statusTitle}>已归档食谱</Text>
@@ -256,11 +256,13 @@ export default function HistoryMealPlanDetailScreen({ navigation, route }: Histo
                   <View key={mealIndex} style={styles.mealSection}>
                     <View style={styles.mealHeader}>
                       <View style={styles.mealTitleRow}>
-                        <Text style={styles.mealIcon}>
-                          {meal.mealType === 'breakfast' ? '🌅' :
-                           meal.mealType === 'lunch' ? '☀️' :
-                           meal.mealType === 'dinner' ? '🌙' : '🍎'}
-                        </Text>
+                        <Ionicons 
+                          name={meal.mealType === 'breakfast' ? 'sunny-outline' :
+                                meal.mealType === 'lunch' ? 'sunny' :
+                                meal.mealType === 'dinner' ? 'moon-outline' : 'cafe-outline'}
+                          size={16}
+                          color={Colors.textSecondary}
+                        />
                         <Text style={styles.mealType}>{MEAL_TYPES[meal.mealType] || meal.mealType}</Text>
                       </View>
                       <Text style={styles.mealCalories}>{Math.round(parseFloat(meal.totalCalories as any) || 0)} kcal</Text>

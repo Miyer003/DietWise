@@ -30,20 +30,20 @@ interface AIGeneratePlanInputScreenProps {
 type HealthGoal = '减脂' | '增肌' | '维持';
 
 const MEAL_COUNT_OPTIONS = [2, 3, 4, 5];
-const HEALTH_GOALS: { value: HealthGoal; label: string; icon: string; desc: string }[] = [
-  { value: '减脂', label: '减脂', icon: '🔥', desc: '控制热量，健康瘦身' },
-  { value: '增肌', label: '增肌', icon: '💪', desc: '高蛋白，助力肌肉生长' },
-  { value: '维持', label: '维持', icon: '⚖️', desc: '均衡饮食，保持健康体重' },
+const HEALTH_GOALS: { value: HealthGoal; label: string; icon: React.ComponentProps<typeof Ionicons>['name']; desc: string }[] = [
+  { value: '减脂', label: '减脂', icon: 'flame-outline', desc: '控制热量，健康瘦身' },
+  { value: '增肌', label: '增肌', icon: 'barbell-outline', desc: '高蛋白，助力肌肉生长' },
+  { value: '维持', label: '维持', icon: 'fitness-outline', desc: '均衡饮食，保持健康体重' },
 ];
-const PREFERENCE_OPTIONS = [
-  { value: '清淡', icon: '🥗' },
-  { value: '微辣', icon: '🌶️' },
-  { value: '无辣不欢', icon: '🔥' },
-  { value: '少油', icon: '🚫🛢️' },
-  { value: '低糖', icon: '🚫🍬' },
-  { value: '高蛋白', icon: '🥩' },
-  { value: '素食', icon: '🌱' },
-  { value: '低碳水', icon: '🍞' },
+const PREFERENCE_OPTIONS: { value: string; icon: React.ComponentProps<typeof Ionicons>['name'] }[] = [
+  { value: '清淡', icon: 'leaf-outline' },
+  { value: '微辣', icon: 'flame-outline' },
+  { value: '无辣不欢', icon: 'flame' },
+  { value: '少油', icon: 'water-outline' },
+  { value: '低糖', icon: 'cube-outline' },
+  { value: '高蛋白', icon: 'nutrition-outline' },
+  { value: '素食', icon: 'flower-outline' },
+  { value: '低碳水', icon: 'pizza-outline' },
 ];
 const DIETARY_RESTRICTIONS = [
   { value: '无麸质', desc: '避免小麦、大麦等' },
@@ -145,7 +145,7 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
         {/* 介绍卡片 */}
         <View style={styles.introCard}>
           <View style={styles.introIcon}>
-            <Text style={{ fontSize: 32 }}>🤖</Text>
+            <Ionicons name="sparkles" size={32} color={Colors.primary} />
           </View>
           <Text style={styles.introTitle}>告诉 AI 你的需求</Text>
           <Text style={styles.introDesc}>
@@ -222,7 +222,7 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
                   style={[styles.goalBtn, goal === g.value && styles.goalBtnActive]}
                   onPress={() => setGoal(g.value)}
                 >
-                  <Text style={styles.goalIcon}>{g.icon}</Text>
+                  <Ionicons name={g.icon} size={28} color={goal === g.value ? Colors.primary : Colors.textSecondary} />
                   <Text style={[styles.goalLabel, goal === g.value && styles.goalLabelActive]}>
                     {g.label}
                   </Text>
@@ -245,7 +245,7 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
                   ]}
                   onPress={() => togglePreference(pref.value)}
                 >
-                  <Text style={styles.preferenceIcon}>{pref.icon}</Text>
+                  <Ionicons name={pref.icon} size={16} color={preferences.includes(pref.value) ? Colors.primary : Colors.textSecondary} />
                   <Text
                     style={[
                       styles.preferenceText,

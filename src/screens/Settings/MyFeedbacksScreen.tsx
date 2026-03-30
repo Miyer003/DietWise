@@ -182,7 +182,7 @@ export default function MyFeedbacksScreen() {
       return (
         <View style={styles.centerContainer}>
           <View style={styles.emptyIcon}>
-            <Text style={{ fontSize: 48 }}>💬</Text>
+            <Ionicons name="chatbubbles-outline" size={48} color={Colors.textMuted} />
           </View>
           <Text style={styles.emptyTitle}>暂无反馈记录</Text>
           <Text style={styles.emptyDesc}>您还没有提交过反馈，遇到问题欢迎随时反馈给我们</Text>

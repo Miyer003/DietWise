@@ -257,7 +257,7 @@ export default function AIGeneratePlanPreviewScreen({ navigation, route }: AIGen
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <View style={styles.aiIconContainer}>
-            <Text style={styles.aiIcon}>🤖</Text>
+            <Ionicons name="sparkles" size={40} color={Colors.primary} />
             <View style={styles.aiThinking}>
               <ActivityIndicator size="small" color={Colors.primary} />
             </View>
@@ -267,7 +267,7 @@ export default function AIGeneratePlanPreviewScreen({ navigation, route }: AIGen
             正在根据你的{requestParams.healthGoal}目标和口味偏好，生成专属一周食谱...
           </Text>
           <Text style={styles.loadingTimeHint}>
-            ⏱️ 大约需要 30-90 秒，请耐心等待
+            大约需要 30-90 秒，请耐心等待
           </Text>
           <View style={styles.loadingParams}>
             <View style={styles.paramTag}>
@@ -291,7 +291,7 @@ export default function AIGeneratePlanPreviewScreen({ navigation, route }: AIGen
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorIcon}>⚠️</Text>
+          <Ionicons name="warning-outline" size={48} color={Colors.danger} style={styles.errorIcon} />
           <Text style={styles.errorTitle}>生成失败</Text>
           <Text style={styles.errorText}>{error}</Text>
           <View style={styles.errorActions}>
@@ -334,7 +334,8 @@ export default function AIGeneratePlanPreviewScreen({ navigation, route }: AIGen
         <View style={styles.overviewCard}>
           <View style={styles.overviewHeader}>
             <View style={styles.aiBadge}>
-              <Text style={styles.aiBadgeText}>🤖 AI 生成</Text>
+              <Ionicons name="sparkles" size={14} color={Colors.primary} style={{ marginRight: 4 }} />
+              <Text style={styles.aiBadgeText}>AI 生成</Text>
             </View>
             <TouchableOpacity style={styles.regenerateBtn} onPress={regenerate}>
               <Ionicons name="refresh" size={16} color={Colors.primary} />

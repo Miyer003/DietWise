@@ -19,11 +19,11 @@ interface RecordScreenProps {
   navigation: any;
 }
 
-const MEAL_TYPES: { type: MealType; name: string; icon: string; color: string }[] = [
-  { type: 'breakfast', name: '早餐', icon: '🍳', color: '#FFEDD5' },
-  { type: 'lunch', name: '午餐', icon: '🍱', color: '#FEE2E2' },
-  { type: 'dinner', name: '晚餐', icon: '🌙', color: '#DBEAFE' },
-  { type: 'snack', name: '加餐', icon: '🍎', color: '#D1FAE5' },
+const MEAL_TYPES: { type: MealType; name: string; icon: React.ComponentProps<typeof Ionicons>['name']; color: string }[] = [
+  { type: 'breakfast', name: '早餐', icon: 'sunny-outline', color: '#FFEDD5' },
+  { type: 'lunch', name: '午餐', icon: 'sunny', color: '#FEE2E2' },
+  { type: 'dinner', name: '晚餐', icon: 'moon-outline', color: '#DBEAFE' },
+  { type: 'snack', name: '加餐', icon: 'cafe-outline', color: '#D1FAE5' },
 ];
 
 export default function RecordScreen({ navigation }: RecordScreenProps) {
@@ -213,8 +213,8 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
             style={styles.methodCard}
             onPress={() => handleMethodSelect('camera')}
           >
-            <View style={[styles.iconContainer, { backgroundColor: Colors.info }]}>
-              <Text style={styles.iconText}>📷</Text>
+            <View style={styles.iconContainer}>
+              <Ionicons name="camera-outline" size={32} color={Colors.primary} />
             </View>
             <View style={styles.methodInfo}>
               <Text style={styles.methodTitle}>拍照识菜</Text>
@@ -228,8 +228,8 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
             style={styles.methodCard}
             onPress={() => handleMethodSelect('voice')}
           >
-            <View style={[styles.iconContainer, { backgroundColor: Colors.purple }]}>
-              <Text style={styles.iconText}>🎤</Text>
+            <View style={styles.iconContainer}>
+              <Ionicons name="mic" size={32} color={Colors.primary} />
             </View>
             <View style={styles.methodInfo}>
               <Text style={styles.methodTitle}>语音速记</Text>
@@ -243,8 +243,8 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
             style={styles.methodCard}
             onPress={() => handleMethodSelect('manual')}
           >
-            <View style={[styles.iconContainer, { backgroundColor: Colors.primary }]}>
-              <Text style={styles.iconText}>⌨️</Text>
+            <View style={styles.iconContainer}>
+              <Ionicons name="keypad-outline" size={32} color={Colors.primary} />
             </View>
             <View style={styles.methodInfo}>
               <Text style={styles.methodTitle}>手动输入</Text>
@@ -314,7 +314,7 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
                   style={[styles.mealTypeBtn, { backgroundColor: meal.color }]}
                   onPress={() => handleMealTypeSelect(meal.type)}
                 >
-                  <Text style={styles.mealTypeIcon}>{meal.icon}</Text>
+                  <Ionicons name={meal.icon} size={28} color={Colors.text} />
                   <Text style={styles.mealTypeName}>{meal.name}</Text>
                 </TouchableOpacity>
               ))}

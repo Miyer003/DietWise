@@ -138,7 +138,7 @@ export default function LoginScreen({ navigation, route }: any) {
           {/* Logo 区域 */}
           <View style={styles.logoContainer}>
             <View style={styles.logo}>
-              <Text style={styles.logoEmoji}>🥗</Text>
+              <Ionicons name="leaf" size={50} color={Colors.primary} />
             </View>
             <Text style={styles.appName}>膳智 DietWise</Text>
             <Text style={styles.slogan}>智能饮食健康管理</Text>
