@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../../constants/Colors';
@@ -77,6 +77,23 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
       setExpandedDays(expandedDays.filter(d => d !== dayOfWeek));
     } else {
       setExpandedDays([...expandedDays, dayOfWeek]);
+    }
+  };
+
+  const handleActivatePlan = async () => {
+    if (!mealPlan?.id) return;
+    
+    try {
+      const res = await MealPlanService.activatePlan(mealPlan.id);
+      if (res.code === 0) {
+        Alert.alert('成功', '食谱已激活，将用于您的每日饮食推荐');
+        setMealPlan({ ...mealPlan, status: 'active' });
+      } else {
+        throw new Error(res.message || '激活失败');
+      }
+    } catch (err: any) {
+      console.error('激活食谱失败:', err);
+      Alert.alert('激活失败', err.message || '请稍后重试');
     }
   };
 
@@ -299,7 +316,7 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
 
         {/* 操作按钮 */}
         {mealPlan.status !== 'active' && (
-          <TouchableOpacity style={styles.activateBtn}>
+          <TouchableOpacity style={styles.activateBtn} onPress={handleActivatePlan}>
             <Text style={styles.activateBtnText}>应用此食谱</Text>
           </TouchableOpacity>
         )}
