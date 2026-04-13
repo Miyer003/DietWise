@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import ScreenHeader from '../../components/ScreenHeader';
+import { Theme } from '../../constants/Theme';
 import { MealPlanService } from '../../services/api';
 import { MealPlan, MealPlanDay } from '../../types';
 
@@ -123,15 +124,9 @@ export default function HistoryMealPlanDetailScreen({ navigation, route }: Histo
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={24} color={Colors.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>历史食谱详情</Text>
-          <View style={{ width: 24 }} />
-        </View>
+        <ScreenHeader title="历史食谱详情" />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Theme.colors.primary} />
           <Text style={styles.loadingText}>加载中...</Text>
         </View>
       </SafeAreaView>
@@ -141,13 +136,7 @@ export default function HistoryMealPlanDetailScreen({ navigation, route }: Histo
   if (!plan) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={24} color={Colors.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>历史食谱详情</Text>
-          <View style={{ width: 24 }} />
-        </View>
+        <ScreenHeader title="历史食谱详情" />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>食谱不存在或已被删除</Text>
         </View>
@@ -157,14 +146,7 @@ export default function HistoryMealPlanDetailScreen({ navigation, route }: Histo
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 头部导航 */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={Colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>历史食谱详情</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <ScreenHeader title="历史食谱详情" />
 
       <ScrollView
         style={styles.scrollView}
@@ -172,10 +154,10 @@ export default function HistoryMealPlanDetailScreen({ navigation, route }: Histo
         showsVerticalScrollIndicator={true}
       >
         {/* 状态卡片 */}
-        <View style={[styles.statusCard, { backgroundColor: Colors.cream, borderColor: Colors.border }]}>
+        <View style={[styles.statusCard, { backgroundColor: Theme.colors.cream, borderColor: Theme.colors.border }]}>
           <View style={styles.statusHeader}>
-            <View style={[styles.statusIcon, { backgroundColor: Colors.textMuted }]}>
-              <Ionicons name="cube-outline" size={28} color={Colors.textMuted} />
+            <View style={[styles.statusIcon, { backgroundColor: Theme.colors.textMuted }]}>
+              <Ionicons name="cube-outline" size={28} color={Theme.colors.textMuted} />
             </View>
             <View>
               <Text style={styles.statusTitle}>已归档食谱</Text>
@@ -242,7 +224,7 @@ export default function HistoryMealPlanDetailScreen({ navigation, route }: Histo
                     <Ionicons
                       name={isExpanded ? 'chevron-up' : 'chevron-down'}
                       size={18}
-                      color={Colors.textMuted}
+                      color={Theme.colors.textMuted}
                       style={{ marginLeft: 4 }}
                     />
                   </View>
@@ -261,7 +243,7 @@ export default function HistoryMealPlanDetailScreen({ navigation, route }: Histo
                                 meal.mealType === 'lunch' ? 'sunny' :
                                 meal.mealType === 'dinner' ? 'moon-outline' : 'cafe-outline'}
                           size={16}
-                          color={Colors.textSecondary}
+                          color={Theme.colors.textSecondary}
                         />
                         <Text style={styles.mealType}>{MEAL_TYPES[meal.mealType] || meal.mealType}</Text>
                       </View>
@@ -290,7 +272,7 @@ export default function HistoryMealPlanDetailScreen({ navigation, route }: Histo
         {/* 底部按钮 - 根据状态显示 */}
         {plan.status === 'active' ? (
           <View style={styles.currentUseBadge}>
-            <Ionicons name="checkmark-circle" size={20} color={Colors.primary} style={{ marginRight: 8 }} />
+            <Ionicons name="checkmark-circle" size={20} color={Theme.colors.primary} style={{ marginRight: 8 }} />
             <Text style={styles.currentUseText}>当前正在使用此食谱</Text>
           </View>
         ) : (
@@ -319,21 +301,7 @@ export default function HistoryMealPlanDetailScreen({ navigation, route }: Histo
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
+    backgroundColor: Theme.colors.background,
   },
   scrollView: {
     flex: 1,
@@ -348,9 +316,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: Colors.textSecondary,
+    marginTop: Theme.spacing.compact,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
   },
   emptyContainer: {
     flex: 1,
@@ -358,19 +326,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 16,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
   },
   statusCard: {
-    margin: 16,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
+    margin: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
   },
   statusHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   statusIcon: {
     width: 48,
@@ -378,22 +349,22 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: Theme.spacing.compact,
   },
   statusTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 4,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.xs,
   },
   statusSubtitle: {
-    fontSize: 13,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   statusStats: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingTop: 16,
+    paddingTop: Theme.spacing.lg,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.05)',
   },
@@ -401,67 +372,67 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 4,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.xs,
   },
   statLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
   },
   section: {
-    marginHorizontal: 16,
-    marginBottom: 24,
+    marginHorizontal: Theme.spacing.lg,
+    marginBottom: Theme.spacing.xl,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.compact,
   },
   preferencesCard: {
     backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
   },
   preferencesList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: Theme.spacing.compact,
   },
   prefTag: {
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.sm,
+    borderRadius: Theme.radius.xl,
   },
   prefText: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   dayCard: {
     backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.lg,
+    marginBottom: Theme.spacing.compact,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
   },
   dayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: Theme.spacing.compact,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
@@ -470,113 +441,109 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dayName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   dayCalorieBadge: {
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.md,
   },
   dayCalorieText: {
-    fontSize: 13,
-    color: Colors.primary,
-    fontWeight: '600',
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.semibold,
   },
   mealSection: {
-    marginTop: 16,
+    marginTop: Theme.spacing.lg,
   },
   mealHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: Theme.spacing.compact,
   },
   mealTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: Theme.spacing.xs,
   },
   mealIcon: {
-    fontSize: 16,
+    fontSize: Theme.typography.sizes.body,
   },
   mealType: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   mealCalories: {
-    fontSize: 13,
-    color: Colors.warning,
-    fontWeight: '600',
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.warning,
+    fontWeight: Theme.typography.weights.semibold,
   },
   dishRow: {
-    marginBottom: 8,
+    marginBottom: Theme.spacing.sm,
   },
   dishViewRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: Colors.background,
-    padding: 12,
-    borderRadius: 10,
+    backgroundColor: Theme.colors.background,
+    padding: Theme.spacing.compact,
+    borderRadius: Theme.radius.sm,
   },
   dishName: {
-    fontSize: 14,
-    color: Colors.text,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.text,
+    fontWeight: Theme.typography.weights.medium,
   },
   dishMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Theme.spacing.compact,
   },
   dishQuantity: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
   },
   dishCalories: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
+    fontWeight: Theme.typography.weights.medium,
   },
   activateBtn: {
-    backgroundColor: Colors.primary,
-    marginHorizontal: 16,
-    marginTop: 8,
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.primary,
+    marginHorizontal: Theme.spacing.lg,
+    marginTop: Theme.spacing.sm,
+    paddingVertical: Theme.spacing.lg,
+    borderRadius: Theme.radius.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    ...Theme.shadows.button,
   },
   activateBtnText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.bold,
   },
   currentUseBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 16,
-    marginTop: 8,
-    paddingVertical: 16,
-    backgroundColor: Colors.primaryLight,
-    borderRadius: 12,
+    marginHorizontal: Theme.spacing.lg,
+    marginTop: Theme.spacing.sm,
+    paddingVertical: Theme.spacing.lg,
+    backgroundColor: Theme.colors.primaryLight,
+    borderRadius: Theme.radius.md,
     borderWidth: 1,
-    borderColor: Colors.primary,
+    borderColor: Theme.colors.primary,
   },
   currentUseText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.primary,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.primary,
   },
 });

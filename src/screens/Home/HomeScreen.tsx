@@ -16,7 +16,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
 import { useAuth } from '../../store/AuthContext';
 import { DietService, TipsService, AIService } from '../../services/api';
 import { DailySummary, DietRecord, AITip } from '../../types';
@@ -42,7 +42,7 @@ const CircularProgress: React.FC<{ progress: number; consumed: number; goal: num
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={Colors.border}
+          stroke={Theme.colors.border}
           strokeWidth={strokeWidth}
           fill="transparent"
         />
@@ -50,7 +50,7 @@ const CircularProgress: React.FC<{ progress: number; consumed: number; goal: num
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={progress > 100 ? Colors.danger : Colors.primary}
+          stroke={progress > 100 ? Theme.colors.danger : Theme.colors.primary}
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeDasharray={circumference}
@@ -61,7 +61,7 @@ const CircularProgress: React.FC<{ progress: number; consumed: number; goal: num
       <View style={styles.progressTextContainer}>
         <Text style={styles.progressValue}>{consumed.toLocaleString()}</Text>
         <Text style={styles.progressLabel}>/ {goal.toLocaleString()} kcal</Text>
-        <Text style={[styles.progressPercent, { color: progress > 100 ? Colors.danger : Colors.primary }]}>
+        <Text style={[styles.progressPercent, { color: progress > 100 ? Theme.colors.danger : Theme.colors.primary }]}>
           {Math.round(progress)}%
         </Text>
       </View>
@@ -106,7 +106,7 @@ const AICard: React.FC<{
     <View style={styles.aiCard}>
       <View style={styles.aiCardHeader}>
         <View style={styles.aiIcon}>
-          <Ionicons name="sparkles" size={20} color={Colors.primary} />
+          <Ionicons name="sparkles" size={20} color={Theme.colors.primary} />
         </View>
         <View style={styles.aiTitleContainer}>
           <Text style={styles.aiTitle}>
@@ -197,7 +197,7 @@ const TimelineItem: React.FC<{
                   onPress={() => onDelete(record.id)}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="trash-outline" size={16} color={Colors.textMuted} />
+                  <Ionicons name="trash-outline" size={16} color={Theme.colors.textMuted} />
                 </TouchableOpacity>
               )}
             </View>
@@ -389,38 +389,40 @@ export default function HomeScreen({ navigation }: any) {
         </View>
 
         {/* 环形进度图 */}
-        <View style={styles.progressContainer}>
-          <CircularProgress 
-            progress={progress} 
-            consumed={dailyData?.calorieConsumed || 0}
-            goal={dailyData?.calorieGoal || profile?.dailyCalorieGoal || 2000}
-          />
+        <View style={styles.progressSection}>
+          <View style={styles.progressContainer}>
+            <CircularProgress 
+              progress={progress} 
+              consumed={dailyData?.calorieConsumed || 0}
+              goal={dailyData?.calorieGoal || profile?.dailyCalorieGoal || 2000}
+            />
+          </View>
         </View>
 
         {/* 营养进度条 */}
-        <View style={styles.nutrientsContainer}>
+        <View style={styles.nutrientsSection}>
           <NutrientBar 
             label="蛋白质" 
             current={dailyData?.proteinG || 0} 
             total={proteinGoal} 
-            color={Colors.primary} 
+            color={Theme.colors.primary} 
           />
           <NutrientBar 
             label="碳水化合物" 
             current={dailyData?.carbsG || 0} 
             total={carbsGoal} 
-            color={Colors.warning} 
+            color={Theme.colors.warning} 
           />
           <NutrientBar 
             label="脂肪" 
             current={dailyData?.fatG || 0} 
             total={fatGoal} 
-            color="#F97316" 
+            color={Theme.colors.danger} 
           />
         </View>
 
         {/* AI智能建议卡片 */}
-        <View style={styles.sectionPadding}>
+        <View style={styles.aiSection}>
           <AICard 
             tip={aiTip}
             onRefresh={loadAiTip}
@@ -434,7 +436,7 @@ export default function HomeScreen({ navigation }: any) {
         <View style={styles.timelineSection}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleRow}>
-              <Ionicons name="time-outline" size={20} color={Colors.text} />
+              <Ionicons name="time-outline" size={20} color={Theme.colors.text} />
               <Text style={styles.sectionTitle}>今日记录</Text>
             </View>
             <TouchableOpacity onPress={() => navigation.navigate('Main', { screen: 'AnalyticsTab' })}>
@@ -454,7 +456,7 @@ export default function HomeScreen({ navigation }: any) {
               ))
             ) : (
               <View style={styles.emptyState}>
-                <Ionicons name="restaurant-outline" size={32} color={Colors.textMuted} />
+                <Ionicons name="restaurant-outline" size={32} color={Theme.colors.textMuted} />
                 <Text style={styles.emptyStateText}>今天还没有记录</Text>
               </View>
             )}
@@ -464,7 +466,7 @@ export default function HomeScreen({ navigation }: any) {
               onPress={() => navigation.navigate('RecordTab')}
             >
               <View style={styles.addRecordIcon}>
-                <Ionicons name="add" size={20} color={Colors.primary} />
+                <Ionicons name="add" size={20} color={Theme.colors.primary} />
               </View>
               <Text style={styles.addRecordText}>添加记录</Text>
             </TouchableOpacity>
@@ -480,7 +482,7 @@ export default function HomeScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   scrollView: {
     flex: 1,
@@ -489,52 +491,57 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: Theme.spacing.page,
+    paddingVertical: Theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.divider,
   },
   dateText: {
-    fontSize: 13,
-    color: Colors.textMuted,
-    marginBottom: 4,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textMuted,
+    marginBottom: Theme.spacing.xs,
   },
   greeting: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h1,
+    fontWeight: Theme.typography.weights.light,
+    letterSpacing: 2,
+    color: Theme.colors.text,
   },
   avatarButton: {
-    width: 44,
-    height: 44,
-    backgroundColor: Colors.primary,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    backgroundColor: Theme.colors.primary,
+    borderRadius: Theme.radius.xs,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.textInverse,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.medium,
+    color: Theme.colors.textInverse,
   },
   avatarImage: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: Theme.radius.xs,
   },
   avatarEmoji: {
-    fontSize: 24,
+    fontSize: 20,
+  },
+  progressSection: {
+    paddingVertical: Theme.spacing.section,
+    paddingHorizontal: Theme.spacing.page,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.divider,
   },
   progressContainer: {
     alignItems: 'center',
-    marginVertical: 16,
-    backgroundColor: Colors.highlight,
-    marginHorizontal: 16,
-    paddingVertical: 20,
-    borderRadius: 20,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+    paddingVertical: Theme.spacing.section,
+    backgroundColor: Theme.colors.card,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
   },
   progressRingContainer: {
     width: 160,
@@ -548,40 +555,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   progressValue: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: Colors.text,
+    fontSize: 32,
+    fontWeight: Theme.typography.weights.light,
+    color: Theme.colors.text,
   },
   progressLabel: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    marginTop: 2,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
+    marginTop: Theme.spacing.xs,
   },
   progressPercent: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: 4,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.medium,
+    marginTop: Theme.spacing.xs,
   },
-  nutrientsContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    marginBottom: 20,
-    marginHorizontal: 16,
-    backgroundColor: Colors.surface,
-    borderRadius: 20,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+  nutrientsSection: {
+    paddingVertical: Theme.spacing.section,
+    paddingHorizontal: Theme.spacing.page,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.divider,
   },
   nutrientContainer: {
-    marginBottom: 14,
+    marginBottom: Theme.spacing.compact,
   },
   nutrientHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: Theme.spacing.xs,
   },
   nutrientLabel: {
     flexDirection: 'row',
@@ -590,54 +590,58 @@ const styles = StyleSheet.create({
   dot: {
     width: 6,
     height: 6,
-    borderRadius: 3,
-    marginRight: 8,
+    borderRadius: Theme.radius.none,
+    marginRight: Theme.spacing.sm,
   },
   nutrientName: {
-    fontSize: 13,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   nutrientValue: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.medium,
+    color: Theme.colors.text,
   },
   progressBar: {
-    height: 6,
-    backgroundColor: Colors.border,
-    borderRadius: 3,
+    height: 4,
+    backgroundColor: Theme.colors.border,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: 3,
   },
   sectionPadding: {
-    paddingHorizontal: 16,
+    paddingHorizontal: Theme.spacing.page,
+  },
+  aiSection: {
+    paddingVertical: Theme.spacing.section,
+    paddingHorizontal: Theme.spacing.page,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.divider,
   },
   aiCard: {
-    backgroundColor: Colors.highlight,
-    borderRadius: 16,
-    padding: 18,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    elevation: 2,
+    marginHorizontal: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
+    backgroundColor: Theme.colors.card,
+    padding: Theme.spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
   },
   aiCardHeader: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginBottom: Theme.spacing.compact,
     alignItems: 'center',
   },
   aiIcon: {
     width: 36,
     height: 36,
-    backgroundColor: Colors.cream,
-    borderRadius: 10,
+    backgroundColor: Theme.colors.subtle,
+    borderRadius: Theme.radius.none,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: Theme.spacing.compact,
   },
   aiTitleContainer: {
     flex: 1,
@@ -646,102 +650,99 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   aiTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h3,
+    fontWeight: Theme.typography.weights.medium,
+    color: Theme.colors.text,
   },
   aiTime: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
   },
   aiContent: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-    marginBottom: 14,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
+    lineHeight: 22,
+    marginBottom: Theme.spacing.compact,
   },
   aiActions: {
     flexDirection: 'row',
-    gap: 10,
+    gap: Theme.spacing.compact,
   },
   aiButtonPrimary: {
     flex: 1,
-    backgroundColor: Colors.primary,
-    paddingVertical: 10,
-    borderRadius: 10,
+    backgroundColor: Theme.colors.primary,
+    paddingVertical: Theme.spacing.compact,
+    borderRadius: Theme.radius.none,
     alignItems: 'center',
   },
   aiButtonPrimaryText: {
-    color: Colors.textInverse,
-    fontWeight: '600',
-    fontSize: 14,
+    color: Theme.colors.textInverse,
+    fontWeight: Theme.typography.weights.medium,
+    fontSize: Theme.typography.sizes.body,
   },
   aiButtonSecondary: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: Colors.cream,
-    borderRadius: 10,
+    paddingHorizontal: Theme.spacing.page,
+    paddingVertical: Theme.spacing.compact,
+    backgroundColor: Theme.colors.subtle,
+    borderRadius: Theme.radius.none,
   },
   aiButtonSecondaryText: {
-    color: Colors.text,
-    fontWeight: '500',
-    fontSize: 14,
+    color: Theme.colors.text,
+    fontWeight: Theme.typography.weights.medium,
+    fontSize: Theme.typography.sizes.body,
   },
   timelineSection: {
-    padding: 16,
-    marginTop: 8,
+    paddingVertical: Theme.spacing.section,
+    paddingHorizontal: Theme.spacing.page,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: Theme.spacing.compact,
   },
   sectionTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: Theme.spacing.xs,
   },
   sectionTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.light,
+    letterSpacing: 1,
+    color: Theme.colors.text,
   },
   sectionLink: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   timelineCard: {
-    backgroundColor: Colors.cream,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    elevation: 2,
+    marginHorizontal: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
+    backgroundColor: Theme.colors.card,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    padding: Theme.spacing.lg,
   },
   timelineItem: {
     flexDirection: 'row',
-    marginBottom: 16,
-    position: 'relative',
+    paddingVertical: Theme.spacing.compact,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.divider,
   },
   timelineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.primary,
-    marginRight: 12,
-    marginTop: 8,
+    width: 6,
+    height: 6,
+    borderRadius: Theme.radius.none,
+    backgroundColor: Theme.colors.primary,
+    marginRight: Theme.spacing.compact,
+    marginTop: Theme.spacing.sm,
   },
   timelineLine: {
-    position: 'absolute',
-    left: 3,
-    top: 20,
-    width: 2,
-    height: '100%',
-    backgroundColor: Colors.border,
+    display: 'none',
   },
   timelineContent: {
     flex: 1,
@@ -750,10 +751,10 @@ const styles = StyleSheet.create({
   timelineIcon: {
     width: 32,
     height: 32,
-    borderRadius: 8,
+    borderRadius: Theme.radius.none,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: Theme.spacing.compact,
   },
   timelineInfo: {
     flex: 1,
@@ -762,63 +763,64 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: Theme.spacing.xs,
   },
   timelineMealType: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h3,
+    fontWeight: Theme.typography.weights.medium,
+    color: Theme.colors.text,
   },
   timelineHeaderRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   timelineTime: {
-    fontSize: 13,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textMuted,
   },
   deleteButton: {
-    padding: 4,
+    padding: Theme.spacing.xs,
   },
   timelineFood: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
     marginBottom: 2,
   },
   timelineCalories: {
-    fontSize: 13,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: Theme.spacing.xxl,
   },
   emptyStateText: {
-    fontSize: 14,
-    color: Colors.textMuted,
-    marginTop: 8,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textMuted,
+    marginTop: Theme.spacing.sm,
   },
   addRecordItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 12,
+    paddingTop: Theme.spacing.compact,
+    marginTop: Theme.spacing.compact,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: Theme.colors.border,
   },
   addRecordIcon: {
     width: 32,
     height: 32,
-    borderRadius: 8,
-    backgroundColor: Colors.highlight,
+    borderRadius: Theme.radius.none,
+    backgroundColor: Theme.colors.subtle,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: Theme.spacing.compact,
   },
   addRecordText: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
 });

@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { View, Text, ActivityIndicator, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../constants/Colors';
+import { Theme } from '../constants/Theme';
 import { useAuth } from '../store/AuthContext';
 
 // 导入页面
@@ -66,8 +66,8 @@ function MainTabNavigator() {
           
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.textMuted,
+        tabBarActiveTintColor: Theme.colors.primary,
+        tabBarInactiveTintColor: Theme.colors.textSecondary,
         headerShown: false,
         // 自定义 tabBarButton 移除默认的圆形水波纹/阴影点击效果
         tabBarButton: (props: any) => (
@@ -78,21 +78,16 @@ function MainTabNavigator() {
           />
         ),
         tabBarStyle: {
-          height: 84,
-          paddingBottom: 20,
-          paddingTop: 8,
-          backgroundColor: Colors.surface,
+          height: 56,
+          paddingBottom: 4,
+          paddingTop: 4,
+          backgroundColor: Theme.colors.surface,
           borderTopWidth: 1,
-          borderTopColor: Colors.border,
-          shadowColor: Colors.text,
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.03,
-          shadowRadius: 8,
-          elevation: 2,
+          borderTopColor: Theme.colors.border,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          marginTop: 4,
+          fontSize: Theme.typography.sizes.small,
+          marginTop: 2,
         },
       })}
     >
@@ -113,20 +108,14 @@ function MainTabNavigator() {
           tabBarLabel: '记录',
           tabBarIcon: ({ color }) => (
             <View style={{
-              width: 52,
-              height: 52,
-              backgroundColor: Colors.primary,
-              borderRadius: 18,
+              width: 40,
+              height: 40,
+              backgroundColor: Theme.colors.primary,
+              borderRadius: Theme.radius.none,
               justifyContent: 'center',
               alignItems: 'center',
-              marginTop: -16,
-              shadowColor: Colors.primaryDark,
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.22,
-              shadowRadius: 10,
-              elevation: 5,
             }}>
-              <Ionicons name="add" size={30} color="white" />
+              <Ionicons name="add" size={24} color={Theme.colors.textInverse} />
             </View>
           ),
         }}
@@ -151,7 +140,7 @@ function AuthNavigator() {
     <AuthStack.Navigator
       screenOptions={{
         headerShown: false,
-        cardStyle: { backgroundColor: Colors.background },
+        cardStyle: { backgroundColor: Theme.colors.background },
       }}
     >
       <AuthStack.Screen name="Login" component={LoginScreen} />
@@ -166,7 +155,7 @@ function AppStackNavigator() {
     <MainStack.Navigator 
       screenOptions={{ 
         headerShown: false,
-        cardStyle: { backgroundColor: Colors.background }
+        cardStyle: { backgroundColor: Theme.colors.background }
       }}
     >
       {/* Tab主界面 */}
@@ -184,12 +173,12 @@ function AppStackNavigator() {
       <MainStack.Screen 
         name="FoodSearch" 
         component={FoodSearchScreen}
-        options={{ headerShown: true, title: '搜索食物' }}
+        options={{ headerShown: false }}
       />
       <MainStack.Screen 
         name="FoodAIInput" 
         component={FoodAIInputScreen}
-        options={{ headerShown: true, title: 'AI 智能分析' }}
+        options={{ headerShown: false }}
       />
       <MainStack.Screen 
         name="VoiceRecord" 
@@ -201,26 +190,26 @@ function AppStackNavigator() {
       <MainStack.Screen 
         name="Chat" 
         component={ChatScreen} 
-        options={{ headerShown: true, title: 'AI营养顾问' }}
+        options={{ headerShown: false }}
       />
       
       {/* 个人资料页面 */}
       <MainStack.Screen 
         name="ProfileEdit" 
         component={ProfileEditScreen} 
-        options={{ headerShown: true, title: '个人画像' }}
+        options={{ headerShown: false }}
       />
       
       {/* 食谱管理页面 */}
       <MainStack.Screen 
         name="MealPlan" 
         component={MealPlanScreen} 
-        options={{ headerShown: true, title: '我的食谱' }}
+        options={{ headerShown: false }}
       />
       <MainStack.Screen 
         name="MealPlanDetail" 
         component={MealPlanDetailScreen}
-        options={{ headerShown: true, title: '食谱详情' }}
+        options={{ headerShown: false }}
       />
       <MainStack.Screen 
         name="AIGeneratePlanInput" 
@@ -247,29 +236,29 @@ function AppStackNavigator() {
       <MainStack.Screen 
         name="NotificationSettings" 
         component={NotificationSettings} 
-        options={{ headerShown: true, title: '提醒设置' }}
+        options={{ headerShown: false }}
       />
       <MainStack.Screen 
         name="Feedback" 
         component={FeedbackScreen}
-        options={{ headerShown: true, title: '意见反馈' }}
+        options={{ headerShown: false }}
       />
       <MainStack.Screen 
         name="MyFeedbacks" 
         component={MyFeedbacksScreen}
-        options={{ headerShown: true, title: '我的反馈' }}
+        options={{ headerShown: false }}
       />
       <MainStack.Screen 
         name="About" 
         component={AboutScreen}
-        options={{ headerShown: true, title: '关于膳智' }}
+        options={{ headerShown: false }}
       />
       
       {/* 成就页面 */}
       <MainStack.Screen 
         name="Achievements" 
         component={AchievementsScreen}
-        options={{ headerShown: true, title: '我的成就' }}
+        options={{ headerShown: false }}
       />
     </MainStack.Navigator>
   );
@@ -286,28 +275,30 @@ export default function AppNavigator() {
         flex: 1, 
         justifyContent: 'center', 
         alignItems: 'center',
-        backgroundColor: Colors.background 
+        backgroundColor: Theme.colors.background 
       }}>
         <View style={{
-          width: 80,
-          height: 80,
-          backgroundColor: Colors.primaryLight,
-          borderRadius: 20,
+          width: 64,
+          height: 64,
+          backgroundColor: Theme.colors.card,
+          borderRadius: Theme.radius.none,
           justifyContent: 'center',
           alignItems: 'center',
           marginBottom: 16,
+          borderWidth: 1,
+          borderColor: Theme.colors.border,
         }}>
           <Text style={{ fontSize: 40 }}>🥗</Text>
         </View>
         <Text style={{ 
-          fontSize: 20, 
-          fontWeight: 'bold',
-          color: Colors.text,
+          fontSize: Theme.typography.sizes.h1, 
+          fontWeight: Theme.typography.weights.semibold,
+          color: Theme.colors.text,
           marginBottom: 16 
         }}>
           膳智 DietWise
         </Text>
-        <ActivityIndicator size="small" color={Colors.primary} />
+        <ActivityIndicator size="small" color={Theme.colors.primary} />
       </View>
     );
   }

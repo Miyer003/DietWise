@@ -11,7 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
 import { DietService } from '../../services/api';
 import CalendarPicker from '../../components/CalendarPicker';
 
@@ -174,7 +174,7 @@ export default function HistoryView({ navigation, onNavigateToTab }: HistoryView
             style={styles.calendarButton}
             onPress={() => setShowCalendar(true)}
           >
-            <Ionicons name="calendar-outline" size={20} color={Colors.primary} />
+            <Ionicons name="calendar-outline" size={20} color={Theme.colors.primary} />
             <Text style={styles.calendarButtonText}>日历</Text>
           </TouchableOpacity>
         </View>
@@ -213,7 +213,7 @@ export default function HistoryView({ navigation, onNavigateToTab }: HistoryView
     if (weeksWithRecords.length === 0) {
       return (
         <View style={styles.emptyStateCard}>
-          <Ionicons name="bar-chart" size={48} color={Colors.textMuted} />
+          <Ionicons name="bar-chart" size={48} color={Theme.colors.textMuted} />
           <Text style={styles.emptyStateText}>暂无周记录</Text>
           <Text style={styles.emptyStateSubtext}>记录饮食后将显示周统计</Text>
         </View>
@@ -235,7 +235,7 @@ export default function HistoryView({ navigation, onNavigateToTab }: HistoryView
               onPress={() => handleWeekSelect(week.weekStart)}
             >
               <View style={styles.historyIcon}>
-                <Ionicons name="bar-chart" size={28} color={Colors.primary} />
+                <Ionicons name="bar-chart" size={28} color={Theme.colors.primary} />
               </View>
               <View style={styles.historyContent}>
                 <Text style={styles.historyTitle}>
@@ -246,7 +246,7 @@ export default function HistoryView({ navigation, onNavigateToTab }: HistoryView
                   · {week.recordCount}条记录
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+              <Ionicons name="chevron-forward" size={20} color={Theme.colors.textMuted} />
             </TouchableOpacity>
           );
         })}
@@ -276,13 +276,13 @@ export default function HistoryView({ navigation, onNavigateToTab }: HistoryView
             onPress={() => handleMonthSelect(month.month)}
           >
             <View style={styles.historyIcon}>
-              <Ionicons name="calendar-outline" size={28} color={Colors.textMuted} />
+              <Ionicons name="calendar-outline" size={28} color={Theme.colors.textMuted} />
             </View>
             <View style={styles.historyContent}>
               <Text style={styles.historyTitle}>{month.label}</Text>
               <Text style={styles.historySubtitle}>点击查看月详情</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+            <Ionicons name="chevron-forward" size={20} color={Theme.colors.textMuted} />
           </TouchableOpacity>
         ))}
       </View>
@@ -292,7 +292,7 @@ export default function HistoryView({ navigation, onNavigateToTab }: HistoryView
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={Theme.colors.primary} />
       </View>
     );
   }
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
+    padding: Theme.spacing.lg,
   },
   loadingContainer: {
     padding: 40,
@@ -339,156 +339,156 @@ const styles = StyleSheet.create({
   },
   modeSwitch: {
     flexDirection: 'row',
-    backgroundColor: Colors.cream,
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 20,
+    backgroundColor: Theme.colors.cream,
+    borderRadius: Theme.radius.md,
+    padding: Theme.spacing.xs,
+    marginBottom: Theme.spacing.page,
   },
   modeButton: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: Theme.spacing.compact,
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: Theme.radius.xs,
   },
   modeButtonActive: {
     backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: Theme.colors.border,
+    ...Theme.shadows.card,
   },
   modeButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.medium,
+    color: Theme.colors.textSecondary,
   },
   modeButtonTextActive: {
-    color: Colors.primary,
+    color: Theme.colors.primary,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: Theme.spacing.xl,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: Theme.spacing.md,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
   },
   calendarButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    gap: 4,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.xs,
+    gap: Theme.spacing.xs,
   },
   calendarButtonText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: Colors.primary,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.medium,
+    color: Theme.colors.primary,
   },
   monthGroup: {
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   monthGroupTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-    marginBottom: 10,
-    paddingLeft: 4,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.textSecondary,
+    marginBottom: Theme.spacing.compact,
+    paddingLeft: Theme.spacing.xs,
   },
   daysGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   dayCard: {
     width: 56,
     height: 56,
-    backgroundColor: Colors.card,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.md,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    elevation: 2,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
   },
   dayNumber: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h1,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
   },
   dayWeek: {
-    fontSize: 11,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
     marginTop: 2,
   },
   historyCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    elevation: 2,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.lg,
+    marginBottom: Theme.spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
   },
   historyIcon: {
     width: 48,
     height: 48,
-    backgroundColor: Colors.highlight,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.highlight,
+    borderRadius: Theme.radius.md,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: Theme.spacing.md,
   },
   historyContent: {
     flex: 1,
   },
   historyTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   historySubtitle: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginTop: 4,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
+    marginTop: Theme.spacing.xs,
   },
   emptyStateCard: {
-    backgroundColor: Colors.card,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    borderRadius: 16,
+    backgroundColor: Theme.colors.card,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
+    borderRadius: Theme.radius.lg,
     padding: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyStateIcon: {
     fontSize: 48,
-    marginBottom: 12,
+    marginBottom: Theme.spacing.md,
   },
   emptyStateText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.textMuted,
   },
   emptyStateSubtext: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginTop: 8,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
+    marginTop: Theme.spacing.sm,
   },
 });

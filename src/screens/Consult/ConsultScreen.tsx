@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
+import ScreenHeader from '../../components/ScreenHeader';
 
 export default function ConsultScreen({ navigation }: any) {
   const hotQuestions = [
@@ -19,15 +20,11 @@ export default function ConsultScreen({ navigation }: any) {
         showsVerticalScrollIndicator={true}
       >
         {/* 顶部标题 */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.headerTitle}>健康咨询</Text>
-            <Text style={styles.headerSubtitle}>AI助力您的饮食健康</Text>
-          </View>
-          <View style={styles.headerIcon}>
-            <Ionicons name="sparkles" size={28} color={Colors.primary} />
-          </View>
-        </View>
+        <ScreenHeader
+          title="健康咨询"
+          subtitle="AI助力您的饮食健康"
+          rightIcon="sparkles"
+        />
 
         {/* 功能入口 */}
         <View style={styles.cardsContainer}>
@@ -36,14 +33,14 @@ export default function ConsultScreen({ navigation }: any) {
             style={styles.featureCard}
             onPress={() => navigation.navigate('AIGeneratePlanInput')}
           >
-            <View style={[styles.iconContainer, { backgroundColor: Colors.warning }]}>
-              <Ionicons name="restaurant" size={24} color={Colors.textInverse} />
+            <View style={[styles.iconContainer, { backgroundColor: Theme.colors.warning }]}>
+              <Ionicons name="restaurant" size={24} color={Theme.colors.textInverse} />
             </View>
             <View style={styles.featureInfo}>
               <Text style={styles.featureTitle}>智能生成食谱</Text>
               <Text style={styles.featureDesc}>AI根据您的身体数据和目标，自动生成饮食方案</Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color={Colors.textMuted} />
+            <Ionicons name="chevron-forward" size={24} color={Theme.colors.textMuted} />
           </TouchableOpacity>
 
           {/* AI营养顾问 */}
@@ -51,14 +48,14 @@ export default function ConsultScreen({ navigation }: any) {
             style={styles.featureCard}
             onPress={() => navigation.navigate('Chat')}
           >
-            <View style={[styles.iconContainer, { backgroundColor: Colors.primary }]}>
-              <Ionicons name="chatbubbles" size={24} color={Colors.textInverse} />
+            <View style={[styles.iconContainer, { backgroundColor: Theme.colors.primary }]}>
+              <Ionicons name="chatbubbles" size={24} color={Theme.colors.textInverse} />
             </View>
             <View style={styles.featureInfo}>
               <Text style={styles.featureTitle}>AI营养顾问</Text>
               <Text style={styles.featureDesc}>随时咨询饮食问题，获取专业健康建议</Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color={Colors.textMuted} />
+            <Ionicons name="chevron-forward" size={24} color={Theme.colors.textMuted} />
           </TouchableOpacity>
         </View>
 
@@ -67,11 +64,11 @@ export default function ConsultScreen({ navigation }: any) {
           <View style={styles.tag}>
             <Text style={styles.tagText}>AI分析</Text>
           </View>
-          <View style={[styles.tag, { backgroundColor: Colors.primaryLight }]}>
-            <Text style={[styles.tagText, { color: Colors.primaryDark }]}>科学配比</Text>
+          <View style={[styles.tag, { backgroundColor: Theme.colors.primaryLight }]}>
+            <Text style={[styles.tagText, { color: Theme.colors.primaryDark }]}>科学配比</Text>
           </View>
-          <View style={[styles.tag, { backgroundColor: Colors.highlight }]}>
-            <Text style={[styles.tagText, { color: Colors.primaryDark }]}>一键生成</Text>
+          <View style={[styles.tag, { backgroundColor: Theme.colors.highlight }]}>
+            <Text style={[styles.tagText, { color: Theme.colors.primaryDark }]}>一键生成</Text>
           </View>
         </View>
 
@@ -85,7 +82,7 @@ export default function ConsultScreen({ navigation }: any) {
               onPress={() => navigation.navigate('Chat', { initialMessage: question })}
             >
               <Text style={styles.questionText}>{question}</Text>
-              <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} />
+              <Ionicons name="chevron-forward" size={16} color={Theme.colors.textMuted} />
             </TouchableOpacity>
           ))}
         </View>
@@ -99,7 +96,7 @@ export default function ConsultScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   scrollView: {
     flex: 1,
@@ -108,60 +105,29 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 40,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: Colors.card,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.text,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginTop: 4,
-  },
-  headerIcon: {
-    width: 48,
-    height: 48,
-    backgroundColor: Colors.cream,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   cardsContainer: {
-    padding: 16,
-    gap: 12,
+    padding: Theme.spacing.lg,
+    gap: Theme.spacing.compact,
   },
   featureCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.card,
-    padding: 16,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    elevation: 2,
+    backgroundColor: Theme.colors.card,
+    padding: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
   },
   iconContainer: {
     width: 64,
     height: 64,
-    borderRadius: 16,
+    borderRadius: Theme.radius.lg,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: Theme.spacing.lg,
   },
   iconText: {
     fontSize: 32,
@@ -170,59 +136,61 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   featureTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 4,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.xs,
   },
   featureDesc: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
     lineHeight: 20,
   },
   tagsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    gap: 8,
+    paddingHorizontal: Theme.spacing.lg,
+    gap: Theme.spacing.sm,
     marginTop: -8,
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   tag: {
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.xs,
   },
   tagText: {
-    color: Colors.primaryDark,
-    fontSize: 12,
-    fontWeight: '500',
+    color: Theme.colors.primaryDark,
+    fontSize: Theme.typography.sizes.small,
+    fontWeight: Theme.typography.weights.medium,
   },
   section: {
-    padding: 16,
+    marginHorizontal: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.lg,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.compact,
   },
   questionItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: Colors.card,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
+    backgroundColor: Theme.colors.card,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
+    padding: Theme.spacing.lg,
+    borderRadius: Theme.radius.md,
+    marginBottom: Theme.spacing.sm,
   },
   questionText: {
-    fontSize: 14,
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.text,
   },
 });

@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import ScreenHeader from '../../components/ScreenHeader';
+import { Theme } from '../../constants/Theme';
 import { UserService } from '../../services/api';
 import { Achievement } from '../../types';
 
@@ -199,17 +200,17 @@ export default function AchievementsScreen({ navigation }: any) {
     const { conditionValue, conditionType } = badge;
     
     if (conditionType === 'streak_days') {
-      if (conditionValue >= 30) return { level: '困难', color: Colors.danger };
-      if (conditionValue >= 7) return { level: '中等', color: Colors.warning };
-      return { level: '简单', color: Colors.success };
+      if (conditionValue >= 30) return { level: '困难', color: Theme.colors.danger };
+      if (conditionValue >= 7) return { level: '中等', color: Theme.colors.warning };
+      return { level: '简单', color: Theme.colors.success };
     }
     if (conditionType === 'record_count' && conditionValue >= 50) {
-      return { level: '困难', color: Colors.danger };
+      return { level: '困难', color: Theme.colors.danger };
     }
     if (conditionValue >= 20) {
-      return { level: '中等', color: Colors.warning };
+      return { level: '中等', color: Theme.colors.warning };
     }
-    return { level: '简单', color: Colors.success };
+    return { level: '简单', color: Theme.colors.success };
   };
 
   // 获取进度单位
@@ -237,13 +238,7 @@ export default function AchievementsScreen({ navigation }: any) {
   return (
     <SafeAreaView style={styles.container}>
       {/* 头部 */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={28} color={Colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>成就徽章</Text>
-        <View style={{ width: 28 }} />
-      </View>
+      <ScreenHeader title="成就徽章" subtitle="收集徽章，记录健康里程碑" />
 
       {/* 进度概览 */}
       <View style={styles.progressCard}>
@@ -414,15 +409,15 @@ export default function AchievementsScreen({ navigation }: any) {
                     </View>
                   </View>
                   {selectedBadge.isUnlocked && (
-                    <View style={[styles.modalTag, { backgroundColor: Colors.success + '20' }]}>
-                      <Text style={[styles.modalTagText, { color: Colors.success }]}>
+                    <View style={[styles.modalTag, { backgroundColor: Theme.colors.success + '20' }]}>
+                      <Text style={[styles.modalTagText, { color: Theme.colors.success }]}>
                         ✓ 已解锁
                       </Text>
                     </View>
                   )}
                   {!selectedBadge.isUnlocked && (
-                    <View style={[styles.modalTag, { backgroundColor: Colors.alpha.text10 }]}>
-                      <Text style={[styles.modalTagText, { color: Colors.textSecondary }]}>
+                    <View style={[styles.modalTag, { backgroundColor: Theme.colors.alpha.text10 }]}>
+                      <Text style={[styles.modalTagText, { color: Theme.colors.textSecondary }]}>
                         🔒 未解锁
                       </Text>
                     </View>
@@ -437,7 +432,7 @@ export default function AchievementsScreen({ navigation }: any) {
                 {/* 解锁条件 */}
                 <View style={styles.modalInfoCard}>
                   <View style={styles.modalInfoRow}>
-                    <Ionicons name="trophy-outline" size={18} color={Colors.primary} />
+                    <Ionicons name="trophy-outline" size={18} color={Theme.colors.primary} />
                     <View style={styles.modalInfoContent}>
                       <Text style={styles.modalInfoLabel}>解锁条件</Text>
                       <Text style={styles.modalInfoValue}>{getConditionText(selectedBadge)}</Text>
@@ -447,7 +442,7 @@ export default function AchievementsScreen({ navigation }: any) {
                   <View style={styles.modalDivider} />
                   
                   <View style={styles.modalInfoRow}>
-                    <Ionicons name="fitness-outline" size={18} color={Colors.warning} />
+                    <Ionicons name="fitness-outline" size={18} color={Theme.colors.warning} />
                     <View style={styles.modalInfoContent}>
                       <Text style={styles.modalInfoLabel}>难度等级</Text>
                       <View style={styles.difficultyBadge}>
@@ -468,7 +463,7 @@ export default function AchievementsScreen({ navigation }: any) {
                 {/* 解锁时间 */}
                 {selectedBadge.isUnlocked && selectedBadge.unlockedAt && (
                   <View style={styles.modalUnlockInfo}>
-                    <Ionicons name="calendar-outline" size={16} color={Colors.success} />
+                    <Ionicons name="calendar-outline" size={16} color={Theme.colors.success} />
                     <Text style={styles.modalUnlockText}>
                       解锁于 {new Date(selectedBadge.unlockedAt).toLocaleDateString('zh-CN', {
                         year: 'numeric',
@@ -483,11 +478,11 @@ export default function AchievementsScreen({ navigation }: any) {
                 {!selectedBadge.isUnlocked && (
                   <View style={[styles.modalInfoCard, { marginBottom: 12 }]}>
                     <View style={styles.modalInfoRow}>
-                      <Ionicons name="trending-up-outline" size={18} color={Colors.primary} />
+                      <Ionicons name="trending-up-outline" size={18} color={Theme.colors.primary} />
                       <View style={{ flex: 1, marginLeft: 12 }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
                           <Text style={styles.modalInfoLabel}>当前进度</Text>
-                          <Text style={[styles.modalInfoValue, { color: Colors.primary }]}>
+                          <Text style={[styles.modalInfoValue, { color: Theme.colors.primary }]}>
                             {getBadgeProgress(selectedBadge.badgeCode).current} / {getBadgeProgress(selectedBadge.badgeCode).target}
                           </Text>
                         </View>
@@ -541,80 +536,68 @@ export default function AchievementsScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.text,
+    backgroundColor: Theme.colors.background,
   },
   progressCard: {
-    backgroundColor: Colors.card,
-    margin: 16,
-    marginTop: 0,
-    padding: 16,
-    borderRadius: 16,
+    backgroundColor: Theme.colors.card,
+    margin: Theme.spacing.lg,
+    marginTop: Theme.spacing.lg,
+    padding: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
   },
   progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: Theme.spacing.compact,
   },
   progressTitle: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
   },
   progressCount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.primary,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.primary,
   },
   progressBar: {
     height: 8,
-    backgroundColor: Colors.border,
-    borderRadius: 4,
+    backgroundColor: Theme.colors.border,
+    borderRadius: Theme.radius.xxs,
     overflow: 'hidden',
-    marginBottom: 8,
+    marginBottom: Theme.spacing.sm,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: Colors.primary,
-    borderRadius: 4,
+    backgroundColor: Theme.colors.primary,
+    borderRadius: Theme.radius.xxs,
   },
   progressText: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
   },
   filterContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    gap: 8,
+    paddingHorizontal: Theme.spacing.lg,
+    marginBottom: Theme.spacing.lg,
+    gap: Theme.spacing.sm,
   },
   filterTab: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: Colors.card,
+    paddingHorizontal: Theme.spacing.lg,
+    paddingVertical: Theme.spacing.sm,
+    borderRadius: Theme.radius.xl,
+    backgroundColor: Theme.colors.card,
   },
   filterTabActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
   },
   filterTabText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
   },
   filterTabTextActive: {
     color: 'white',
-    fontWeight: '500',
+    fontWeight: Theme.typography.weights.medium,
   },
   scrollView: {
     flex: 1,
@@ -622,15 +605,15 @@ const styles = StyleSheet.create({
   badgesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 12,
-    paddingBottom: 24,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingBottom: Theme.spacing.xl,
   },
   badgeCard: {
     width: (width - 48) / 3,
-    margin: 4,
-    padding: 12,
-    backgroundColor: Colors.card,
-    borderRadius: 16,
+    margin: Theme.spacing.xs,
+    padding: Theme.spacing.compact,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.lg,
     alignItems: 'center',
     position: 'relative',
   },
@@ -643,7 +626,7 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: Theme.spacing.sm,
     position: 'relative',
   },
   badgeEmoji: {
@@ -653,39 +636,39 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -4,
     right: -4,
-    backgroundColor: Colors.danger,
-    paddingHorizontal: 6,
+    backgroundColor: Theme.colors.danger,
+    paddingHorizontal: Theme.spacing.xs,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: Theme.radius.xs,
   },
   newBadgeText: {
-    fontSize: 10,
+    fontSize: Theme.typography.sizes.tiny,
     color: 'white',
-    fontWeight: 'bold',
+    fontWeight: Theme.typography.weights.bold,
   },
   badgeName: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.small,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
     textAlign: 'center',
   },
   badgeNameLocked: {
-    color: Colors.textMuted,
+    color: Theme.colors.textMuted,
   },
   badgeCategory: {
-    fontSize: 10,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.tiny,
+    color: Theme.colors.textSecondary,
     marginTop: 2,
   },
   badgeProgressContainer: {
     width: '100%',
-    marginTop: 6,
+    marginTop: Theme.spacing.xs,
     alignItems: 'center',
   },
   badgeProgressBar: {
     width: '100%',
     height: 4,
-    backgroundColor: Colors.border,
+    backgroundColor: Theme.colors.border,
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -694,10 +677,10 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   badgeProgressText: {
-    fontSize: 10,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.tiny,
+    color: Theme.colors.textMuted,
     marginTop: 3,
-    fontWeight: '500',
+    fontWeight: Theme.typography.weights.medium,
   },
   lockedOverlay: {
     position: 'absolute',
@@ -708,19 +691,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.3)',
-    borderRadius: 16,
+    borderRadius: Theme.radius.lg,
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: Theme.spacing.xl,
   },
   modalContent: {
-    backgroundColor: Colors.card,
+    backgroundColor: Theme.colors.card,
     borderRadius: 24,
-    padding: 24,
+    padding: Theme.spacing.xl,
     width: '100%',
     maxWidth: 320,
     alignItems: 'center',
@@ -731,7 +714,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
     position: 'relative',
   },
   modalEmoji: {
@@ -749,78 +732,78 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 8,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.sm,
   },
   modalBadge: {
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 16,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.md,
+    marginBottom: Theme.spacing.lg,
   },
   modalBadgeText: {
-    fontSize: 12,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   modalDesc: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   modalCondition: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
+    gap: Theme.spacing.sm,
+    marginBottom: Theme.spacing.sm,
   },
   modalConditionText: {
-    fontSize: 13,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   modalDate: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   modalDateText: {
-    fontSize: 13,
-    color: Colors.success,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.success,
   },
   // 新弹窗样式
   modalTags: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
+    gap: Theme.spacing.sm,
+    marginBottom: Theme.spacing.compact,
     flexWrap: 'wrap',
     justifyContent: 'center',
   },
   modalTag: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.md,
   },
   modalTagText: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.small,
+    fontWeight: Theme.typography.weights.medium,
   },
   modalInfoCard: {
     width: '100%',
-    backgroundColor: Colors.background,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+    backgroundColor: Theme.colors.background,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.lg,
+    marginBottom: Theme.spacing.lg,
   },
   modalInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Theme.spacing.compact,
   },
   modalInfoContent: {
     flex: 1,
@@ -829,82 +812,82 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalInfoLabel: {
-    fontSize: 13,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   modalInfoValue: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   modalDivider: {
     height: 1,
-    backgroundColor: Colors.border,
-    marginVertical: 12,
+    backgroundColor: Theme.colors.border,
+    marginVertical: Theme.spacing.compact,
   },
   difficultyBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: Theme.spacing.xs,
   },
   difficultyDot: {
     width: 8,
     height: 8,
-    borderRadius: 4,
+    borderRadius: Theme.radius.xxs,
   },
   modalUnlockInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: Colors.success + '10',
-    borderRadius: 12,
+    gap: Theme.spacing.sm,
+    marginBottom: Theme.spacing.lg,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.sm,
+    backgroundColor: Theme.colors.success + '10',
+    borderRadius: Theme.radius.md,
   },
   modalUnlockText: {
-    fontSize: 13,
-    color: Colors.success,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.success,
+    fontWeight: Theme.typography.weights.medium,
   },
   modalLockedHint: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: Colors.cream,
-    borderRadius: 12,
+    gap: Theme.spacing.sm,
+    marginBottom: Theme.spacing.lg,
+    paddingHorizontal: Theme.spacing.lg,
+    paddingVertical: Theme.spacing.compact,
+    backgroundColor: Theme.colors.cream,
+    borderRadius: Theme.radius.md,
   },
   modalLockedHintText: {
-    fontSize: 13,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
     flex: 1,
   },
   modalCloseBtn: {
-    marginTop: 4,
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    backgroundColor: Colors.primary,
-    borderRadius: 12,
+    marginTop: Theme.spacing.xs,
+    paddingHorizontal: Theme.spacing.xxl,
+    paddingVertical: Theme.spacing.compact,
+    backgroundColor: Theme.colors.primary,
+    borderRadius: Theme.radius.md,
     width: '100%',
     alignItems: 'center',
   },
   modalCloseText: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: Theme.typography.sizes.h3,
+    fontWeight: Theme.typography.weights.semibold,
     color: 'white',
   },
   modalProgressBar: {
     width: '100%',
     height: 8,
-    backgroundColor: Colors.border,
-    borderRadius: 4,
+    backgroundColor: Theme.colors.border,
+    borderRadius: Theme.radius.xxs,
     overflow: 'hidden',
   },
   modalProgressFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: Theme.radius.xxs,
   },
 });

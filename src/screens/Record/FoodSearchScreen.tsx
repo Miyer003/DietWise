@@ -14,7 +14,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
+import ScreenHeader from '../../components/ScreenHeader';
 import { FoodService, DietService, AIService } from '../../services/api';
 import { FoodItem, MealType } from '../../types';
 
@@ -159,38 +160,13 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
   };
 
   // 食物项渲染
-  const renderFoodItem = ({ item }: { item: FoodItem }) => (
-    <TouchableOpacity
-      style={styles.foodItem}
-      onPress={() => {
-        setSelectedFood(item);
-        setQuantity(item.defaultPortionG || 100);
-      }}
-    >
-      <View style={styles.foodInfo}>
-        <Text style={styles.foodName}>{item.name}</Text>
-        <Text style={styles.foodCategory}>{item.category}</Text>
-      </View>
-      <View style={styles.foodCalories}>
-        <Text style={styles.calorieValue}>{item.caloriesPer100g}</Text>
-        <Text style={styles.calorieUnit}>kcal/100g</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
   // 选择数量视图
   if (selectedFood) {
     const nutrition = calculateNutrition(selectedFood, quantity);
 
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => setSelectedFood(null)}>
-            <Ionicons name="chevron-back" size={24} color={Colors.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>确认份量</Text>
-          <View style={{ width: 24 }} />
-        </View>
+        <ScreenHeader title="确认份量" />
 
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -240,7 +216,7 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
                   style={styles.sliderBtn}
                   onPress={() => setQuantity(Math.max(10, quantity - 10))}
                 >
-                  <Ionicons name="remove" size={20} color={Colors.text} />
+                  <Ionicons name="remove" size={20} color={Theme.colors.text} />
                 </TouchableOpacity>
                 <View style={styles.sliderTrack}>
                   <View
@@ -254,7 +230,7 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
                   style={styles.sliderBtn}
                   onPress={() => setQuantity(Math.min(1000, quantity + 10))}
                 >
-                  <Ionicons name="add" size={20} color={Colors.text} />
+                  <Ionicons name="add" size={20} color={Theme.colors.text} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -296,93 +272,105 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 头部 */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={Colors.text} />
-        </TouchableOpacity>
-        <View style={styles.searchBox}>
-          <Ionicons name="search" size={18} color={Colors.textMuted} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="搜索食物..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            autoFocus
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={18} color={Colors.textMuted} />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
+      <ScreenHeader title="搜索食物" subtitle="查找食物并添加记录" />
 
-      {/* AI 智能分析入口 */}
-      <TouchableOpacity 
-        style={styles.aiEntryCard}
-        onPress={() => navigation.navigate('FoodAIInput', { mealType })}
+      <ScrollView
+        showsVerticalScrollIndicator={true}
+        contentContainerStyle={{ paddingBottom: 40 }}
       >
-        <View style={styles.aiEntryContent}>
-          <View style={styles.aiEntryIcon}>
-            <Ionicons name="sparkles" size={24} color={Colors.primary} />
-          </View>
-          <View style={styles.aiEntryText}>
-            <Text style={styles.aiEntryTitle}>AI 智能分析</Text>
-            <Text style={styles.aiEntryDesc}>输入食物名称，AI自动分析营养成分</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
-        </View>
-      </TouchableOpacity>
+        {/* AI 智能分析入口 */}
+        <TouchableOpacity
+          style={styles.aiEntryRow}
+          onPress={() => navigation.navigate('FoodAIInput', { mealType })}
+        >
+          <Ionicons name="sparkles" size={16} color={Theme.colors.primary} />
+          <Text style={styles.aiEntryLabel}>AI 智能分析</Text>
+          <Ionicons name="chevron-forward" size={16} color={Theme.colors.primary} />
+        </TouchableOpacity>
 
-      {/* 分类筛选 */}
-      <View style={styles.categoryContainer}>
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={CATEGORIES}
-          keyExtractor={(item) => item}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[
-                styles.categoryBtn,
-                selectedCategory === item && styles.categoryBtnActive,
-              ]}
-              onPress={() => setSelectedCategory(item)}
-            >
-              <Text
-                style={[
-                  styles.categoryText,
-                  selectedCategory === item && styles.categoryTextActive,
-                ]}
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          )}
-          contentContainerStyle={styles.categoryList}
-        />
-      </View>
-
-      {/* 食物库列表 */}
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-        </View>
-      ) : (
-        <FlatList
-          data={foods}
-          keyExtractor={(item) => item.id}
-          renderItem={renderFoodItem}
-          contentContainerStyle={[styles.listContainer, { flexGrow: 1, paddingBottom: 40 }]}
-          showsVerticalScrollIndicator={true}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>暂无食物数据</Text>
+        <View style={styles.filterCard}>
+          {/* 搜索框 */}
+          <View style={styles.header}>
+            <View style={styles.searchBox}>
+              <Ionicons name="search" size={18} color={Theme.colors.textMuted} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="搜索食物..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoFocus
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchQuery('')}>
+                  <Ionicons name="close-circle" size={18} color={Theme.colors.textMuted} />
+                </TouchableOpacity>
+              )}
             </View>
-          }
-        />
-      )}
+          </View>
+
+          {/* 分类筛选 */}
+          <View style={styles.categoryContainer}>
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              data={CATEGORIES}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.categoryBtn,
+                    selectedCategory === item && styles.categoryBtnActive,
+                  ]}
+                  onPress={() => setSelectedCategory(item)}
+                >
+                  <Text
+                    style={[
+                      styles.categoryText,
+                      selectedCategory === item && styles.categoryTextActive,
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              contentContainerStyle={styles.categoryList}
+            />
+          </View>
+        </View>
+
+        {/* 食物库列表 */}
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Theme.colors.primary} />
+          </View>
+        ) : foods.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>暂无食物数据</Text>
+          </View>
+        ) : (
+          <View style={styles.foodGrid}>
+            {foods.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.foodCard}
+                onPress={() => {
+                  setSelectedFood(item);
+                  setQuantity(item.defaultPortionG || 100);
+                }}
+              >
+                <View style={styles.foodInfo}>
+                  <Text style={styles.foodName}>{item.name}</Text>
+                  <Text style={styles.foodCategory}>{item.category}</Text>
+                </View>
+                <View style={styles.foodCalories}>
+                  <Text style={styles.calorieValue}>{item.caloriesPer100g}</Text>
+                  <Text style={styles.calorieUnit}>kcal/100g</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -390,304 +378,292 @@ export default function FoodSearchScreen({ navigation, route }: FoodSearchScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   // AI 入口样式
-  aiEntryCard: {
-    backgroundColor: Colors.card,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.primaryLight,
-  },
-  aiEntryContent: {
+  aiEntryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    gap: 12,
+    paddingHorizontal: Theme.spacing.page,
+    paddingVertical: Theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.divider,
+    gap: Theme.spacing.xs,
   },
-  aiEntryIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Colors.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
+  aiEntryLabel: {
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.medium,
+    color: Theme.colors.primary,
   },
-  aiEntryText: {
-    flex: 1,
-  },
-  aiEntryTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  aiEntryDesc: {
-    fontSize: 13,
-    color: Colors.textSecondary,
+  filterCard: {
+    backgroundColor: Theme.colors.card,
+    margin: Theme.spacing.lg,
+    marginTop: Theme.spacing.lg,
+    padding: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    gap: 12,
+    justifyContent: 'space-between',
+    paddingBottom: Theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
   },
   searchBox: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.card,
-    borderRadius: 10,
-    paddingHorizontal: 12,
+    backgroundColor: Theme.colors.background,
+    borderRadius: Theme.radius.sm,
+    paddingHorizontal: Theme.spacing.md,
     height: 40,
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   searchInput: {
     flex: 1,
-    fontSize: 15,
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.text,
   },
   categoryContainer: {
-    marginBottom: 8,
+    paddingTop: Theme.spacing.lg,
   },
   categoryList: {
-    paddingHorizontal: 16,
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   categoryBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: Colors.card,
+    paddingHorizontal: Theme.spacing.lg,
+    paddingVertical: Theme.spacing.sm,
+    borderRadius: Theme.radius.lg,
+    backgroundColor: Theme.colors.card,
   },
   categoryBtnActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
   },
   categoryText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
   },
   categoryTextActive: {
     color: 'white',
-    fontWeight: '500',
+    fontWeight: Theme.typography.weights.medium,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  listContainer: {
-    padding: 16,
-    gap: 8,
+  foodGrid: {
+    paddingTop: Theme.spacing.compact,
   },
-  foodItem: {
+  foodCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.card,
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.card,
+    marginHorizontal: Theme.spacing.lg,
+    marginBottom: Theme.spacing.compact,
+    padding: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
   },
   foodInfo: {
     flex: 1,
   },
   foodName: {
-    fontSize: 16,
-    color: Colors.text,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.text,
+    fontWeight: Theme.typography.weights.medium,
   },
   foodCategory: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
   },
   foodMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 4,
+    gap: Theme.spacing.sm,
+    marginTop: Theme.spacing.xs,
   },
   foodCount: {
-    fontSize: 11,
-    color: Colors.primary,
-    fontWeight: '500',
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 6,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingHorizontal: Theme.spacing.xs,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: Theme.radius.xs,
   },
   foodCalories: {
     alignItems: 'flex-end',
   },
   calorieValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.warning,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.warning,
   },
   calorieUnit: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
   },
   emptyContainer: {
     padding: 40,
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 14,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textMuted,
   },
   recentContainer: {
     flex: 1,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    paddingHorizontal: 16,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    paddingHorizontal: Theme.spacing.lg,
+    marginBottom: Theme.spacing.md,
   },
   // 确认页样式
   confirmContainer: {
     flex: 1,
   },
   confirmContentContainer: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: Theme.spacing.lg,
+    paddingBottom: Theme.spacing.xxl,
   },
   selectedFoodCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.page,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   selectedFoodName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 8,
+    fontSize: Theme.typography.sizes.h1,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.sm,
   },
   selectedFoodTags: {
     flexDirection: 'row',
   },
   tag: {
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.md,
   },
   tagText: {
-    fontSize: 12,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   quantityCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.page,
+    marginBottom: Theme.spacing.lg,
   },
   quantityDisplay: {
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'center',
-    marginVertical: 20,
+    marginVertical: Theme.spacing.page,
   },
   quantityValue: {
     fontSize: 48,
-    fontWeight: 'bold',
-    color: Colors.primary,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.primary,
   },
   quantityUnit: {
-    fontSize: 20,
-    color: Colors.textSecondary,
-    marginLeft: 4,
+    fontSize: Theme.typography.sizes.h2,
+    color: Theme.colors.textSecondary,
+    marginLeft: Theme.spacing.xs,
   },
   quickQuantities: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 10,
-    marginBottom: 20,
+    gap: Theme.spacing.compact,
+    marginBottom: Theme.spacing.page,
   },
   quickBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: Colors.cream,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.sm,
+    borderRadius: Theme.radius.xl,
+    backgroundColor: Theme.colors.cream,
   },
   quickBtnActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
   },
   quickBtnText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
   },
   quickBtnTextActive: {
     color: 'white',
-    fontWeight: '500',
+    fontWeight: Theme.typography.weights.medium,
   },
   sliderContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Theme.spacing.md,
   },
   sliderBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: Colors.cream,
+    backgroundColor: Theme.colors.cream,
     justifyContent: 'center',
     alignItems: 'center',
   },
   sliderTrack: {
     flex: 1,
     height: 6,
-    backgroundColor: Colors.border,
+    backgroundColor: Theme.colors.border,
     borderRadius: 3,
   },
   sliderFill: {
     height: '100%',
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
     borderRadius: 3,
   },
   nutritionCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.page,
+    marginBottom: Theme.spacing.lg,
   },
   nutritionRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginTop: 16,
+    marginTop: Theme.spacing.lg,
   },
   nutritionItem: {
     alignItems: 'center',
   },
   nutritionValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
   },
   nutritionLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginTop: 4,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
+    marginTop: Theme.spacing.xs,
   },
   saveBtn: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.primary,
+    paddingVertical: Theme.spacing.lg,
+    borderRadius: Theme.radius.md,
     alignItems: 'center',
   },
   saveBtnText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.bold,
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
-  },
+
 });

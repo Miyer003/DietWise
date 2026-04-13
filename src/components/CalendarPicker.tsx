@@ -8,7 +8,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../constants/Colors';
+import { Theme } from '../constants/Theme';
 
 const { width } = Dimensions.get('window');
 
@@ -116,13 +116,13 @@ export default function CalendarPicker({
           {/* 头部 */}
           <View style={styles.header}>
             <TouchableOpacity onPress={handlePrevMonth} style={styles.arrowButton}>
-              <Ionicons name="chevron-back" size={24} color={Colors.text} />
+              <Ionicons name="chevron-back" size={24} color={Theme.colors.text} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>
               {currentYear}年{monthNames[currentMonth]}
             </Text>
             <TouchableOpacity onPress={handleNextMonth} style={styles.arrowButton}>
-              <Ionicons name="chevron-forward" size={24} color={Colors.text} />
+              <Ionicons name="chevron-forward" size={24} color={Theme.colors.text} />
             </TouchableOpacity>
           </View>
 
@@ -184,7 +184,7 @@ export default function CalendarPicker({
           {/* 图例 */}
           <View style={styles.legend}>
             <View style={styles.legendItem}>
-              <View style={[styles.legendBox, { backgroundColor: Colors.primary }]} />
+              <View style={[styles.legendBox, { backgroundColor: Theme.colors.primary }]} />
               <Text style={styles.legendText}>已选中</Text>
             </View>
             <View style={styles.legendItem}>
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   container: {
-    backgroundColor: Colors.card,
+    backgroundColor: Theme.colors.card,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Theme.colors.text,
   },
   weekDaysRow: {
     flexDirection: 'row',
@@ -243,11 +243,11 @@ const styles = StyleSheet.create({
     width: 40,
     textAlign: 'center',
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: Theme.colors.textSecondary,
     fontWeight: '500',
   },
   weekendText: {
-    color: Colors.danger,
+    color: Theme.colors.danger,
   },
   daysGrid: {
     flexDirection: 'row',
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   },
   dayText: {
     fontSize: 15,
-    color: Colors.text,
+    color: Theme.colors.text,
     fontWeight: '500',
   },
   // 有记录 - 蓝色底色
@@ -283,11 +283,11 @@ const styles = StyleSheet.create({
   // 今天 - 蓝色边框圈起来
   today: {
     borderWidth: 3,
-    borderColor: Colors.primary,
+    borderColor: Theme.colors.primary,
     backgroundColor: 'transparent',
   },
   todayText: {
-    color: Colors.primary,
+    color: Theme.colors.primary,
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -295,14 +295,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -2,
     fontSize: 8,
-    color: Colors.primary,
+    color: Theme.colors.primary,
     fontWeight: 'bold',
   },
   // 选中 - 主色填充
   selectedDay: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
     transform: [{ scale: 1.1 }],
-    shadowColor: Colors.primary,
+    shadowColor: Theme.colors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -334,12 +334,12 @@ const styles = StyleSheet.create({
   },
   todayBox: {
     borderWidth: 3,
-    borderColor: Colors.primary,
+    borderColor: Theme.colors.primary,
     backgroundColor: 'transparent',
   },
   legendText: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: Theme.colors.textSecondary,
     fontWeight: '500',
   },
   closeButton: {
@@ -352,6 +352,6 @@ const styles = StyleSheet.create({
   closeButtonText: {
     fontSize: 16,
     fontWeight: '500',
-    color: Colors.text,
+    color: Theme.colors.text,
   },
 });

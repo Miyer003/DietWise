@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import ScreenHeader from '../../components/ScreenHeader';
+import { Theme } from '../../constants/Theme';
 import { AIService, DietService } from '../../services/api';
 import { NutritionAnalysisResult, MealType } from '../../types';
 
@@ -136,13 +137,7 @@ export default function FoodAIInputScreen({ navigation, route }: FoodAIInputScre
         style={styles.keyboardView}
       >
         {/* 头部 */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={24} color={Colors.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>AI 智能分析</Text>
-          <View style={{ width: 24 }} />
-        </View>
+        <ScreenHeader title="AI 智能分析" />
 
         <ScrollView
           style={styles.scrollView}
@@ -202,7 +197,7 @@ export default function FoodAIInputScreen({ navigation, route }: FoodAIInputScre
                     style={styles.sliderBtn}
                     onPress={() => setQuantity(Math.max(10, quantity - 10))}
                   >
-                    <Ionicons name="remove" size={20} color={Colors.text} />
+                    <Ionicons name="remove" size={20} color={Theme.colors.text} />
                   </TouchableOpacity>
                   <View style={styles.sliderTrack}>
                     <View
@@ -216,7 +211,7 @@ export default function FoodAIInputScreen({ navigation, route }: FoodAIInputScre
                     style={styles.sliderBtn}
                     onPress={() => setQuantity(Math.min(1000, quantity + 10))}
                   >
-                    <Ionicons name="add" size={20} color={Colors.text} />
+                    <Ionicons name="add" size={20} color={Theme.colors.text} />
                   </TouchableOpacity>
                 </View>
                 {/* 快捷份量 */}
@@ -295,7 +290,7 @@ export default function FoodAIInputScreen({ navigation, route }: FoodAIInputScre
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   keyboardView: {
     flex: 1,
@@ -304,233 +299,235 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    padding: Theme.spacing.lg,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    padding: Theme.spacing.lg,
   },
   inputCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.page,
+    marginBottom: Theme.spacing.lg,
+    marginHorizontal: Theme.spacing.lg,
   },
   inputLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 8,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.sm,
   },
   inputHint: {
-    fontSize: 13,
-    color: Colors.textMuted,
-    marginBottom: 16,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textMuted,
+    marginBottom: Theme.spacing.lg,
   },
   textInput: {
-    backgroundColor: Colors.background,
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 15,
-    color: Colors.text,
+    backgroundColor: Theme.colors.background,
+    borderRadius: Theme.radius.md,
+    padding: Theme.spacing.lg,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.text,
     minHeight: 80,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   analyzeBtn: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 12,
-    gap: 8,
+    paddingVertical: Theme.spacing.content,
+    borderRadius: Theme.radius.md,
+    gap: Theme.spacing.sm,
   },
   analyzeBtnDisabled: {
     opacity: 0.6,
   },
   btnIcon: {
-    marginRight: 4,
+    marginRight: Theme.spacing.xs,
   },
   analyzeBtnText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
   },
   resultCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.page,
+    marginHorizontal: Theme.spacing.lg,
   },
   resultHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: Theme.spacing.page,
   },
   resultTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h1,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
     flex: 1,
   },
   confidenceBadge: {
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.md,
   },
   confidenceText: {
-    fontSize: 12,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   quantitySection: {
     marginBottom: 24,
-    paddingBottom: 20,
+    paddingBottom: Theme.spacing.page,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
   sectionLabel: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
+    marginBottom: Theme.spacing.md,
   },
   quantityDisplay: {
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   quantityValue: {
     fontSize: 48,
-    fontWeight: 'bold',
-    color: Colors.primary,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.primary,
   },
   quantityUnit: {
-    fontSize: 20,
-    color: Colors.textSecondary,
-    marginLeft: 4,
+    fontSize: Theme.typography.sizes.h1,
+    color: Theme.colors.textSecondary,
+    marginLeft: Theme.spacing.xs,
   },
   sliderContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
+    gap: Theme.spacing.md,
+    marginBottom: Theme.spacing.lg,
   },
   sliderBtn: {
     width: 36,
     height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.cream,
+    borderRadius: Theme.radius.lg,
+    backgroundColor: Theme.colors.cream,
     justifyContent: 'center',
     alignItems: 'center',
   },
   sliderTrack: {
     flex: 1,
     height: 6,
-    backgroundColor: Colors.border,
+    backgroundColor: Theme.colors.border,
     borderRadius: 3,
   },
   sliderFill: {
     height: '100%',
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
     borderRadius: 3,
   },
   quickQuantities: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 10,
+    gap: Theme.spacing.compact,
   },
   quickBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: Colors.cream,
+    paddingHorizontal: Theme.spacing.content,
+    paddingVertical: Theme.spacing.sm,
+    borderRadius: Theme.radius.xl,
+    backgroundColor: Theme.colors.cream,
   },
   quickBtnActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
   },
   quickBtnText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   quickBtnTextActive: {
     color: 'white',
-    fontWeight: '500',
+    fontWeight: Theme.typography.weights.medium,
   },
   nutritionSection: {
     marginBottom: 24,
   },
   nutritionGrid: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 12,
+    gap: Theme.spacing.compact,
+    marginBottom: Theme.spacing.md,
   },
   nutritionItem: {
     flex: 1,
-    backgroundColor: Colors.background,
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: Theme.colors.background,
+    borderRadius: Theme.radius.md,
+    padding: Theme.spacing.md,
     alignItems: 'center',
   },
   calorieItem: {
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: Theme.colors.primaryLight,
   },
   nutritionValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 4,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.xs,
   },
   nutritionLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
   },
   nutritionSubGrid: {
     flexDirection: 'row',
-    gap: 10,
+    gap: Theme.spacing.compact,
   },
   nutritionSubItem: {
     flex: 1,
-    backgroundColor: Colors.background,
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: Theme.colors.background,
+    borderRadius: Theme.radius.md,
+    padding: Theme.spacing.md,
     alignItems: 'center',
   },
   nutritionSubValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 4,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.xs,
   },
   nutritionSubLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
   },
   saveBtn: {
-    backgroundColor: Colors.warning,
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.warning,
+    paddingVertical: Theme.spacing.lg,
+    borderRadius: Theme.radius.md,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: Theme.spacing.md,
   },
   saveBtnText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
   },
   aiTip: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
     textAlign: 'center',
     fontStyle: 'italic',
   },

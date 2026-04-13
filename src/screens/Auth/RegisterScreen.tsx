@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
+import ScreenHeader from '../../components/ScreenHeader';
 import { useAuth } from '../../store/AuthContext';
 import { AuthService } from '../../services/api';
 
@@ -123,19 +124,7 @@ export default function RegisterScreen({ navigation }: any) {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          {/* 返回按钮 */}
-          <TouchableOpacity
-            style={styles.backBtn}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="chevron-back" size={24} color={Colors.text} />
-          </TouchableOpacity>
-
-          {/* 标题 */}
-          <View style={styles.header}>
-            <Text style={styles.title}>创建账号</Text>
-            <Text style={styles.subtitle}>开启您的健康饮食之旅</Text>
-          </View>
+          <ScreenHeader title="创建账号" subtitle="开启您的健康饮食之旅" />
 
           {/* 输入区域 */}
           <View style={styles.inputContainer}>
@@ -187,7 +176,7 @@ export default function RegisterScreen({ navigation }: any) {
                   disabled={countdown > 0 || isSendingSms}
                 >
                   {isSendingSms ? (
-                    <ActivityIndicator size="small" color={Colors.primary} />
+                    <ActivityIndicator size="small" color={Theme.colors.primary} />
                   ) : (
                     <Text style={[styles.smsBtnText, countdown > 0 && styles.smsBtnTextDisabled]}>
                       {countdown > 0 ? `${countdown}s` : '获取验证码'}
@@ -213,7 +202,7 @@ export default function RegisterScreen({ navigation }: any) {
                   <Ionicons
                     name={showPassword ? 'eye-off' : 'eye'}
                     size={20}
-                    color={Colors.textMuted}
+                    color={Theme.colors.textMuted}
                   />
                 </TouchableOpacity>
               </View>
@@ -280,147 +269,131 @@ export default function RegisterScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 24,
+    padding: Theme.spacing.section,
   },
   backBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.card,
+    borderRadius: Theme.radius.xl,
+    backgroundColor: Theme.colors.card,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
-  header: {
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
+
   inputContainer: {
-    gap: 20,
+    gap: Theme.spacing.page,
   },
   inputWrapper: {
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   inputLabel: {
-    fontSize: 14,
-    color: Colors.text,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.text,
+    fontWeight: Theme.typography.weights.medium,
   },
   inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.md,
+    paddingHorizontal: Theme.spacing.content,
     height: 52,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Theme.colors.border,
   },
   prefix: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginRight: 8,
-    paddingRight: 8,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
+    marginRight: Theme.spacing.sm,
+    paddingRight: Theme.spacing.sm,
     borderRightWidth: 1,
-    borderRightColor: Colors.border,
+    borderRightColor: Theme.colors.border,
   },
   input: {
     flex: 1,
-    fontSize: 16,
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.text,
   },
   smsBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: Theme.spacing.xs,
   },
   smsBtnDisabled: {
     opacity: 0.6,
   },
   smsBtnText: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   smsBtnTextDisabled: {
-    color: Colors.textMuted,
+    color: Theme.colors.textMuted,
   },
   agreement: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: Theme.spacing.section,
   },
   checkbox: {
     width: 20,
     height: 20,
-    borderRadius: 4,
+    borderRadius: Theme.radius.xxs,
     borderWidth: 2,
-    borderColor: Colors.textMuted,
-    marginRight: 8,
+    borderColor: Theme.colors.textMuted,
+    marginRight: Theme.spacing.sm,
     justifyContent: 'center',
     alignItems: 'center',
   },
   checkboxActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
+    borderColor: Theme.colors.primary,
   },
   agreementText: {
-    fontSize: 13,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
     flex: 1,
   },
   linkText: {
-    color: Colors.primary,
+    color: Theme.colors.primary,
   },
   registerBtn: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
     height: 52,
-    borderRadius: 12,
+    borderRadius: Theme.radius.md,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 32,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    marginTop: Theme.spacing.xxl,
+    ...Theme.shadows.button,
   },
   registerBtnDisabled: {
     opacity: 0.7,
   },
   registerBtnText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.bold,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
-    gap: 4,
+    marginTop: Theme.spacing.section,
+    gap: Theme.spacing.xs,
   },
   footerText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
   },
   footerLink: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
 });

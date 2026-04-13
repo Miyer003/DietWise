@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
+import ScreenHeader from '../../components/ScreenHeader';
 
 const APP_VERSION = '2.0.0';
 const BUILD_NUMBER = '20250311';
@@ -25,10 +26,12 @@ export default function AboutScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={true}
       >
+        <ScreenHeader title="关于 DietWise" subtitle="版本信息与应用介绍" />
+
         {/* Logo区域 */}
         <View style={styles.logoSection}>
           <View style={styles.logo}>
-            <Ionicons name="leaf" size={50} color={Colors.primary} />
+            <Ionicons name="leaf" size={50} color={Theme.colors.primary} />
           </View>
           <Text style={styles.appName}>膳智 DietWise</Text>
           <Text style={styles.version}>版本 {APP_VERSION} ({BUILD_NUMBER})</Text>
@@ -55,7 +58,7 @@ export default function AboutScreen() {
               { icon: 'trophy', title: '成就系统', desc: '养成健康习惯' },
             ].map((feature: { icon: React.ComponentProps<typeof Ionicons>['name'], title: string, desc: string }, index: number) => (
               <View key={index} style={styles.featureItem}>
-                <Ionicons name={feature.icon} size={28} color={Colors.primary} style={styles.featureIcon} />
+                <Ionicons name={feature.icon} size={28} color={Theme.colors.primary} style={styles.featureIcon} />
                 <Text style={styles.featureTitle}>{feature.title}</Text>
                 <Text style={styles.featureDesc}>{feature.desc}</Text>
               </View>
@@ -77,7 +80,7 @@ export default function AboutScreen() {
                 onPress={() => openLink(link.url)}
               >
                 <Text style={styles.linkText}>{link.title}</Text>
-                <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+                <Ionicons name="chevron-forward" size={20} color={Theme.colors.textMuted} />
               </TouchableOpacity>
             ))}
           </View>
@@ -88,11 +91,11 @@ export default function AboutScreen() {
           <Text style={styles.sectionTitle}>联系我们</Text>
           <View style={styles.contactCard}>
             <View style={styles.contactItem}>
-              <Ionicons name="mail-outline" size={20} color={Colors.textSecondary} />
+              <Ionicons name="mail-outline" size={20} color={Theme.colors.textSecondary} />
               <Text style={styles.contactText}>support@dietwise.cn</Text>
             </View>
             <View style={styles.contactItem}>
-              <Ionicons name="globe-outline" size={20} color={Colors.textSecondary} />
+              <Ionicons name="globe-outline" size={20} color={Theme.colors.textSecondary} />
               <Text style={styles.contactText}>www.dietwise.cn</Text>
             </View>
           </View>
@@ -113,7 +116,7 @@ export default function AboutScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   scrollView: {
     flex: 1,
@@ -129,113 +132,115 @@ const styles = StyleSheet.create({
   logo: {
     width: 100,
     height: 100,
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: Theme.colors.primaryLight,
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   logoEmoji: {
     fontSize: 50,
   },
   appName: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 8,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.sm,
   },
   version: {
-    fontSize: 14,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textMuted,
   },
   card: {
-    backgroundColor: Colors.card,
-    margin: 16,
-    padding: 20,
-    borderRadius: 16,
+    backgroundColor: Theme.colors.card,
+    margin: Theme.spacing.lg,
+    padding: Theme.spacing.page,
+    borderRadius: Theme.radius.lg,
   },
   description: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
     lineHeight: 22,
   },
   section: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    marginHorizontal: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
+    paddingHorizontal: Theme.spacing.lg,
+    marginBottom: Theme.spacing.lg,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.compact,
   },
   featuresGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: Theme.spacing.compact,
   },
   featureItem: {
     width: (require('react-native').Dimensions.get('window').width - 56) / 3,
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.md,
+    padding: Theme.spacing.lg,
     alignItems: 'center',
   },
   featureIcon: {
     fontSize: 28,
-    marginBottom: 8,
+    marginBottom: Theme.spacing.sm,
   },
   featureTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 4,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.xs,
   },
   featureDesc: {
-    fontSize: 11,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
     textAlign: 'center',
   },
   linksCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.md,
   },
   linkItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: Theme.spacing.lg,
   },
   linkItemBorder: {
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
   linkText: {
-    fontSize: 15,
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h3,
+    color: Theme.colors.text,
   },
   contactCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    padding: 16,
-    gap: 12,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.md,
+    padding: Theme.spacing.lg,
+    gap: Theme.spacing.compact,
   },
   contactItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Theme.spacing.compact,
   },
   contactText: {
-    fontSize: 15,
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h3,
+    color: Theme.colors.text,
   },
   footer: {
     alignItems: 'center',
-    marginTop: 24,
-    paddingVertical: 16,
+    marginTop: Theme.spacing.xl,
+    paddingVertical: Theme.spacing.lg,
   },
   copyright: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
   },
 });

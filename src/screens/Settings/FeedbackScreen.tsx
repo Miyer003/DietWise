@@ -11,14 +11,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
+import ScreenHeader from '../../components/ScreenHeader';
 import { FeedbackService } from '../../services/api';
 
 const FEEDBACK_TYPES = [
-  { key: 'bug', label: '问题反馈', icon: 'bug-outline', color: Colors.danger },
-  { key: 'feature', label: '功能建议', icon: 'bulb-outline', color: Colors.warning },
-  { key: 'data_error', label: '数据错误', icon: 'alert-circle-outline', color: Colors.secondary },
-  { key: 'other', label: '其他', icon: 'chatbubble-outline', color: Colors.success },
+  { key: 'bug', label: '问题反馈', icon: 'bug-outline', color: Theme.colors.danger },
+  { key: 'feature', label: '功能建议', icon: 'bulb-outline', color: Theme.colors.warning },
+  { key: 'data_error', label: '数据错误', icon: 'alert-circle-outline', color: Theme.colors.secondary },
+  { key: 'other', label: '其他', icon: 'chatbubble-outline', color: Theme.colors.success },
 ];
 
 type FeedbackType = 'bug' | 'feature' | 'data_error' | 'other';
@@ -70,30 +71,17 @@ export default function FeedbackScreen({ navigation }: any) {
         showsVerticalScrollIndicator={true}
         keyboardShouldPersistTaps="handled"
       >
-        {/* 说明卡片 */}
-        <View style={[styles.card, styles.infoCard]}>
-          <View style={styles.infoHeader}>
-            <View style={styles.infoIcon}>
-              <Ionicons name="chatbubble-ellipses" size={28} color={Colors.primary} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.infoTitle}>意见反馈</Text>
-              <Text style={styles.infoDesc}>
-                遇到问题或有好的建议？欢迎告诉我们，我们会认真阅读每一条反馈。
-              </Text>
-            </View>
-          </View>
-          
-          {/* 查看我的反馈按钮 */}
-          <TouchableOpacity 
-            style={styles.myFeedbackBtn}
-            onPress={() => navigation.navigate('MyFeedbacks')}
-          >
-            <Ionicons name="document-text-outline" size={16} color={Colors.primary} />
-            <Text style={styles.myFeedbackText}>查看我的反馈</Text>
-            <Ionicons name="chevron-forward" size={16} color={Colors.primary} />
-          </TouchableOpacity>
-        </View>
+        <ScreenHeader title="意见反馈" subtitle="遇到问题或有好的建议？欢迎告诉我们" />
+
+        {/* 查看我的反馈入口 */}
+        <TouchableOpacity 
+          style={styles.myFeedbackBtn}
+          onPress={() => navigation.navigate('MyFeedbacks')}
+        >
+          <Ionicons name="document-text-outline" size={16} color={Theme.colors.primary} />
+          <Text style={styles.myFeedbackText}>查看我的反馈</Text>
+          <Ionicons name="chevron-forward" size={16} color={Theme.colors.primary} />
+        </TouchableOpacity>
 
         {/* 反馈类型选择 */}
         <View style={styles.section}>
@@ -114,7 +102,7 @@ export default function FeedbackScreen({ navigation }: any) {
                 <Ionicons 
                   name={type.icon as any} 
                   size={20} 
-                  color={selectedType === type.key ? type.color : Colors.textMuted} 
+                  color={selectedType === type.key ? type.color : Theme.colors.textMuted} 
                 />
                 <Text style={[
                   styles.typeText,
@@ -184,7 +172,7 @@ export default function FeedbackScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   scrollView: {
     flex: 1,
@@ -194,114 +182,83 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   card: {
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 16,
-  },
-  infoCard: {
-    backgroundColor: Colors.primaryLight,
-    borderWidth: 1,
-    borderColor: Colors.alpha.primary20,
-    margin: 16,
-  },
-  infoHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  infoIcon: {
-    width: 48,
-    height: 48,
-    backgroundColor: Colors.alpha.primary10,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  infoTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  infoDesc: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    lineHeight: 18,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.md,
+    padding: Theme.spacing.lg,
+    marginHorizontal: Theme.spacing.lg,
   },
   myFeedbackBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: Colors.alpha.primary10,
-    gap: 6,
+    paddingHorizontal: Theme.spacing.page,
+    paddingVertical: Theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.divider,
+    gap: Theme.spacing.xs,
   },
   myFeedbackText: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   section: {
-    paddingHorizontal: 16,
-    marginTop: 20,
+    paddingHorizontal: Theme.spacing.lg,
+    marginTop: Theme.spacing.page,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.md,
   },
   required: {
-    color: Colors.danger,
+    color: Theme.colors.danger,
   },
   typeContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: Theme.spacing.compact,
   },
   typeItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: Colors.surface,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    gap: Theme.spacing.xs,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.compact,
+    borderRadius: Theme.radius.xl,
+    backgroundColor: Theme.colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
   },
   typeText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
   },
   contentInput: {
-    fontSize: 14,
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.text,
     lineHeight: 20,
     minHeight: 120,
-    paddingTop: 4,
+    paddingTop: Theme.spacing.xs,
   },
   contactInput: {
-    fontSize: 14,
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.text,
     height: 44,
   },
   charCount: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
     textAlign: 'right',
-    marginTop: 8,
+    marginTop: Theme.spacing.sm,
   },
   submitBtn: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 14,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.primary,
+    paddingVertical: Theme.spacing.compact,
+    borderRadius: Theme.radius.md,
     alignItems: 'center',
   },
   submitBtnDisabled: {
@@ -309,13 +266,13 @@ const styles = StyleSheet.create({
   },
   submitBtnText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.semibold,
   },
   tipText: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
     textAlign: 'center',
-    marginTop: 12,
+    marginTop: Theme.spacing.md,
   },
 });

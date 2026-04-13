@@ -12,9 +12,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import ScreenHeader from '../../components/ScreenHeader';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
 import { AIService, DietService } from '../../services/api';
 import { NutritionAnalysisResult, MealType } from '../../types';
 
@@ -343,7 +344,7 @@ export default function VoiceRecordScreen({ navigation, route }: VoiceRecordScre
   // 渲染处理中界面
   const renderProcessingInterface = () => (
     <View style={styles.centerContainer}>
-      <ActivityIndicator size="large" color={Colors.primary} />
+      <ActivityIndicator size="large" color={Theme.colors.primary} />
       <Text style={styles.processingText}>正在识别语音...</Text>
       <Text style={styles.processingSubText}>AI正在分析您描述的食物</Text>
     </View>
@@ -381,7 +382,7 @@ export default function VoiceRecordScreen({ navigation, route }: VoiceRecordScre
                 style={styles.sliderBtn}
                 onPress={() => setQuantity(Math.max(10, quantity - 10))}
               >
-                <Ionicons name="remove" size={20} color={Colors.text} />
+                <Ionicons name="remove" size={20} color={Theme.colors.text} />
               </TouchableOpacity>
               <View style={styles.sliderTrack}>
                 <View
@@ -395,7 +396,7 @@ export default function VoiceRecordScreen({ navigation, route }: VoiceRecordScre
                 style={styles.sliderBtn}
                 onPress={() => setQuantity(Math.min(1000, quantity + 10))}
               >
-                <Ionicons name="add" size={20} color={Colors.text} />
+                <Ionicons name="add" size={20} color={Theme.colors.text} />
               </TouchableOpacity>
             </View>
             {/* 快捷份量 */}
@@ -476,7 +477,7 @@ export default function VoiceRecordScreen({ navigation, route }: VoiceRecordScre
   // 渲染错误界面
   const renderErrorInterface = () => (
     <View style={styles.centerContainer}>
-      <Ionicons name="alert-circle-outline" size={64} color={Colors.warning} />
+      <Ionicons name="alert-circle-outline" size={64} color={Theme.colors.warning} />
       <Text style={styles.errorTitle}>识别失败</Text>
       <Text style={styles.errorMessage}>{errorMessage}</Text>
       <TouchableOpacity style={styles.retryButton} onPress={retakeRecording}>
@@ -489,7 +490,7 @@ export default function VoiceRecordScreen({ navigation, route }: VoiceRecordScre
   const renderIdleInterface = () => (
     <View style={styles.centerContainer}>
       <View style={styles.voiceIconContainer}>
-        <Ionicons name="mic" size={64} color={Colors.primary} />
+        <Ionicons name="mic" size={64} color={Theme.colors.primary} />
       </View>
       <Text style={styles.idleTitle}>语音速记</Text>
       <Text style={styles.idleHint}>按住下方按钮，描述你吃的食物{'\n'}AI 将自动识别并分析营养成分</Text>
@@ -518,13 +519,7 @@ export default function VoiceRecordScreen({ navigation, route }: VoiceRecordScre
   return (
     <SafeAreaView style={styles.container}>
       {/* 头部 */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={Colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>语音速记</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <ScreenHeader title="语音速记" />
 
       {/* 主要内容 */}
       <View style={styles.content}>
@@ -541,18 +536,7 @@ export default function VoiceRecordScreen({ navigation, route }: VoiceRecordScre
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
+    backgroundColor: Theme.colors.background,
   },
   content: {
     flex: 1,
@@ -568,68 +552,64 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: Theme.colors.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
   },
   idleTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.h1,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.md,
   },
   idleHint: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 32,
   },
   exampleContainer: {
-    backgroundColor: Colors.card,
-    padding: 20,
-    borderRadius: 16,
+    backgroundColor: Theme.colors.card,
+    padding: Theme.spacing.page,
+    borderRadius: Theme.radius.lg,
     width: '100%',
     marginBottom: 32,
   },
   exampleTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.md,
   },
   exampleText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginBottom: 8,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
+    marginBottom: Theme.spacing.sm,
     lineHeight: 20,
   },
   recordButton: {
     width: 88,
     height: 88,
-    borderRadius: 44,
-    backgroundColor: Colors.primary,
+    borderRadius: Theme.radius.xl,
+    backgroundColor: Theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    ...Theme.shadows.cardPressed,
   },
   recordButtonInner: {
     width: 88,
     height: 88,
-    borderRadius: 44,
-    backgroundColor: Colors.primary,
+    borderRadius: Theme.radius.xl,
+    backgroundColor: Theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   recordHint: {
-    marginTop: 16,
-    fontSize: 14,
-    color: Colors.textSecondary,
+    marginTop: Theme.spacing.lg,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   // 录音中样式
   recordingContainer: {
@@ -638,14 +618,14 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   recordingHint: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Colors.primary,
-    marginBottom: 8,
+    fontSize: Theme.typography.sizes.h1,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.primary,
+    marginBottom: Theme.spacing.sm,
   },
   recordingSubHint: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
     marginBottom: 48,
   },
   waveContainer: {
@@ -653,288 +633,287 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     height: 100,
-    gap: 12,
+    gap: Theme.spacing.md,
     marginBottom: 48,
   },
   waveBar: {
     width: 12,
     height: 60,
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
     borderRadius: 6,
   },
   durationText: {
     fontSize: 48,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 8,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.sm,
   },
   durationHint: {
-    fontSize: 14,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textMuted,
     marginBottom: 48,
   },
   stopButton: {
     width: 72,
     height: 72,
-    borderRadius: 36,
-    backgroundColor: Colors.warning,
+    borderRadius: Theme.radius.lg,
+    backgroundColor: Theme.colors.warning,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.warning,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    ...Theme.shadows.cardPressed,
   },
   stopHint: {
-    marginTop: 16,
-    fontSize: 14,
-    color: Colors.textSecondary,
+    marginTop: Theme.spacing.lg,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   // 处理中样式
   processingText: {
     marginTop: 24,
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   processingSubText: {
-    marginTop: 8,
-    fontSize: 14,
-    color: Colors.textSecondary,
+    marginTop: Theme.spacing.sm,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   // 结果样式
   resultScrollView: {
     flex: 1,
-    padding: 16,
+    padding: Theme.spacing.lg,
   },
   transcribedCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.page,
+    marginBottom: Theme.spacing.lg,
   },
   transcribedLabel: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginBottom: 8,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
+    marginBottom: Theme.spacing.sm,
   },
   transcribedText: {
-    fontSize: 16,
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h2,
+    color: Theme.colors.text,
     fontStyle: 'italic',
     lineHeight: 24,
   },
   resultCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 20,
+    marginHorizontal: Theme.spacing.lg,
+    marginBottom: Theme.spacing.compact,
+
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.page,
   },
   resultHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: Theme.spacing.page,
   },
   resultTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h1,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
     flex: 1,
   },
   confidenceBadge: {
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.md,
   },
   confidenceText: {
-    fontSize: 12,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   quantitySection: {
     marginBottom: 24,
-    paddingBottom: 20,
+    paddingBottom: Theme.spacing.page,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
   sectionLabel: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
+    marginBottom: Theme.spacing.md,
   },
   quantityDisplay: {
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   quantityValue: {
     fontSize: 48,
-    fontWeight: 'bold',
-    color: Colors.primary,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.primary,
   },
   quantityUnit: {
-    fontSize: 20,
-    color: Colors.textSecondary,
-    marginLeft: 4,
+    fontSize: Theme.typography.sizes.h1,
+    color: Theme.colors.textSecondary,
+    marginLeft: Theme.spacing.xs,
   },
   sliderContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
+    gap: Theme.spacing.md,
+    marginBottom: Theme.spacing.lg,
   },
   sliderBtn: {
     width: 36,
     height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.cream,
+    borderRadius: Theme.radius.lg,
+    backgroundColor: Theme.colors.cream,
     justifyContent: 'center',
     alignItems: 'center',
   },
   sliderTrack: {
     flex: 1,
     height: 6,
-    backgroundColor: Colors.border,
+    backgroundColor: Theme.colors.border,
     borderRadius: 3,
   },
   sliderFill: {
     height: '100%',
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
     borderRadius: 3,
   },
   quickQuantities: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 10,
+    gap: Theme.spacing.compact,
   },
   quickBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: Colors.cream,
+    paddingHorizontal: Theme.spacing.content,
+    paddingVertical: Theme.spacing.sm,
+    borderRadius: Theme.radius.xl,
+    backgroundColor: Theme.colors.cream,
   },
   quickBtnActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
   },
   quickBtnText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   quickBtnTextActive: {
     color: 'white',
-    fontWeight: '500',
+    fontWeight: Theme.typography.weights.medium,
   },
   nutritionSection: {
     marginBottom: 24,
   },
   nutritionGrid: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 12,
+    gap: Theme.spacing.compact,
+    marginBottom: Theme.spacing.md,
   },
   nutritionItem: {
     flex: 1,
-    backgroundColor: Colors.background,
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: Theme.colors.background,
+    borderRadius: Theme.radius.md,
+    padding: Theme.spacing.md,
     alignItems: 'center',
   },
   calorieItem: {
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: Theme.colors.primaryLight,
   },
   nutritionValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 4,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.xs,
   },
   nutritionLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
   },
   nutritionSubGrid: {
     flexDirection: 'row',
-    gap: 10,
+    gap: Theme.spacing.compact,
   },
   nutritionSubItem: {
     flex: 1,
-    backgroundColor: Colors.background,
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: Theme.colors.background,
+    borderRadius: Theme.radius.md,
+    padding: Theme.spacing.md,
     alignItems: 'center',
   },
   nutritionSubValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 4,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.xs,
   },
   nutritionSubLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
+    gap: Theme.spacing.md,
+    marginBottom: Theme.spacing.lg,
   },
   retakeBtn: {
     flex: 1,
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: Theme.spacing.lg,
+    borderRadius: Theme.radius.md,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Theme.colors.border,
     alignItems: 'center',
   },
   retakeBtnText: {
-    fontSize: 16,
-    color: Colors.text,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.h2,
+    color: Theme.colors.text,
+    fontWeight: Theme.typography.weights.medium,
   },
   saveBtn: {
     flex: 2,
-    backgroundColor: Colors.warning,
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.warning,
+    paddingVertical: Theme.spacing.lg,
+    borderRadius: Theme.radius.md,
     alignItems: 'center',
   },
   saveBtnText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
   },
   aiTip: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
     textAlign: 'center',
     fontStyle: 'italic',
   },
   // 错误样式
   errorTitle: {
-    marginTop: 16,
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.text,
+    marginTop: Theme.spacing.lg,
+    fontSize: Theme.typography.sizes.h1,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
   },
   errorMessage: {
-    marginTop: 8,
-    fontSize: 14,
-    color: Colors.textSecondary,
+    marginTop: Theme.spacing.sm,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
     textAlign: 'center',
     marginBottom: 32,
   },
   retryButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
     paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: Theme.spacing.content,
+    borderRadius: Theme.radius.md,
   },
   retryButtonText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
   },
 });

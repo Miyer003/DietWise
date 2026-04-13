@@ -15,7 +15,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns/format';
 import { startOfWeek } from 'date-fns/startOfWeek';
 import { zhCN } from 'date-fns/locale';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
+import ScreenHeader from '../../components/ScreenHeader';
 import { DietService } from '../../services/api';
 import { DailySummary, WeeklySummary, MonthlySummary, DietRecord } from '../../types';
 import HistoryView from './HistoryView';
@@ -56,7 +57,7 @@ const StatCard: React.FC<{ value: string; label: string; subtext?: string; color
   value,
   label,
   subtext,
-  color = Colors.text,
+  color = Theme.colors.text,
 }) => (
   <View style={styles.statCard}>
     <Text style={[styles.statValue, { color }]}>{value}</Text>
@@ -80,7 +81,7 @@ const NutrientBar: React.FC<{ label: string; current: number; total: number; col
     <View style={styles.nutrientRow}>
       <View style={styles.nutrientHeader}>
         <Text style={styles.nutrientLabel}>{label}</Text>
-        <Text style={[styles.nutrientValue, isLow && { color: Colors.danger }]}>
+        <Text style={[styles.nutrientValue, isLow && { color: Theme.colors.danger }]}>
           {Math.round(current)}g / {Math.round(total)}g
         </Text>
       </View>
@@ -241,7 +242,7 @@ export default function AnalyticsScreen({ navigation, route }: any) {
     if (isLoading && activeTab !== 3) {
       return (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Theme.colors.primary} />
         </View>
       );
     }
@@ -278,21 +279,16 @@ export default function AnalyticsScreen({ navigation, route }: any) {
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }
       >
-        {/* 顶部标题 */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.headerTitle}>饮食分析</Text>
-            <Text style={styles.headerSubtitle}>
-              {activeTab === 0 && `${displayDate} 数据`}
-              {activeTab === 1 && `${displayWeek} 当周数据`}
-              {activeTab === 2 && `${displayMonth} 当月数据`}
-              {activeTab === 3 && '历史记录'}
-            </Text>
-          </View>
-          <View style={styles.headerIcon}>
-            <Ionicons name="bar-chart" size={28} color={Colors.primary} />
-          </View>
-        </View>
+        <ScreenHeader
+          title="饮食分析"
+          subtitle={`${
+            activeTab === 0 ? `${displayDate} 数据` :
+            activeTab === 1 ? `${displayWeek} 当周数据` :
+            activeTab === 2 ? `${displayMonth} 当月数据` :
+            '历史记录'
+          }`}
+          rightIcon="bar-chart"
+        />
 
         {/* 分段控制器 */}
         <View style={styles.segmentWrapper}>
@@ -374,19 +370,19 @@ const TodayView: React.FC<{
           value={calorieConsumed.toLocaleString()} 
           label={`${dateLabel}摄入`} 
           subtext={`剩余 ${Math.round(calorieRemaining)}`} 
-          color={calorieConsumed > calorieGoal ? Colors.danger : Colors.text} 
+          color={calorieConsumed > calorieGoal ? Theme.colors.danger : Theme.colors.text} 
         />
         <StatCard 
           value={records.length.toString()} 
           label="已记录餐次" 
           subtext="目标 3餐" 
-          color={Colors.text} 
+          color={Theme.colors.text} 
         />
         <StatCard 
           value={healthScore.toString()} 
           label="健康评分" 
           subtext={healthScore >= 80 ? '优秀' : healthScore >= 60 ? '良好' : '需改善'} 
-          color={healthScore >= 80 ? Colors.success : healthScore >= 60 ? Colors.warning : Colors.danger} 
+          color={healthScore >= 80 ? Theme.colors.success : healthScore >= 60 ? Theme.colors.warning : Theme.colors.danger} 
         />
       </View>
 
@@ -394,10 +390,10 @@ const TodayView: React.FC<{
       <View style={styles.card}>
         <Text style={styles.cardTitle}>🥜 营养成分分析</Text>
         <View style={styles.nutrientsList}>
-          <NutrientBar label="蛋白质" current={summary?.proteinG || 0} total={proteinGoal} color={Colors.primary} />
-          <NutrientBar label="碳水化合物" current={summary?.carbsG || 0} total={carbsGoal} color={Colors.warning} />
+          <NutrientBar label="蛋白质" current={summary?.proteinG || 0} total={proteinGoal} color={Theme.colors.primary} />
+          <NutrientBar label="碳水化合物" current={summary?.carbsG || 0} total={carbsGoal} color={Theme.colors.warning} />
           <NutrientBar label="脂肪" current={summary?.fatG || 0} total={fatGoal} color="#F97316" />
-          <NutrientBar label="膳食纤维" current={summary?.fiberG || 0} total={fiberGoal} color={Colors.danger} />
+          <NutrientBar label="膳食纤维" current={summary?.fiberG || 0} total={fiberGoal} color={Theme.colors.danger} />
         </View>
       </View>
 
@@ -419,14 +415,14 @@ const TodayView: React.FC<{
                   </Text>
                 </View>
                 <View style={styles.mealCalories}>
-                  <Text style={[styles.calorieValue, record.totalCalories > 800 && { color: Colors.danger }]}>
+                  <Text style={[styles.calorieValue, record.totalCalories > 800 && { color: Theme.colors.danger }]}>
                     {Math.round(record.totalCalories)}
                   </Text>
                   <Text style={styles.calorieUnit}>kcal</Text>
                 </View>
                 {onDelete && (
                   <TouchableOpacity style={styles.deleteButton} onPress={() => onDelete(record.id)}>
-                    <Ionicons name="trash-outline" size={20} color={Colors.danger} />
+                    <Ionicons name="trash-outline" size={20} color={Theme.colors.danger} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -455,9 +451,9 @@ const WeekView: React.FC<{ summary: WeeklySummary | null; displayWeek: string }>
       </View>
       
       <View style={styles.statsGrid}>
-        <StatCard value={Math.round(avgCalories).toString()} label="平均日摄入" subtext="kcal" color={Colors.text} />
-        <StatCard value={healthScore.toString()} label="周健康评分" subtext={healthScore >= 80 ? '良好' : '需改善'} color={healthScore >= 80 ? Colors.success : Colors.warning} />
-        <StatCard value={`${compliantDays}/7`} label="合规天数" subtext="达标天数" color={compliantDays >= 5 ? Colors.success : Colors.warning} />
+        <StatCard value={Math.round(avgCalories).toString()} label="平均日摄入" subtext="kcal" color={Theme.colors.text} />
+        <StatCard value={healthScore.toString()} label="周健康评分" subtext={healthScore >= 80 ? '良好' : '需改善'} color={healthScore >= 80 ? Theme.colors.success : Theme.colors.warning} />
+        <StatCard value={`${compliantDays}/7`} label="合规天数" subtext="达标天数" color={compliantDays >= 5 ? Theme.colors.success : Theme.colors.warning} />
       </View>
 
       <View style={styles.card}>
@@ -487,9 +483,9 @@ const MonthView: React.FC<{ summary: MonthlySummary | null; displayMonth: string
       </View>
       
       <View style={styles.statsGrid}>
-        <StatCard value={Math.round(avgCalories).toString()} label="平均日摄入" subtext="kcal" color={Colors.text} />
-        <StatCard value={healthScore.toString()} label="月健康评分" subtext={healthScore >= 80 ? '良好' : '需改善'} color={healthScore >= 80 ? Colors.success : Colors.warning} />
-        <StatCard value={`${summary?.compliantDays || 0}`} label="合规天数" subtext="达标天数" color={Colors.text} />
+        <StatCard value={Math.round(avgCalories).toString()} label="平均日摄入" subtext="kcal" color={Theme.colors.text} />
+        <StatCard value={healthScore.toString()} label="月健康评分" subtext={healthScore >= 80 ? '良好' : '需改善'} color={healthScore >= 80 ? Theme.colors.success : Theme.colors.warning} />
+        <StatCard value={`${summary?.compliantDays || 0}`} label="合规天数" subtext="达标天数" color={Theme.colors.text} />
       </View>
 
       <View style={styles.card}>
@@ -508,7 +504,7 @@ const MonthView: React.FC<{ summary: MonthlySummary | null; displayMonth: string
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   scrollView: {
     flex: 1,
@@ -521,189 +517,159 @@ const styles = StyleSheet.create({
     padding: 40,
     alignItems: 'center',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: Colors.card,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.text,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginTop: 4,
-  },
-  headerIcon: {
-    width: 40,
-    height: 40,
-    backgroundColor: Colors.cream,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   segmentWrapper: {
-    padding: 16,
+    padding: Theme.spacing.lg,
   },
   segmentContainer: {
     flexDirection: 'row',
-    backgroundColor: Colors.cream,
-    borderRadius: 10,
-    padding: 4,
+    backgroundColor: Theme.colors.cream,
+    borderRadius: Theme.radius.sm,
+    padding: Theme.spacing.xs,
   },
   segmentItem: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: Theme.spacing.sm,
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: Theme.radius.xs,
   },
   segmentItemActive: {
     backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
   },
   segmentText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.medium,
+    color: Theme.colors.textSecondary,
   },
   segmentTextActive: {
-    color: Colors.primary,
+    color: Theme.colors.primary,
   },
   dateBanner: {
-    backgroundColor: Colors.primaryLight,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: 8,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingVertical: Theme.spacing.sm,
+    paddingHorizontal: Theme.spacing.lg,
+    marginHorizontal: Theme.spacing.lg,
+    marginBottom: Theme.spacing.md,
+    borderRadius: Theme.radius.xs,
     alignItems: 'center',
   },
   dateBannerText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.primary,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.primary,
   },
   statsGrid: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    gap: 12,
-    marginBottom: 16,
+    paddingHorizontal: Theme.spacing.lg,
+    gap: Theme.spacing.md,
+    marginBottom: Theme.spacing.lg,
   },
   statCard: {
     flex: 1,
-    backgroundColor: Colors.highlight,
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: Theme.colors.highlight,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.lg,
     alignItems: 'center',
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
   },
   statValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 4,
+    fontSize: Theme.typography.sizes.h1,
+    fontWeight: Theme.typography.weights.bold,
+    marginBottom: Theme.spacing.xs,
   },
   statLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
     marginBottom: 2,
   },
   statSubtext: {
-    fontSize: 11,
-    color: Colors.primary,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.primary,
     marginTop: 2,
   },
   card: {
-    backgroundColor: Colors.cream,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 16,
+    backgroundColor: Theme.colors.cream,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.lg,
+    marginHorizontal: Theme.spacing.lg,
+    marginBottom: Theme.spacing.lg,
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 16,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.lg,
   },
   nutrientsList: {
-    gap: 16,
+    gap: Theme.spacing.lg,
   },
   nutrientRow: {
-    marginBottom: 4,
+    marginBottom: Theme.spacing.xs,
   },
   nutrientHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: Theme.spacing.xs,
   },
   nutrientLabel: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   nutrientValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   progressBar: {
     height: 8,
-    backgroundColor: Colors.border,
-    borderRadius: 4,
+    backgroundColor: Theme.colors.border,
+    borderRadius: Theme.radius.xxs,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: Theme.radius.xxs,
   },
   nutrientSource: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    marginTop: 4,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
+    marginTop: Theme.spacing.xs,
   },
   section: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    marginHorizontal: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
+    paddingHorizontal: Theme.spacing.lg,
+    marginBottom: Theme.spacing.lg,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.md,
   },
   mealCard: {
-    backgroundColor: Colors.cream,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: Theme.colors.cream,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.lg,
+    marginBottom: Theme.spacing.md,
   },
   mealHeader: {
     flexDirection: 'row',
@@ -712,79 +678,79 @@ const styles = StyleSheet.create({
   mealIcon: {
     width: 48,
     height: 48,
-    backgroundColor: Colors.primaryLight,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.primaryLight,
+    borderRadius: Theme.radius.md,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: Theme.spacing.md,
   },
   mealInfo: {
     flex: 1,
   },
   mealType: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   mealFood: {
-    fontSize: 13,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
     marginTop: 2,
   },
   mealCalories: {
     alignItems: 'flex-end',
   },
   calorieValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
   },
   calorieUnit: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
   },
   deleteButton: {
-    padding: 8,
-    marginLeft: 8,
+    padding: Theme.spacing.sm,
+    marginLeft: Theme.spacing.sm,
   },
   deleteButtonText: {
-    fontSize: 16,
+    fontSize: Theme.typography.sizes.h2,
   },
   emptyCard: {
-    backgroundColor: Colors.card,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    borderRadius: 16,
-    padding: 24,
+    backgroundColor: Theme.colors.card,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.xl,
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 14,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textMuted,
   },
   trendItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: Theme.spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
   trendDate: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   trendCalories: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   compliant: {
-    color: Colors.success,
+    color: Theme.colors.success,
   },
   notCompliant: {
-    color: Colors.danger,
+    color: Theme.colors.danger,
   },
 });

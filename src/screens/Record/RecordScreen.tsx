@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
 import { FoodService, DietService } from '../../services/api';
 import { MealType, RecentFoodItem } from '../../types';
 
@@ -20,10 +20,10 @@ interface RecordScreenProps {
 }
 
 const MEAL_TYPES: { type: MealType; name: string; icon: React.ComponentProps<typeof Ionicons>['name']; color: string }[] = [
-  { type: 'breakfast', name: '早餐', icon: 'sunny-outline', color: Colors.highlight },
-  { type: 'lunch', name: '午餐', icon: 'sunny', color: Colors.primaryLight },
-  { type: 'dinner', name: '晚餐', icon: 'moon-outline', color: Colors.highlight },
-  { type: 'snack', name: '加餐', icon: 'cafe-outline', color: Colors.highlight },
+  { type: 'breakfast', name: '早餐', icon: 'sunny-outline', color: Theme.colors.highlight },
+  { type: 'lunch', name: '午餐', icon: 'sunny', color: Theme.colors.primaryLight },
+  { type: 'dinner', name: '晚餐', icon: 'moon-outline', color: Theme.colors.highlight },
+  { type: 'snack', name: '加餐', icon: 'cafe-outline', color: Theme.colors.highlight },
 ];
 
 export default function RecordScreen({ navigation }: RecordScreenProps) {
@@ -194,12 +194,6 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
       >
         {/* 顶部导航 */}
         <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="chevron-back" size={24} color={Colors.text} />
-          </TouchableOpacity>
           <View>
             <Text style={styles.title}>添加记录</Text>
             <Text style={styles.subtitle}>选择记录方式</Text>
@@ -214,13 +208,13 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
             onPress={() => handleMethodSelect('camera')}
           >
             <View style={styles.iconContainer}>
-              <Ionicons name="camera-outline" size={32} color={Colors.primary} />
+              <Ionicons name="camera-outline" size={32} color={Theme.colors.primary} />
             </View>
             <View style={styles.methodInfo}>
               <Text style={styles.methodTitle}>拍照识菜</Text>
               <Text style={styles.methodDesc}>AI识别菜品并估算热量</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+            <Ionicons name="chevron-forward" size={20} color={Theme.colors.textMuted} />
           </TouchableOpacity>
 
           {/* 语音速记 */}
@@ -229,13 +223,13 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
             onPress={() => handleMethodSelect('voice')}
           >
             <View style={styles.iconContainer}>
-              <Ionicons name="mic" size={32} color={Colors.primary} />
+              <Ionicons name="mic" size={32} color={Theme.colors.primary} />
             </View>
             <View style={styles.methodInfo}>
               <Text style={styles.methodTitle}>语音速记</Text>
               <Text style={styles.methodDesc}>按住说话，自动解析食物名称</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+            <Ionicons name="chevron-forward" size={20} color={Theme.colors.textMuted} />
           </TouchableOpacity>
 
           {/* 手动输入 */}
@@ -244,13 +238,13 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
             onPress={() => handleMethodSelect('manual')}
           >
             <View style={styles.iconContainer}>
-              <Ionicons name="keypad-outline" size={32} color={Colors.primary} />
+              <Ionicons name="keypad-outline" size={32} color={Theme.colors.primary} />
             </View>
             <View style={styles.methodInfo}>
               <Text style={styles.methodTitle}>手动输入</Text>
               <Text style={styles.methodDesc}>搜索食物库，精确记录分量</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+            <Ionicons name="chevron-forward" size={20} color={Theme.colors.textMuted} />
           </TouchableOpacity>
         </View>
 
@@ -279,7 +273,7 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
                       )}
                     </View>
                   </View>
-                  <Ionicons name="add-circle" size={20} color={Colors.primary} />
+                  <Ionicons name="add-circle" size={20} color={Theme.colors.primary} />
                 </TouchableOpacity>
               ))
             ) : (
@@ -304,7 +298,7 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>选择餐次</Text>
               <TouchableOpacity onPress={() => setShowMealSelector(false)}>
-                <Ionicons name="close" size={24} color={Colors.text} />
+                <Ionicons name="close" size={24} color={Theme.colors.text} />
               </TouchableOpacity>
             </View>
             <View style={styles.mealTypeGrid}>
@@ -314,7 +308,7 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
                   style={[styles.mealTypeBtn, { backgroundColor: meal.color }]}
                   onPress={() => handleMealTypeSelect(meal.type)}
                 >
-                  <Ionicons name={meal.icon} size={28} color={Colors.text} />
+                  <Ionicons name={meal.icon} size={28} color={Theme.colors.text} />
                   <Text style={styles.mealTypeName}>{meal.name}</Text>
                 </TouchableOpacity>
               ))}
@@ -329,7 +323,7 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   scrollView: {
     flex: 1,
@@ -341,102 +335,99 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: Colors.card,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+    padding: Theme.spacing.page,
+    backgroundColor: Theme.colors.card,
+    ...Theme.shadows.card,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: Theme.colors.border,
   },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.background,
+    borderRadius: Theme.radius.xl,
+    backgroundColor: Theme.colors.background,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: Theme.spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h1,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
   },
   subtitle: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginTop: 2,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
+    marginTop: Theme.spacing.xs,
   },
   methodsContainer: {
-    padding: 16,
-    gap: 12,
+    padding: Theme.spacing.lg,
+    gap: Theme.spacing.md,
   },
   methodCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.card,
-    padding: 16,
-    borderRadius: 16,
+    backgroundColor: Theme.colors.card,
+    padding: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+    marginHorizontal: Theme.spacing.lg,
   },
   iconContainer: {
     width: 56,
     height: 56,
-    borderRadius: 16,
+    borderRadius: Theme.radius.lg,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: Theme.spacing.lg,
   },
   iconText: {
-    fontSize: 28,
+    fontSize: Theme.typography.sizes.h1,
   },
   methodInfo: {
     flex: 1,
   },
   methodTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 4,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.xs,
   },
   methodDesc: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   comingSoonBadge: {
-    backgroundColor: Colors.cream,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: Theme.colors.cream,
+    paddingHorizontal: Theme.spacing.sm,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.xs,
   },
   comingSoonText: {
-    fontSize: 11,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
   },
   recentSection: {
-    padding: 16,
+    padding: Theme.spacing.lg,
   },
   sectionTitle: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
+    marginBottom: Theme.spacing.md,
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: Theme.spacing.compact,
   },
   foodCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.md,
+    padding: Theme.spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -451,28 +442,28 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   foodCardName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 4,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.xs,
   },
   foodCardMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   foodCardCount: {
-    fontSize: 11,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   foodCardTime: {
-    fontSize: 11,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
   },
   emptyText: {
-    fontSize: 14,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textMuted,
     fontStyle: 'italic',
   },
   // 弹窗样式
@@ -482,40 +473,40 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 20,
+    padding: Theme.spacing.page,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: Theme.spacing.page,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
   },
   mealTypeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: Theme.spacing.md,
   },
   mealTypeBtn: {
     width: (require('react-native').Dimensions.get('window').width - 64) / 2,
     paddingVertical: 24,
-    borderRadius: 16,
+    borderRadius: Theme.radius.lg,
     alignItems: 'center',
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   mealTypeIcon: {
     fontSize: 32,
   },
   mealTypeName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
 });

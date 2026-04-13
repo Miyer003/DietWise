@@ -13,9 +13,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
+import ScreenHeader from '../../components/ScreenHeader';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
 import { AIService, DietService } from '../../services/api';
 import { NutritionAnalysisResult, MealType } from '../../types';
 
@@ -174,7 +175,7 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
       const requestData = {
         recordDate: today,
         mealType: mealType,
-        inputMethod: 'photo',
+        inputMethod: 'photo' as const,
         items: [
           {
             foodName: result.foodName,
@@ -253,13 +254,12 @@ export default function CameraScreen({ navigation, route }: CameraScreenProps) {
     console.log('显示分析结果页面:', analysisResult);
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="close" size={28} color={Colors.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>识别结果 - {analysisResult.foodName}</Text>
-          <View style={{ width: 28 }} />
-        </View>
+        <ScreenHeader
+          title={analysisResult.foodName}
+          subtitle="识别结果"
+          rightIcon="close"
+          onRightPress={() => navigation.goBack()}
+        />
 
         <View style={styles.resultContainer}>
           {capturedImage && (
@@ -415,23 +415,23 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   permissionText: {
-    fontSize: 16,
-    color: Colors.text,
-    marginBottom: 16,
+    fontSize: Theme.typography.sizes.h2,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.lg,
   },
   permissionBtn: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
     paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: Theme.spacing.md,
+    borderRadius: Theme.radius.xs,
   },
   permissionBtnText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.medium,
   },
   camera: {
     flex: 1,
@@ -440,19 +440,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    paddingTop: 10,
+    padding: Theme.spacing.page,
+    paddingTop: Theme.spacing.compact,
   },
   mealTypeBadge: {
     backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: Theme.spacing.lg,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.lg,
   },
   mealTypeText: {
     color: 'white',
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.medium,
   },
   focusFrame: {
     position: 'absolute',
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderLeftWidth: 3,
     borderTopWidth: 3,
-    borderColor: Colors.primary,
+    borderColor: Theme.colors.primary,
   },
   focusCornerTopRight: {
     right: 0,
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
   galleryBtn: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: Theme.radius.xl,
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
   captureBtn: {
     width: 80,
     height: 80,
-    borderRadius: 40,
+    borderRadius: Theme.radius.lg,
     backgroundColor: 'rgba(255,255,255,0.3)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -517,14 +517,14 @@ const styles = StyleSheet.create({
   captureBtnInner: {
     width: 64,
     height: 64,
-    borderRadius: 32,
+    borderRadius: Theme.radius.lg,
     backgroundColor: 'white',
   },
   previewHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: Theme.spacing.page,
     position: 'absolute',
     top: 0,
     left: 0,
@@ -533,8 +533,8 @@ const styles = StyleSheet.create({
   },
   previewTitle: {
     color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
   },
   previewImage: {
     flex: 1,
@@ -544,28 +544,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    padding: 20,
+    padding: Theme.spacing.page,
     paddingBottom: 40,
     backgroundColor: 'black',
   },
   retakeBtn: {
     paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: Theme.spacing.md,
+    borderRadius: Theme.radius.xs,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Theme.colors.border,
   },
   retakeBtnText: {
-    fontSize: 16,
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h2,
+    color: Theme.colors.text,
   },
   analyzeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
     paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: Theme.spacing.md,
+    borderRadius: Theme.radius.xs,
     cursor: 'pointer',
     ...Platform.select({
       web: {
@@ -577,94 +577,95 @@ const styles = StyleSheet.create({
   analyzeBtnContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   analyzeBtnDisabled: {
     opacity: 0.7,
   },
   analyzeBtnText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: Colors.card,
+    padding: Theme.spacing.lg,
+    backgroundColor: Theme.colors.card,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   resultContainer: {
     flex: 1,
-    backgroundColor: Colors.background,
-    padding: 16,
+    backgroundColor: Theme.colors.background,
+    padding: Theme.spacing.lg,
   },
   resultImage: {
     width: '100%',
     height: 200,
-    borderRadius: 16,
-    marginBottom: 16,
+    borderRadius: Theme.radius.lg,
+    marginBottom: Theme.spacing.lg,
   },
   resultCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.page,
+    marginBottom: Theme.spacing.lg,
+    marginHorizontal: Theme.spacing.lg,
   },
   resultHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: Theme.spacing.page,
   },
   foodName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h1,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
     flex: 1,
   },
   confidenceBadge: {
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.md,
   },
   confidenceText: {
-    fontSize: 12,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   nutritionGrid: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   nutritionItem: {
     alignItems: 'center',
   },
   nutritionValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
   },
   nutritionLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginTop: 4,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
+    marginTop: Theme.spacing.xs,
   },
   portionText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
     textAlign: 'center',
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Theme.spacing.md,
     ...Platform.select({
       web: {
         display: 'flex',
@@ -673,9 +674,9 @@ const styles = StyleSheet.create({
   },
   saveBtn: {
     flex: 1,
-    backgroundColor: Colors.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.primary,
+    paddingVertical: Theme.spacing.lg,
+    borderRadius: Theme.radius.md,
     alignItems: 'center',
     ...Platform.select({
       web: {
@@ -686,7 +687,7 @@ const styles = StyleSheet.create({
   },
   saveBtnText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
   },
 });

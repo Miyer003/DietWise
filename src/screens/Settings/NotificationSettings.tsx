@@ -14,7 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Notifications from 'expo-notifications';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
+import ScreenHeader from '../../components/ScreenHeader';
 import { NotificationService } from '../../services/api';
 import { NotificationSettings as NotificationSettingsType } from '../../types';
 
@@ -109,7 +110,7 @@ function SettingRow({
   return (
     <View style={[styles.settingItem, !masterEnabled && styles.settingItemDisabled]}>
       <View style={styles.settingHeader}>
-        <Ionicons name={icon} size={24} color={masterEnabled ? Colors.primary : Colors.textMuted} style={styles.settingIcon} />
+        <Ionicons name={icon} size={24} color={masterEnabled ? Theme.colors.primary : Theme.colors.textMuted} style={styles.settingIcon} />
         <View style={styles.settingInfo}>
           <Text style={[styles.settingTitle, !masterEnabled && styles.settingTitleDisabled]}>
             {title}
@@ -123,7 +124,7 @@ function SettingRow({
         <Switch
           value={enabled}
           onValueChange={onToggle}
-          trackColor={{ false: '#E5E7EB', true: Colors.primary }}
+          trackColor={{ false: '#E5E7EB', true: Theme.colors.primary }}
           thumbColor="white"
           disabled={!masterEnabled}
         />
@@ -235,7 +236,7 @@ export default function NotificationSettings() {
   if (loading) {
     return (
       <SafeAreaView style={[styles.container, styles.centerContent]}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={Theme.colors.primary} />
         <Text style={styles.loadingText}>加载中...</Text>
       </SafeAreaView>
     );
@@ -256,10 +257,12 @@ export default function NotificationSettings() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={true}
       >
+        <ScreenHeader title="通知提醒" subtitle="管理您的饮食与健康提醒" />
+
         {/* 主开关 */}
         <View style={styles.masterSwitch}>
           <View style={styles.masterIcon}>
-            <Ionicons name="notifications-outline" size={28} color={Colors.primary} />
+            <Ionicons name="notifications-outline" size={28} color={Theme.colors.primary} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.masterTitle}>接收通知提醒</Text>
@@ -268,7 +271,7 @@ export default function NotificationSettings() {
           <Switch
             value={settings.masterEnabled}
             onValueChange={(v) => updateSetting('masterEnabled', v)}
-            trackColor={{ false: '#E5E7EB', true: Colors.primary }}
+            trackColor={{ false: '#E5E7EB', true: Theme.colors.primary }}
             thumbColor="white"
           />
         </View>
@@ -353,7 +356,7 @@ export default function NotificationSettings() {
                     onPress={() => updateWaterInterval(-1)}
                     disabled={!settings.masterEnabled}
                   >
-                    <Ionicons name="remove" size={16} color={settings.masterEnabled ? Colors.primary : Colors.textMuted} />
+                    <Ionicons name="remove" size={16} color={settings.masterEnabled ? Theme.colors.primary : Theme.colors.textMuted} />
                   </TouchableOpacity>
                   <Text style={styles.intervalText}>{settings.waterIntervalH}小时</Text>
                   <TouchableOpacity
@@ -361,7 +364,7 @@ export default function NotificationSettings() {
                     onPress={() => updateWaterInterval(1)}
                     disabled={!settings.masterEnabled}
                   >
-                    <Ionicons name="add" size={16} color={settings.masterEnabled ? Colors.primary : Colors.textMuted} />
+                    <Ionicons name="add" size={16} color={settings.masterEnabled ? Theme.colors.primary : Theme.colors.textMuted} />
                   </TouchableOpacity>
                 </View>
                 <Text style={styles.timeLabel}>提醒一次</Text>
@@ -445,16 +448,16 @@ export default function NotificationSettings() {
               }
             }}
           >
-            <Ionicons name="notifications-outline" size={18} color={Colors.primary} />
+            <Ionicons name="notifications-outline" size={18} color={Theme.colors.primary} />
             <Text style={styles.testBtnText}>发送测试通知</Text>
           </TouchableOpacity>
         </View>
 
         {/* Android FCM 提示 */}
         {Platform.OS === 'android' && (
-          <View style={[styles.tipCard, { backgroundColor: Colors.highlight }]}>
+          <View style={[styles.tipCard, { backgroundColor: Theme.colors.highlight }]}>
             <Ionicons name="warning" size={20} color="#F59E0B" />
-            <Text style={[styles.tipText, { color: Colors.accent }]}>
+            <Text style={[styles.tipText, { color: Theme.colors.accent }]}>
               Android 设备需要配置 Firebase Cloud Messaging 才能接收推送通知。如需完整推送功能，请参考 Expo 文档进行配置。
             </Text>
           </View>
@@ -462,7 +465,7 @@ export default function NotificationSettings() {
 
         {/* 说明 */}
         <View style={styles.tipCard}>
-          <Ionicons name="information-circle" size={20} color={Colors.primary} />
+          <Ionicons name="information-circle" size={20} color={Theme.colors.primary} />
           <Text style={styles.tipText}>
             提醒设置会自动同步到云端，即使更换设备也不会丢失。请确保开启系统通知权限以正常接收提醒。
           </Text>
@@ -477,34 +480,34 @@ export default function NotificationSettings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   centerContent: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: Colors.textSecondary,
+    marginTop: Theme.spacing.compact,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
   },
   savingIndicator: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6,
-    gap: 6,
+    paddingVertical: Theme.spacing.xs,
+    gap: Theme.spacing.xs,
     zIndex: 100,
   },
   savingText: {
     color: 'white',
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.medium,
   },
   scrollView: {
     flex: 1,
@@ -515,52 +518,55 @@ const styles = StyleSheet.create({
   masterSwitch: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.card,
-    margin: 16,
-    padding: 16,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    elevation: 2,
+    backgroundColor: Theme.colors.card,
+    margin: Theme.spacing.lg,
+    padding: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
   },
   masterIcon: {
     width: 48,
     height: 48,
-    backgroundColor: Colors.highlight,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.highlight,
+    borderRadius: Theme.radius.md,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: Theme.spacing.compact,
   },
   masterTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   masterSubtitle: {
-    fontSize: 13,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
     marginTop: 2,
   },
   section: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    marginHorizontal: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
+    paddingHorizontal: Theme.spacing.lg,
+    marginBottom: Theme.spacing.lg,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.compact,
   },
   sectionTitleDisabled: {
-    color: Colors.textMuted,
+    color: Theme.colors.textMuted,
   },
   settingItem: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.lg,
+    marginBottom: Theme.spacing.compact,
   },
   settingItemDisabled: {
     opacity: 0.6,
@@ -571,7 +577,7 @@ const styles = StyleSheet.create({
   },
   settingIcon: {
     fontSize: 24,
-    marginRight: 12,
+    marginRight: Theme.spacing.compact,
     width: 32,
   },
   settingIconDisabled: {
@@ -581,24 +587,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   settingTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h3,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   settingTitleDisabled: {
-    color: Colors.textMuted,
+    color: Theme.colors.textMuted,
   },
   settingSubtitle: {
-    fontSize: 13,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
     marginTop: 2,
   },
   settingSubtitleDisabled: {
-    color: Colors.textMuted,
+    color: Theme.colors.textMuted,
   },
   settingDetail: {
-    marginTop: 12,
-    paddingTop: 12,
+    marginTop: Theme.spacing.compact,
+    paddingTop: Theme.spacing.compact,
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
   },
@@ -606,93 +612,93 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   timeLabel: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
   },
   timeBtn: {
-    backgroundColor: Colors.cream,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
+    backgroundColor: Theme.colors.cream,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.sm,
+    borderRadius: Theme.radius.xs,
     minWidth: 64,
     alignItems: 'center',
   },
   timeBtnDisabled: {
-    backgroundColor: Colors.border,
+    backgroundColor: Theme.colors.border,
   },
   timeText: {
-    fontSize: 14,
-    color: Colors.text,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.text,
+    fontWeight: Theme.typography.weights.medium,
   },
   timeTextDisabled: {
-    color: Colors.textMuted,
+    color: Theme.colors.textMuted,
   },
   waterSettings: {
-    gap: 12,
+    gap: Theme.spacing.compact,
   },
   waterIntervalRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   intervalControl: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Theme.spacing.compact,
   },
   intervalBtn: {
     width: 32,
     height: 32,
-    backgroundColor: Colors.cream,
-    borderRadius: 8,
+    backgroundColor: Theme.colors.cream,
+    borderRadius: Theme.radius.xs,
     justifyContent: 'center',
     alignItems: 'center',
   },
   intervalBtnDisabled: {
-    backgroundColor: Colors.border,
+    backgroundColor: Theme.colors.border,
   },
   intervalText: {
-    fontSize: 14,
-    color: Colors.text,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.text,
+    fontWeight: Theme.typography.weights.medium,
     minWidth: 48,
     textAlign: 'center',
   },
   waterTimeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   tipCard: {
     flexDirection: 'row',
-    backgroundColor: Colors.highlight,
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 16,
-    gap: 12,
+    backgroundColor: Theme.colors.highlight,
+    borderRadius: Theme.radius.md,
+    padding: Theme.spacing.lg,
+    marginHorizontal: Theme.spacing.lg,
+    gap: Theme.spacing.compact,
   },
   tipText: {
     flex: 1,
-    fontSize: 13,
-    color: Colors.primary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.primary,
     lineHeight: 18,
   },
   testBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    paddingVertical: 14,
-    gap: 8,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.md,
+    paddingVertical: Theme.spacing.compact,
+    gap: Theme.spacing.sm,
   },
   testBtnText: {
-    fontSize: 15,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.h3,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
 });

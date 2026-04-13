@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import ScreenHeader from '../../components/ScreenHeader';
+import { Theme } from '../../constants/Theme';
 import { MealPlanService } from '../../services/api';
 import { MealPlan } from '../../types';
 
@@ -28,7 +29,7 @@ export default function HistoryMealPlanListScreen({ navigation }: HistoryMealPla
       const res = await MealPlanService.getPlans({ limit: 50 });
       if (res.code === 0 && res.data) {
         // 显示所有食谱（包括当前激活的和已归档的）
-        const allPlans = res.data.items || res.data.plans || [];
+        const allPlans = (res.data as any).items || res.data.plans || [];
         // 按创建时间倒序排列，active 的排在最前面
         allPlans.sort((a: MealPlan, b: MealPlan) => {
           if (a.status === 'active' && b.status !== 'active') return -1;
@@ -65,15 +66,9 @@ export default function HistoryMealPlanListScreen({ navigation }: HistoryMealPla
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={24} color={Colors.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>历史食谱</Text>
-          <View style={{ width: 24 }} />
-        </View>
+        <ScreenHeader title="历史食谱" />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Theme.colors.primary} />
           <Text style={styles.loadingText}>加载中...</Text>
         </View>
       </SafeAreaView>
@@ -82,14 +77,7 @@ export default function HistoryMealPlanListScreen({ navigation }: HistoryMealPla
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 头部导航 */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={Colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>历史食谱</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <ScreenHeader title="历史食谱" />
 
       <ScrollView
         style={styles.scrollView}
@@ -163,7 +151,7 @@ export default function HistoryMealPlanListScreen({ navigation }: HistoryMealPla
 
                 <View style={styles.cardFooter}>
                   <Text style={styles.dateText}>创建于 {formatDate(plan.createdAt)}</Text>
-                  <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
+                  <Ionicons name="chevron-forward" size={18} color={Theme.colors.textMuted} />
                 </View>
               </TouchableOpacity>
             ))}
@@ -177,21 +165,7 @@ export default function HistoryMealPlanListScreen({ navigation }: HistoryMealPla
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
+    backgroundColor: Theme.colors.background,
   },
   scrollView: {
     flex: 1,
@@ -205,9 +179,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: Colors.textSecondary,
+    marginTop: Theme.spacing.compact,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
   },
   emptyContainer: {
     flex: 1,
@@ -217,117 +191,117 @@ const styles = StyleSheet.create({
   },
   emptyIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 8,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.sm,
   },
   emptyDesc: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
   },
   listContainer: {
-    padding: 16,
+    padding: Theme.spacing.lg,
   },
   listHint: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
+    marginBottom: Theme.spacing.compact,
   },
   planCard: {
     backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.lg,
+    marginBottom: Theme.spacing.compact,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: Theme.spacing.compact,
   },
   typeBadge: {
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.md,
   },
   typeText: {
-    fontSize: 13,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   statusBadge: {
-    backgroundColor: Colors.cream,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.cream,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.md,
   },
   statusBadgeActive: {
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: Theme.colors.primaryLight,
   },
   statusText: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
   },
   statusTextActive: {
-    color: Colors.primary,
-    fontWeight: '500',
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   cardBody: {
-    marginBottom: 12,
+    marginBottom: Theme.spacing.compact,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: Theme.spacing.compact,
   },
   infoItem: {
     flex: 1,
   },
   infoLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginBottom: 4,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
+    marginBottom: Theme.spacing.xs,
   },
   infoValue: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h3,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   prefsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   prefTag: {
-    backgroundColor: Colors.cream,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
+    backgroundColor: Theme.colors.cream,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.sm,
   },
   prefText: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
   },
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 12,
+    paddingTop: Theme.spacing.compact,
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
   },
   dateText: {
-    fontSize: 13,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textMuted,
   },
 });

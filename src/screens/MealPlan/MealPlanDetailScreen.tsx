@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import ScreenHeader from '../../components/ScreenHeader';
+import { Theme } from '../../constants/Theme';
 import { MealPlan } from '../../types';
 import { MealPlanService } from '../../services/api';
 
@@ -121,7 +122,7 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Theme.colors.primary} />
           <Text style={styles.loadingText}>加载中...</Text>
         </View>
       </SafeAreaView>
@@ -143,6 +144,7 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScreenHeader title="食谱详情" />
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -227,7 +229,7 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
                     <Ionicons 
                       name={isExpanded ? 'chevron-up' : 'chevron-down'} 
                       size={20} 
-                      color={Colors.textMuted} 
+                      color={Theme.colors.textMuted} 
                     />
                   </View>
                 </TouchableOpacity>
@@ -240,7 +242,7 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
                         {/* 餐次标题 */}
                         <View style={styles.mealHeader}>
                           <View style={styles.mealTitleRow}>
-                            <Ionicons name={getMealIcon(meal.mealType)} size={16} color={Colors.textSecondary} />
+                            <Ionicons name={getMealIcon(meal.mealType)} size={16} color={Theme.colors.textSecondary} />
                             <Text style={styles.mealType}>{getMealTypeName(meal.mealType || 'breakfast')}</Text>
                           </View>
                           <View style={styles.mealCalorieBadge}>
@@ -265,7 +267,7 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
                                     <Text style={styles.dishName}>{dish.name}</Text>
                                     <View style={styles.dishMetaRow}>
                                       <View style={styles.dishMetaItem}>
-                                        <Ionicons name="scale-outline" size={12} color={Colors.textMuted} />
+                                        <Ionicons name="scale-outline" size={12} color={Theme.colors.textMuted} />
                                         <Text style={styles.dishMetaText}>{quantity}g</Text>
                                       </View>
                                       {(protein > 0 || carbs > 0 || fat > 0) && (
@@ -289,7 +291,7 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
                                 {/* 烹饪建议 */}
                                 {cookingTip && (
                                   <View style={styles.cookingTipBox}>
-                                    <Ionicons name="restaurant-outline" size={14} color={Colors.textSecondary} />
+                                    <Ionicons name="restaurant-outline" size={14} color={Theme.colors.textSecondary} />
                                     <Text style={styles.cookingTipText}>{cookingTip}</Text>
                                   </View>
                                 )}
@@ -301,7 +303,7 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
                         {/* 餐次营养汇总 */}
                         {meal.notes && (
                           <View style={styles.mealNotesBox}>
-                            <Ionicons name="nutrition-outline" size={14} color={Colors.primary} />
+                            <Ionicons name="nutrition-outline" size={14} color={Theme.colors.primary} />
                             <Text style={styles.mealNotesText}>{meal.notes}</Text>
                           </View>
                         )}
@@ -330,7 +332,7 @@ export default function MealPlanDetailScreen({ navigation, route }: MealPlanDeta
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   scrollView: {
     flex: 1,
@@ -345,214 +347,207 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: Colors.textSecondary,
+    marginTop: Theme.spacing.md,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: Theme.spacing.page,
   },
   errorText: {
-    fontSize: 16,
-    color: Colors.danger,
-    marginBottom: 16,
+    fontSize: Theme.typography.sizes.h2,
+    color: Theme.colors.danger,
+    marginBottom: Theme.spacing.lg,
   },
   retryBtn: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
     paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: Theme.spacing.md,
+    borderRadius: Theme.radius.xs,
   },
   retryBtnText: {
     color: 'white',
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.medium,
   },
   overviewCard: {
-    backgroundColor: Colors.card,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    margin: 16,
-    padding: 20,
-    borderRadius: 16,
+    backgroundColor: Theme.colors.card,
+    ...Theme.shadows.card,
+    margin: Theme.spacing.lg,
+    padding: Theme.spacing.page,
+    borderRadius: Theme.radius.lg,
   },
   overviewHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: Theme.spacing.page,
   },
   planTypeBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.xs,
   },
   aiBadge: {
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: Theme.colors.primaryLight,
   },
   customBadge: {
-    backgroundColor: Colors.highlight,
+    backgroundColor: Theme.colors.highlight,
   },
   planTypeText: {
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.medium,
   },
   aiBadgeText: {
-    color: Colors.primary,
+    color: Theme.colors.primary,
   },
   customBadgeText: {
-    color: Colors.accent,
+    color: Theme.colors.accent,
   },
   planStatus: {
-    fontSize: 14,
-    color: Colors.success,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.success,
+    fontWeight: Theme.typography.weights.medium,
   },
   overviewStats: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   statItem: {
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h1,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
   },
   statLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginTop: 4,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
+    marginTop: Theme.spacing.xs,
   },
   flavorContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    paddingTop: 16,
+    gap: Theme.spacing.sm,
+    paddingTop: Theme.spacing.lg,
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
   },
   flavorTag: {
-    backgroundColor: Colors.cream,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.cream,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.md,
   },
   flavorText: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
   },
   section: {
-    padding: 16,
+    padding: Theme.spacing.lg,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 16,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.lg,
   },
   dayCard: {
-    backgroundColor: Colors.card,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    borderRadius: 16,
-    marginBottom: 12,
+    backgroundColor: Theme.colors.card,
+    ...Theme.shadows.card,
+    borderRadius: Theme.radius.lg,
+    marginBottom: Theme.spacing.md,
     overflow: 'hidden',
+    marginHorizontal: Theme.spacing.lg,
   },
   dayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: Theme.spacing.lg,
   },
   dayHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Theme.spacing.md,
   },
   dayName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   dayCalorieBadge: {
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.md,
   },
   dayCalorieText: {
-    fontSize: 13,
-    color: Colors.primary,
-    fontWeight: '600',
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.semibold,
   },
   dayHeaderRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   dayMealCount: {
-    fontSize: 13,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textMuted,
   },
   dayContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: Theme.spacing.lg,
+    paddingBottom: Theme.spacing.lg,
   },
   mealSection: {
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   mealHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
-    paddingBottom: 8,
+    marginBottom: Theme.spacing.compact,
+    paddingBottom: Theme.spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
   mealTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: Theme.spacing.xs,
   },
   mealIcon: {
-    fontSize: 16,
+    fontSize: Theme.typography.sizes.h2,
   },
   mealType: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
   },
   mealCalorieBadge: {
-    backgroundColor: Colors.warning + '20',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    backgroundColor: Theme.colors.warning + '20',
+    paddingHorizontal: Theme.spacing.sm,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.xs,
   },
   mealCalorieText: {
-    fontSize: 12,
-    color: Colors.warning,
-    fontWeight: '600',
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.warning,
+    fontWeight: Theme.typography.weights.semibold,
   },
   dishesList: {
-    gap: 10,
+    gap: Theme.spacing.compact,
   },
   dishCard: {
-    backgroundColor: Colors.background,
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: Theme.colors.background,
+    borderRadius: Theme.radius.md,
+    padding: Theme.spacing.md,
   },
   dishMainRow: {
     flexDirection: 'row',
@@ -563,89 +558,89 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   dishName: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: Colors.text,
-    marginBottom: 6,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.medium,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.xs,
   },
   dishMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: Theme.spacing.xs,
     flexWrap: 'wrap',
   },
   dishMetaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: Theme.spacing.xs,
   },
   dishMetaText: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
   },
   dishMetaDivider: {
     width: 3,
     height: 3,
     borderRadius: 1.5,
-    backgroundColor: Colors.textMuted,
+    backgroundColor: Theme.colors.textMuted,
   },
   dishNutritionText: {
-    fontSize: 11,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
   },
   dishCalorieBox: {
     alignItems: 'flex-end',
     minWidth: 50,
   },
   dishCalorieNumber: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.warning,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.warning,
   },
   dishCalorieUnit: {
-    fontSize: 10,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.tiny,
+    color: Theme.colors.textMuted,
   },
   cookingTipBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 10,
-    paddingTop: 10,
+    gap: Theme.spacing.xs,
+    marginTop: Theme.spacing.compact,
+    paddingTop: Theme.spacing.compact,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
   },
   cookingTipText: {
     flex: 1,
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
     fontStyle: 'italic',
     lineHeight: 18,
   },
   mealNotesBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: Colors.primaryLight,
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 8,
+    gap: Theme.spacing.xs,
+    backgroundColor: Theme.colors.primaryLight,
+    padding: Theme.spacing.compact,
+    borderRadius: Theme.radius.xs,
+    marginTop: Theme.spacing.sm,
   },
   mealNotesText: {
     flex: 1,
-    fontSize: 12,
-    color: Colors.primary,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.primary,
   },
   activateBtn: {
-    backgroundColor: Colors.primary,
-    margin: 16,
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.primary,
+    margin: Theme.spacing.lg,
+    paddingVertical: Theme.spacing.lg,
+    borderRadius: Theme.radius.md,
     alignItems: 'center',
   },
   activateBtnText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
   },
 });

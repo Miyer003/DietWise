@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
+import ScreenHeader from '../../components/ScreenHeader';
 import { useAuth } from '../../store/AuthContext';
 import { AuthService } from '../../services/api';
 
@@ -135,10 +136,12 @@ export default function LoginScreen({ navigation, route }: any) {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
+          <ScreenHeader title="欢迎回来" subtitle="登录您的账号" />
+
           {/* Logo 区域 */}
           <View style={styles.logoContainer}>
             <View style={styles.logo}>
-              <Ionicons name="leaf" size={50} color={Colors.primary} />
+              <Ionicons name="leaf" size={50} color={Theme.colors.primary} />
             </View>
             <Text style={styles.appName}>膳智 DietWise</Text>
             <Text style={styles.slogan}>智能饮食健康管理</Text>
@@ -198,7 +201,7 @@ export default function LoginScreen({ navigation, route }: any) {
                     <Ionicons
                       name={showPassword ? 'eye-off' : 'eye'}
                       size={20}
-                      color={Colors.textMuted}
+                      color={Theme.colors.textMuted}
                     />
                   </TouchableOpacity>
                 </View>
@@ -221,7 +224,7 @@ export default function LoginScreen({ navigation, route }: any) {
                     disabled={countdown > 0 || isSendingSms}
                   >
                     {isSendingSms ? (
-                      <ActivityIndicator size="small" color={Colors.primary} />
+                      <ActivityIndicator size="small" color={Theme.colors.primary} />
                     ) : (
                       <Text style={[styles.smsBtnText, countdown > 0 && styles.smsBtnTextDisabled]}>
                         {countdown > 0 ? `${countdown}s` : '获取验证码'}
@@ -266,14 +269,14 @@ export default function LoginScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 24,
+    padding: Theme.spacing.page + 4,
   },
   logoContainer: {
     alignItems: 'center',
@@ -283,29 +286,34 @@ const styles = StyleSheet.create({
   logo: {
     width: 80,
     height: 80,
-    backgroundColor: Colors.primaryLight,
-    borderRadius: 20,
+    backgroundColor: Theme.colors.highlight,
+    borderRadius: Theme.radius.lg,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    ...Theme.shadows.card,
   },
   logoEmoji: {
     fontSize: 40,
   },
   appName: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
     marginBottom: 8,
   },
   slogan: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
   },
   modeSwitch: {
     flexDirection: 'row',
-    backgroundColor: Colors.cream,
-    borderRadius: 10,
+    backgroundColor: Theme.colors.cream,
+    borderRadius: Theme.radius.md,
     padding: 4,
     marginBottom: 24,
   },
@@ -313,23 +321,19 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: Theme.radius.xs,
   },
   modeBtnActive: {
-    backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    backgroundColor: Theme.colors.card,
+    ...Theme.shadows.search,
   },
   modeText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
     fontWeight: '500',
   },
   modeTextActive: {
-    color: Colors.primary,
+    color: Theme.colors.primary,
   },
   inputContainer: {
     gap: 20,
@@ -338,32 +342,32 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   inputLabel: {
-    fontSize: 14,
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.text,
     fontWeight: '500',
   },
   inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.card,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.md,
     paddingHorizontal: 16,
-    height: 52,
+    height: 48,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Theme.colors.border,
   },
   prefix: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
     marginRight: 8,
     paddingRight: 8,
     borderRightWidth: 1,
-    borderRightColor: Colors.border,
+    borderRightColor: Theme.colors.border,
   },
   input: {
     flex: 1,
     fontSize: 16,
-    color: Colors.text,
+    color: Theme.colors.text,
   },
   smsBtn: {
     paddingHorizontal: 12,
@@ -373,33 +377,29 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   smsBtnText: {
-    fontSize: 14,
-    color: Colors.primary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.primary,
     fontWeight: '500',
   },
   smsBtnTextDisabled: {
-    color: Colors.textMuted,
+    color: Theme.colors.textMuted,
   },
   loginBtn: {
-    backgroundColor: Colors.primary,
-    height: 52,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.primary,
+    height: 48,
+    borderRadius: Theme.radius.md,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 32,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    ...Theme.shadows.button,
   },
   loginBtnDisabled: {
     opacity: 0.7,
   },
   loginBtnText: {
-    color: 'white',
+    color: Theme.colors.textInverse,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: Theme.typography.weights.medium,
   },
   footer: {
     flexDirection: 'row',
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   footerText: {
-    fontSize: 14,
-    color: Colors.primary,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.primary,
   },
 });

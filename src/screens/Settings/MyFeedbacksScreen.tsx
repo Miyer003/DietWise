@@ -11,24 +11,25 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
 import { FeedbackService } from '../../services/api';
 import { Feedback } from '../../types';
+import ScreenHeader from '../../components/ScreenHeader';
 
 // 反馈类型映射
 const FEEDBACK_TYPE_MAP: Record<string, { label: string; icon: string; color: string }> = {
-  bug: { label: '问题反馈', icon: 'bug', color: Colors.danger },
-  feature: { label: '功能建议', icon: 'bulb', color: Colors.warning },
-  data_error: { label: '数据错误', icon: 'warning', color: Colors.info },
-  other: { label: '其他', icon: 'chatbubbles', color: Colors.success },
+  bug: { label: '问题反馈', icon: 'bug', color: Theme.colors.danger },
+  feature: { label: '功能建议', icon: 'bulb', color: Theme.colors.warning },
+  data_error: { label: '数据错误', icon: 'warning', color: Theme.colors.info },
+  other: { label: '其他', icon: 'chatbubbles', color: Theme.colors.success },
 };
 
 // 状态映射
 const STATUS_MAP: Record<string, { label: string; color: string; bgColor: string }> = {
-  pending: { label: '待处理', color: Colors.warning, bgColor: Colors.highlight },
-  processing: { label: '处理中', color: Colors.info, bgColor: '#E8F0F3' },
-  resolved: { label: '已解决', color: Colors.success, bgColor: Colors.highlight },
-  rejected: { label: '已关闭', color: '#6B7280', bgColor: Colors.cream },
+  pending: { label: '待处理', color: Theme.colors.warning, bgColor: Theme.colors.highlight },
+  processing: { label: '处理中', color: Theme.colors.info, bgColor: '#E8F0F3' },
+  resolved: { label: '已解决', color: Theme.colors.success, bgColor: Theme.colors.highlight },
+  rejected: { label: '已关闭', color: '#6B7280', bgColor: Theme.colors.cream },
 };
 
 // 格式化日期
@@ -94,7 +95,7 @@ function FeedbackCard({ feedback, isExpanded, onToggle }: FeedbackCardProps) {
         <Text style={styles.timeText}>{formatDate(feedback.createdAt || '')}</Text>
         {hasReply && (
           <View style={styles.replyIndicator}>
-            <Ionicons name="checkmark-circle" size={14} color={Colors.primary} />
+            <Ionicons name="checkmark-circle" size={14} color={Theme.colors.primary} />
             <Text style={styles.replyText}>有回复</Text>
           </View>
         )}
@@ -105,7 +106,7 @@ function FeedbackCard({ feedback, isExpanded, onToggle }: FeedbackCardProps) {
         <View style={styles.replyContainer}>
           <View style={styles.replyDivider} />
           <View style={styles.replyHeader}>
-            <Ionicons name="return-down-forward" size={16} color={Colors.primary} />
+            <Ionicons name="return-down-forward" size={16} color={Theme.colors.primary} />
             <Text style={styles.replyTitle}>官方回复</Text>
           </View>
           <Text style={styles.replyContent}>{feedback.adminReply}</Text>
@@ -117,7 +118,7 @@ function FeedbackCard({ feedback, isExpanded, onToggle }: FeedbackCardProps) {
         <Ionicons
           name={isExpanded ? 'chevron-up' : 'chevron-down'}
           size={16}
-          color={Colors.textMuted}
+          color={Theme.colors.textMuted}
         />
       </View>
     </TouchableOpacity>
@@ -172,7 +173,7 @@ export default function MyFeedbacksScreen() {
     if (loading) {
       return (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Theme.colors.primary} />
           <Text style={styles.loadingText}>加载中...</Text>
         </View>
       );
@@ -182,7 +183,7 @@ export default function MyFeedbacksScreen() {
       return (
         <View style={styles.centerContainer}>
           <View style={styles.emptyIcon}>
-            <Ionicons name="chatbubbles-outline" size={48} color={Colors.textMuted} />
+            <Ionicons name="chatbubbles-outline" size={48} color={Theme.colors.textMuted} />
           </View>
           <Text style={styles.emptyTitle}>暂无反馈记录</Text>
           <Text style={styles.emptyDesc}>您还没有提交过反馈，遇到问题欢迎随时反馈给我们</Text>
@@ -199,9 +200,25 @@ export default function MyFeedbacksScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
+        {/* 顶部标题栏 */}
+        <View style={styles.header}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>我的反馈</Text>
+            <Text style={styles.headerSubtitle}>查看已提交的反馈与官方回复</Text>
+          </View>
+        </View>
+
+        {/* 顶部标题栏 */}
+        <View style={styles.header}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>我的反馈</Text>
+            <Text style={styles.headerSubtitle}>查看已提交的反馈与官方回复</Text>
+          </View>
+        </View>
+
         {/* 提示信息 */}
         <View style={styles.tipContainer}>
-          <Ionicons name="information-circle" size={16} color={Colors.primary} />
+          <Ionicons name="information-circle" size={16} color={Theme.colors.primary} />
           <Text style={styles.tipText}>
             共 {feedbacks.length} 条反馈，点击卡片查看官方回复
           </Text>
@@ -232,15 +249,36 @@ export default function MyFeedbacksScreen() {
 }
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Theme.spacing.page,
+    paddingVertical: Theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.divider,
+    marginHorizontal: -Theme.spacing.lg,
+    marginBottom: Theme.spacing.lg,
+  },
+  headerTitle: {
+    fontSize: Theme.typography.sizes.h1,
+    fontWeight: Theme.typography.weights.light,
+    letterSpacing: 2,
+    color: Theme.colors.text,
+  },
+  headerSubtitle: {
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textMuted,
+    marginTop: Theme.spacing.xs,
+  },
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    padding: Theme.spacing.lg,
   },
   centerContainer: {
     flex: 1,
@@ -249,52 +287,55 @@ const styles = StyleSheet.create({
     padding: 40,
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: Colors.textSecondary,
+    marginTop: Theme.spacing.md,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   emptyIcon: {
     width: 80,
     height: 80,
-    backgroundColor: Colors.card,
-    borderRadius: 40,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.lg,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 8,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.sm,
   },
   emptyDesc: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },
   tipContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.highlight,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginBottom: 16,
-    gap: 6,
+    backgroundColor: Theme.colors.highlight,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: Theme.spacing.compact,
+    borderRadius: Theme.radius.xs,
+    marginBottom: Theme.spacing.lg,
+    gap: Theme.spacing.xs,
   },
   tipText: {
-    fontSize: 13,
-    color: Colors.primary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.primary,
   },
   listContainer: {
-    gap: 12,
+    gap: Theme.spacing.md,
   },
   card: {
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    padding: 16,
+    marginHorizontal: Theme.spacing.lg,
+    marginBottom: Theme.spacing.compact,
+
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.md,
+    padding: Theme.spacing.lg,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -309,34 +350,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: Theme.spacing.md,
   },
   typeTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    gap: Theme.spacing.xs,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.md,
   },
   typeText: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.small,
+    fontWeight: Theme.typography.weights.medium,
   },
   statusTag: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
+    paddingHorizontal: Theme.spacing.sm,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.sm,
   },
   statusText: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.small,
+    fontWeight: Theme.typography.weights.medium,
   },
   content: {
-    fontSize: 14,
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.text,
     lineHeight: 20,
-    marginBottom: 12,
+    marginBottom: Theme.spacing.md,
   },
   cardFooter: {
     flexDirection: 'row',
@@ -344,56 +385,56 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   timeText: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
     lineHeight: 16,
   },
   replyIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
+    gap: Theme.spacing.xs,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingHorizontal: Theme.spacing.sm,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.sm,
   },
   replyText: {
-    fontSize: 11,
-    color: Colors.primary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.primary,
+    fontWeight: Theme.typography.weights.medium,
   },
   replyContainer: {
-    marginTop: 12,
+    marginTop: Theme.spacing.md,
   },
   replyDivider: {
     height: 1,
-    backgroundColor: Colors.border,
-    marginBottom: 12,
+    backgroundColor: Theme.colors.border,
+    marginBottom: Theme.spacing.md,
   },
   replyHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 8,
+    gap: Theme.spacing.xs,
+    marginBottom: Theme.spacing.sm,
   },
   replyTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.primary,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.primary,
   },
   replyContent: {
-    fontSize: 14,
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.text,
     lineHeight: 20,
-    backgroundColor: Colors.background,
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: Theme.colors.background,
+    padding: Theme.spacing.md,
+    borderRadius: Theme.radius.xs,
     borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
+    borderLeftColor: Theme.colors.primary,
   },
   expandIndicator: {
     alignItems: 'center',
-    marginTop: 8,
-    paddingTop: 4,
+    marginTop: Theme.spacing.sm,
+    paddingTop: Theme.spacing.xs,
   },
 });

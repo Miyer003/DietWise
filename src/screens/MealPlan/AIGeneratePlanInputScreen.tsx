@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
+import ScreenHeader from '../../components/ScreenHeader';
 import { useAuth } from '../../store/AuthContext';
 
 interface AIGeneratePlanInputScreenProps {
@@ -133,25 +134,10 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={true}
       >
-        {/* 头部 */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={24} color={Colors.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>AI 定制食谱</Text>
-          <View style={{ width: 24 }} />
-        </View>
-
-        {/* 介绍卡片 */}
-        <View style={styles.introCard}>
-          <View style={styles.introIcon}>
-            <Ionicons name="sparkles" size={32} color={Colors.primary} />
-          </View>
-          <Text style={styles.introTitle}>告诉 AI 你的需求</Text>
-          <Text style={styles.introDesc}>
-            AI 会根据你的身体数据、饮食目标和口味偏好，为你生成专属的一周食谱
-          </Text>
-        </View>
+        <ScreenHeader
+          title="AI 定制食谱"
+          subtitle="根据身体数据、饮食目标和口味偏好，生成专属食谱"
+        />
 
         {/* 基础设置 */}
         <View style={styles.section}>
@@ -164,7 +150,7 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
               <TouchableOpacity style={styles.calorieInputBtn} onPress={openCalorieModal}>
                 <Text style={styles.calorieInputValue}>{calories}</Text>
                 <Text style={styles.calorieInputUnit}>kcal</Text>
-                <Ionicons name="pencil" size={14} color={Colors.primary} style={{ marginLeft: 4 }} />
+                <Ionicons name="pencil" size={14} color={Theme.colors.primary} style={{ marginLeft: Theme.spacing.xs }} />
               </TouchableOpacity>
             </View>
             <View style={styles.sliderContainer}>
@@ -185,7 +171,7 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
           </View>
 
           {/* 每日餐数 */}
-          <View style={[styles.card, { marginTop: 12 }]}>
+          <View style={[styles.card, { marginTop: Theme.spacing.md }]}>
             <Text style={styles.inputLabel}>每日餐数</Text>
             <View style={styles.mealCountGrid}>
               {MEAL_COUNT_OPTIONS.map((count) => (
@@ -206,14 +192,14 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
               <Switch
                 value={includeSnack}
                 onValueChange={setIncludeSnack}
-                trackColor={{ false: '#E5E7EB', true: Colors.primaryLight }}
-                thumbColor={includeSnack ? Colors.primary : '#f4f3f4'}
+                trackColor={{ false: '#E5E7EB', true: Theme.colors.primaryLight }}
+                thumbColor={includeSnack ? Theme.colors.primary : '#f4f3f4'}
               />
             </View>
           </View>
 
           {/* 饮食目标 */}
-          <View style={[styles.card, { marginTop: 12 }]}>
+          <View style={[styles.card, { marginTop: Theme.spacing.md }]}>
             <Text style={styles.inputLabel}>饮食目标</Text>
             <View style={styles.goalGrid}>
               {HEALTH_GOALS.map((g) => (
@@ -222,7 +208,7 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
                   style={[styles.goalBtn, goal === g.value && styles.goalBtnActive]}
                   onPress={() => setGoal(g.value)}
                 >
-                  <Ionicons name={g.icon} size={28} color={goal === g.value ? Colors.primary : Colors.textSecondary} />
+                  <Ionicons name={g.icon} size={28} color={goal === g.value ? Theme.colors.primary : Theme.colors.textSecondary} />
                   <Text style={[styles.goalLabel, goal === g.value && styles.goalLabelActive]}>
                     {g.label}
                   </Text>
@@ -233,7 +219,7 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
           </View>
 
           {/* 口味偏好 */}
-          <View style={[styles.card, { marginTop: 12 }]}>
+          <View style={[styles.card, { marginTop: Theme.spacing.md }]}>
             <Text style={styles.inputLabel}>口味偏好（可多选）</Text>
             <View style={styles.preferencesContainer}>
               {PREFERENCE_OPTIONS.map((pref) => (
@@ -245,7 +231,7 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
                   ]}
                   onPress={() => togglePreference(pref.value)}
                 >
-                  <Ionicons name={pref.icon} size={16} color={preferences.includes(pref.value) ? Colors.primary : Colors.textSecondary} />
+                  <Ionicons name={pref.icon} size={16} color={preferences.includes(pref.value) ? Theme.colors.primary : Theme.colors.textSecondary} />
                   <Text
                     style={[
                       styles.preferenceText,
@@ -269,7 +255,7 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
           <Ionicons
             name={showAdvanced ? 'chevron-up' : 'chevron-down'}
             size={20}
-            color={Colors.textSecondary}
+            color={Theme.colors.textSecondary}
           />
         </TouchableOpacity>
 
@@ -303,7 +289,7 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
             </View>
 
             {/* 烹饪难度 */}
-            <View style={[styles.card, { marginTop: 12 }]}>
+            <View style={[styles.card, { marginTop: Theme.spacing.md }]}>
               <Text style={styles.inputLabel}>烹饪难度偏好</Text>
               <View style={styles.difficultyContainer}>
                 {(['简单', '中等', '复杂'] as const).map((level) => (
@@ -329,7 +315,7 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
             </View>
 
             {/* 自定义要求 */}
-            <View style={[styles.card, { marginTop: 12 }]}>
+            <View style={[styles.card, { marginTop: Theme.spacing.md }]}>
               <Text style={styles.inputLabel}>其他要求（可选）</Text>
               <Text style={styles.inputHint}>
                 例如：不喜欢吃胡萝卜、希望多安排鱼类、周末想吃得丰盛一些等
@@ -400,7 +386,7 @@ export default function AIGeneratePlanInputScreen({ navigation, route }: AIGener
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   scrollView: {
     flex: 1,
@@ -408,32 +394,21 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
-  },
   introCard: {
-    backgroundColor: Colors.primaryLight,
-    margin: 16,
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: Theme.colors.primaryLight,
+    margin: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.page,
     alignItems: 'center',
   },
   introIcon: {
     width: 64,
     height: 64,
-    borderRadius: 32,
+    borderRadius: Theme.radius.lg,
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: Theme.spacing.md,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -441,101 +416,98 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   introTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 8,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.sm,
   },
   introDesc: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },
   section: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    paddingHorizontal: Theme.spacing.lg,
+    marginBottom: Theme.spacing.lg,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.md,
   },
   card: {
-    backgroundColor: Colors.card,
-    shadowColor: Colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: Theme.colors.card,
+    ...Theme.shadows.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.lg,
+    marginHorizontal: Theme.spacing.lg,
   },
   sliderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: Theme.spacing.md,
   },
   sliderLabel: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   sliderValue: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: Colors.warning,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.warning,
   },
   sliderContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   sliderMin: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
     width: 40,
   },
   sliderTrack: {
     flex: 1,
     height: 6,
-    backgroundColor: Colors.border,
+    backgroundColor: Theme.colors.border,
     borderRadius: 3,
-    marginHorizontal: 8,
+    marginHorizontal: Theme.spacing.sm,
   },
   sliderFill: {
     height: '100%',
-    backgroundColor: Colors.warning,
+    backgroundColor: Theme.colors.warning,
     borderRadius: 3,
   },
   sliderMax: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
     width: 40,
     textAlign: 'right',
   },
   inputLabel: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
+    marginBottom: Theme.spacing.md,
   },
   mealCountGrid: {
     flexDirection: 'row',
-    gap: 10,
+    gap: Theme.spacing.compact,
   },
   mealCountBtn: {
     flex: 1,
-    backgroundColor: Colors.cream,
-    paddingVertical: 12,
-    borderRadius: 10,
+    backgroundColor: Theme.colors.cream,
+    paddingVertical: Theme.spacing.md,
+    borderRadius: Theme.radius.sm,
     alignItems: 'center',
   },
   mealCountBtnActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
   },
   mealCountText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
+    fontWeight: Theme.typography.weights.medium,
   },
   mealCountTextActive: {
     color: 'white',
@@ -544,196 +516,192 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 16,
-    paddingTop: 16,
+    marginTop: Theme.spacing.lg,
+    paddingTop: Theme.spacing.lg,
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
   },
   snackLabel: {
-    fontSize: 14,
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.text,
   },
   goalGrid: {
     flexDirection: 'row',
-    gap: 10,
+    gap: Theme.spacing.compact,
   },
   goalBtn: {
     flex: 1,
-    backgroundColor: Colors.cream,
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: Theme.colors.cream,
+    borderRadius: Theme.radius.md,
+    padding: Theme.spacing.lg,
     alignItems: 'center',
   },
   goalBtnActive: {
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: Theme.colors.primaryLight,
     borderWidth: 1,
-    borderColor: Colors.primary,
+    borderColor: Theme.colors.primary,
   },
   goalIcon: {
-    fontSize: 24,
-    marginBottom: 8,
+    fontSize: Theme.typography.sizes.h1,
+    marginBottom: Theme.spacing.sm,
   },
   goalLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 4,
+    fontSize: Theme.typography.sizes.caption,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.xs,
   },
   goalLabelActive: {
-    color: Colors.primary,
+    color: Theme.colors.primary,
   },
   goalDesc: {
-    fontSize: 11,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
     textAlign: 'center',
   },
   preferencesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   preferenceTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.cream,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 4,
+    backgroundColor: Theme.colors.cream,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: Theme.spacing.sm,
+    borderRadius: Theme.radius.xl,
+    gap: Theme.spacing.xs,
   },
   preferenceTagActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
   },
   preferenceIcon: {
-    fontSize: 14,
+    fontSize: Theme.typography.sizes.caption,
   },
   preferenceText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   preferenceTextActive: {
     color: 'white',
-    fontWeight: '500',
+    fontWeight: Theme.typography.weights.medium,
   },
   advancedToggle: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    marginBottom: 16,
-    gap: 4,
+    paddingVertical: Theme.spacing.md,
+    marginBottom: Theme.spacing.lg,
+    gap: Theme.spacing.xs,
   },
   advancedToggleText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   restrictionsContainer: {
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   restrictionTag: {
-    backgroundColor: Colors.cream,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 10,
+    backgroundColor: Theme.colors.cream,
+    paddingHorizontal: Theme.spacing.content,
+    paddingVertical: Theme.spacing.compact,
+    borderRadius: Theme.radius.sm,
   },
   restrictionTagActive: {
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: Theme.colors.primaryLight,
     borderWidth: 1,
     borderColor: '#EF4444',
   },
   restrictionText: {
-    fontSize: 14,
-    color: Colors.text,
-    fontWeight: '500',
-    marginBottom: 2,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.text,
+    fontWeight: Theme.typography.weights.medium,
+    marginBottom: Theme.spacing.xs,
   },
   restrictionTextActive: {
-    color: Colors.danger,
+    color: Theme.colors.danger,
   },
   restrictionDesc: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
   },
   difficultyContainer: {
     flexDirection: 'row',
-    gap: 10,
+    gap: Theme.spacing.compact,
   },
   difficultyBtn: {
     flex: 1,
-    backgroundColor: Colors.cream,
-    paddingVertical: 12,
-    borderRadius: 10,
+    backgroundColor: Theme.colors.cream,
+    paddingVertical: Theme.spacing.md,
+    borderRadius: Theme.radius.sm,
     alignItems: 'center',
   },
   difficultyBtnActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
   },
   difficultyText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
   },
   difficultyTextActive: {
     color: 'white',
-    fontWeight: '500',
+    fontWeight: Theme.typography.weights.medium,
   },
   inputHint: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    marginBottom: 8,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
+    marginBottom: Theme.spacing.sm,
   },
   customInput: {
-    backgroundColor: Colors.background,
-    borderRadius: 10,
-    padding: 12,
-    fontSize: 14,
-    color: Colors.text,
+    backgroundColor: Theme.colors.background,
+    borderRadius: Theme.radius.sm,
+    padding: Theme.spacing.md,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.text,
     minHeight: 80,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Theme.colors.border,
   },
   generateBtn: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    margin: 16,
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    margin: Theme.spacing.lg,
+    paddingVertical: Theme.spacing.lg,
+    borderRadius: Theme.radius.md,
+    gap: Theme.spacing.sm,
+    ...Theme.shadows.cardPressed,
   },
   generateIcon: {
-    marginRight: 4,
+    marginRight: Theme.spacing.xs,
   },
   generateBtnText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
   },
   // 热量输入按钮
   calorieInputBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    backgroundColor: Theme.colors.primaryLight,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.xs,
     borderWidth: 1,
-    borderColor: Colors.primary,
+    borderColor: Theme.colors.primary,
   },
   calorieInputValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.primary,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.primary,
   },
   calorieInputUnit: {
-    fontSize: 14,
-    color: Colors.primary,
-    marginLeft: 2,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.primary,
+    marginLeft: Theme.spacing.xs,
   },
   // 弹窗样式
   modalOverlay: {
@@ -741,67 +709,67 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: Theme.spacing.page,
   },
   modalContent: {
     backgroundColor: 'white',
-    borderRadius: 16,
+    borderRadius: Theme.radius.lg,
     padding: 24,
     width: '100%',
     maxWidth: 320,
     alignItems: 'center',
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 8,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.sm,
   },
   modalDesc: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginBottom: 20,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
+    marginBottom: Theme.spacing.page,
   },
   modalInput: {
     width: '100%',
     height: 56,
     borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.text,
+    borderColor: Theme.colors.border,
+    borderRadius: Theme.radius.md,
+    paddingHorizontal: Theme.spacing.lg,
+    fontSize: Theme.typography.sizes.h1,
+    fontWeight: Theme.typography.weights.semibold,
+    color: Theme.colors.text,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: Theme.spacing.page,
   },
   modalButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Theme.spacing.md,
     width: '100%',
   },
   modalBtnCancel: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: Colors.cream,
+    paddingVertical: Theme.spacing.content,
+    borderRadius: Theme.radius.md,
+    backgroundColor: Theme.colors.cream,
     alignItems: 'center',
   },
   modalBtnCancelText: {
-    fontSize: 16,
-    color: Colors.textSecondary,
-    fontWeight: '600',
+    fontSize: Theme.typography.sizes.h2,
+    color: Theme.colors.textSecondary,
+    fontWeight: Theme.typography.weights.semibold,
   },
   modalBtnConfirm: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: Colors.primary,
+    paddingVertical: Theme.spacing.content,
+    borderRadius: Theme.radius.md,
+    backgroundColor: Theme.colors.primary,
     alignItems: 'center',
   },
   modalBtnConfirmText: {
-    fontSize: 16,
+    fontSize: Theme.typography.sizes.h2,
     color: 'white',
-    fontWeight: '600',
+    fontWeight: Theme.typography.weights.semibold,
   },
 });

@@ -17,7 +17,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
+import ScreenHeader from '../../components/ScreenHeader';
 import { useAuth } from '../../store/AuthContext';
 import { UserService } from '../../services/api';
 
@@ -191,6 +192,8 @@ export default function ProfileEditScreen({ navigation }: any) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={true}
       >
+        <ScreenHeader title="个人画像" subtitle="完善您的个人信息" />
+
         {/* 头像选择 */}
         <View style={styles.avatarSection}>
           <TouchableOpacity 
@@ -199,11 +202,11 @@ export default function ProfileEditScreen({ navigation }: any) {
             disabled={isUploading}
           >
             {isUploading ? (
-              <ActivityIndicator size="large" color={Colors.primary} />
+              <ActivityIndicator size="large" color={Theme.colors.primary} />
             ) : avatarUrl ? (
               <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
             ) : (
-              <Ionicons name={selectedAvatar} size={40} color={Colors.primary} />
+              <Ionicons name={selectedAvatar} size={40} color={Theme.colors.primary} />
             )}
             <View style={styles.avatarOverlay}>
               <Ionicons name="camera" size={20} color="white" />
@@ -225,7 +228,7 @@ export default function ProfileEditScreen({ navigation }: any) {
                 ]}
                 onPress={() => setSelectedAvatar(iconName)}
               >
-                <Ionicons name={iconName} size={24} color={selectedAvatar === iconName ? Colors.primary : Colors.textSecondary} />
+                <Ionicons name={iconName} size={24} color={selectedAvatar === iconName ? Theme.colors.primary : Theme.colors.textSecondary} />
               </TouchableOpacity>
             ))}
           </View>
@@ -242,7 +245,7 @@ export default function ProfileEditScreen({ navigation }: any) {
                 value={nickname}
                 onChangeText={setNickname}
                 placeholder="输入您的昵称"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={Theme.colors.textMuted}
                 editable={!isSaving}
               />
             </View>
@@ -281,7 +284,7 @@ export default function ProfileEditScreen({ navigation }: any) {
                   value={heightCm}
                   onChangeText={setHeightCm}
                   placeholder="170"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={Theme.colors.textMuted}
                   keyboardType="numeric"
                   editable={!isSaving}
                 />
@@ -293,7 +296,7 @@ export default function ProfileEditScreen({ navigation }: any) {
                   value={weightKg}
                   onChangeText={setWeightKg}
                   placeholder="65"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={Theme.colors.textMuted}
                   keyboardType="numeric"
                   editable={!isSaving}
                 />
@@ -308,7 +311,7 @@ export default function ProfileEditScreen({ navigation }: any) {
                   value={targetWeightKg}
                   onChangeText={setTargetWeightKg}
                   placeholder="60"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={Theme.colors.textMuted}
                   keyboardType="numeric"
                   editable={!isSaving}
                 />
@@ -323,7 +326,7 @@ export default function ProfileEditScreen({ navigation }: any) {
                   <Text style={birthDate ? styles.dateText : styles.datePlaceholder}>
                     {birthDate || '选择出生日期'}
                   </Text>
-                  <Ionicons name="calendar-outline" size={20} color={Colors.textMuted} />
+                  <Ionicons name="calendar-outline" size={20} color={Theme.colors.textMuted} />
                 </TouchableOpacity>
                 {showDatePicker && (
                   <DateTimePicker
@@ -390,7 +393,7 @@ export default function ProfileEditScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   scrollView: {
     flex: 1,
@@ -401,7 +404,7 @@ const styles = StyleSheet.create({
   },
   avatarSection: {
     alignItems: 'center',
-    padding: 24,
+    padding: Theme.spacing.xl,
   },
   avatarContainer: {
     position: 'relative',
@@ -409,22 +412,18 @@ const styles = StyleSheet.create({
   avatarEmoji: {
     width: 96,
     height: 96,
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
     borderRadius: 48,
     textAlign: 'center',
     lineHeight: 96,
     fontSize: 48,
     color: 'white',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    ...Theme.shadows.button,
   },
   avatarHint: {
-    marginTop: 12,
-    fontSize: 14,
-    color: Colors.textSecondary,
+    marginTop: Theme.spacing.compact,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
   },
   avatarImage: {
     width: 80,
@@ -443,140 +442,136 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   section: {
-    paddingHorizontal: 16,
-    marginBottom: 24,
+    paddingHorizontal: Theme.spacing.lg,
+    marginBottom: Theme.spacing.xl,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 12,
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
+    marginBottom: Theme.spacing.compact,
   },
   avatarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: Theme.spacing.compact,
   },
   avatarOption: {
     width: 48,
     height: 48,
-    backgroundColor: Colors.cream,
+    backgroundColor: Theme.colors.cream,
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarOptionSelected: {
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: Theme.colors.primaryLight,
     borderWidth: 2,
-    borderColor: Colors.primary,
+    borderColor: Theme.colors.primary,
   },
   avatarOptionText: {
     fontSize: 24,
   },
   card: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: Theme.colors.card,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.lg,
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: Theme.spacing.lg,
   },
   inputLabel: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginBottom: 8,
+    fontSize: Theme.typography.sizes.body,
+    color: Theme.colors.textSecondary,
+    marginBottom: Theme.spacing.sm,
   },
   input: {
-    backgroundColor: Colors.cream,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: Colors.text,
+    backgroundColor: Theme.colors.cream,
+    borderRadius: Theme.radius.md,
+    paddingHorizontal: Theme.spacing.lg,
+    paddingVertical: Theme.spacing.compact,
+    fontSize: Theme.typography.sizes.h3,
+    color: Theme.colors.text,
   },
   dateInput: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.cream,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    backgroundColor: Theme.colors.cream,
+    borderRadius: Theme.radius.md,
+    paddingHorizontal: Theme.spacing.lg,
+    paddingVertical: Theme.spacing.compact,
   },
   dateText: {
-    fontSize: 15,
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h3,
+    color: Theme.colors.text,
   },
   datePlaceholder: {
-    fontSize: 15,
-    color: Colors.textMuted,
+    fontSize: Theme.typography.sizes.h3,
+    color: Theme.colors.textMuted,
   },
   inputDisabled: {
-    color: Colors.textSecondary,
-    backgroundColor: Colors.border,
+    color: Theme.colors.textSecondary,
+    backgroundColor: Theme.colors.border,
   },
   rowInputs: {
     flexDirection: 'row',
   },
   genderContainer: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Theme.spacing.compact,
   },
   genderBtn: {
     flex: 1,
-    backgroundColor: Colors.cream,
-    paddingVertical: 12,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.cream,
+    paddingVertical: Theme.spacing.compact,
+    borderRadius: Theme.radius.md,
     alignItems: 'center',
   },
   genderBtnActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
   },
   genderText: {
-    fontSize: 15,
-    color: Colors.textSecondary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.h3,
+    color: Theme.colors.textSecondary,
+    fontWeight: Theme.typography.weights.medium,
   },
   genderTextActive: {
     color: 'white',
   },
   goalContainer: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Theme.spacing.compact,
   },
   goalBtn: {
     flex: 1,
-    backgroundColor: Colors.cream,
-    paddingVertical: 12,
-    borderRadius: 12,
+    backgroundColor: Theme.colors.cream,
+    paddingVertical: Theme.spacing.compact,
+    borderRadius: Theme.radius.md,
     alignItems: 'center',
   },
   goalBtnActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Theme.colors.primary,
   },
   goalText: {
-    fontSize: 15,
-    color: Colors.textSecondary,
-    fontWeight: '500',
+    fontSize: Theme.typography.sizes.h3,
+    color: Theme.colors.textSecondary,
+    fontWeight: Theme.typography.weights.medium,
   },
   goalTextActive: {
     color: 'white',
   },
   saveBtn: {
-    margin: 16,
-    backgroundColor: Colors.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
+    margin: Theme.spacing.lg,
+    backgroundColor: Theme.colors.primary,
+    paddingVertical: Theme.spacing.lg,
+    borderRadius: Theme.radius.md,
     alignItems: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    ...Theme.shadows.button,
   },
   saveBtnText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: Theme.typography.sizes.body,
+    fontWeight: Theme.typography.weights.bold,
   },
 });

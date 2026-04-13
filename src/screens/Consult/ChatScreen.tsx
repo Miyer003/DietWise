@@ -13,9 +13,11 @@ import {
   Alert,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Markdown from 'react-native-markdown-display';
 import { Ionicons } from '@expo/vector-icons';
-import Colors from '../../constants/Colors';
+import { Theme } from '../../constants/Theme';
+import ScreenHeader from '../../components/ScreenHeader';
 import { useAuth } from '../../store/AuthContext';
 import { DietService, AIService } from '../../services/api';
 import { DailySummary } from '../../types';
@@ -32,32 +34,32 @@ interface Message {
 // Markdown 样式配置
 const markdownStyles = {
   body: {
-    color: Colors.text,
+    color: Theme.colors.text,
     fontSize: 15,
     lineHeight: 22,
   },
   paragraph: {
     marginVertical: 4,
-    color: Colors.text,
+    color: Theme.colors.text,
     fontSize: 15,
     lineHeight: 22,
   },
   heading1: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontWeight: 'bold' as const,
+    color: Theme.colors.text,
     marginVertical: 8,
   },
   heading2: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontWeight: 'bold' as const,
+    color: Theme.colors.text,
     marginVertical: 6,
   },
   heading3: {
     fontSize: 15,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontWeight: 'bold' as const,
+    color: Theme.colors.text,
     marginVertical: 4,
   },
   bullet_list: {
@@ -71,24 +73,24 @@ const markdownStyles = {
     paddingLeft: 8,
   },
   strong: {
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontWeight: 'bold' as const,
+    color: Theme.colors.text,
   },
   em: {
-    fontStyle: 'italic',
-    color: Colors.textSecondary,
+    fontStyle: 'italic' as const,
+    color: Theme.colors.textSecondary,
   },
   code_inline: {
-    backgroundColor: Colors.cream,
+    backgroundColor: Theme.colors.cream,
     paddingHorizontal: 4,
     paddingVertical: 2,
     borderRadius: 4,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     fontSize: 13,
-    color: Colors.danger,
+    color: Theme.colors.danger,
   },
   code_block: {
-    backgroundColor: Colors.cream,
+    backgroundColor: Theme.colors.cream,
     padding: 12,
     borderRadius: 8,
     marginVertical: 8,
@@ -96,7 +98,7 @@ const markdownStyles = {
     fontSize: 13,
   },
   fence: {
-    backgroundColor: Colors.cream,
+    backgroundColor: Theme.colors.cream,
     padding: 12,
     borderRadius: 8,
     marginVertical: 8,
@@ -105,16 +107,16 @@ const markdownStyles = {
   },
   blockquote: {
     borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
+    borderLeftColor: Theme.colors.primary,
     paddingLeft: 12,
     marginVertical: 8,
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: Theme.colors.primaryLight,
     padding: 12,
     borderRadius: 8,
   },
   link: {
-    color: Colors.primary,
-    textDecorationLine: 'underline',
+    color: Theme.colors.primary,
+    textDecorationLine: 'underline' as const,
   },
   table: {
     borderWidth: 1,
@@ -123,11 +125,11 @@ const markdownStyles = {
     marginVertical: 8,
   },
   thead: {
-    backgroundColor: Colors.cream,
+    backgroundColor: Theme.colors.cream,
   },
   th: {
     padding: 8,
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     borderBottomWidth: 1,
     borderColor: '#E5E7EB',
   },
@@ -137,7 +139,7 @@ const markdownStyles = {
     borderColor: '#E5E7EB',
   },
   hr: {
-    backgroundColor: Colors.border,
+    backgroundColor: Theme.colors.border,
     height: 1,
     marginVertical: 12,
   },
@@ -297,11 +299,14 @@ const ChatScreen: React.FC = ({ route }: any) => {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        <ScreenHeader title="AI营养顾问" subtitle="基于今日饮食数据智能答疑" />
+
       {/* 顶部数据快照 */}
       <View style={styles.snapshot}>
         <View style={styles.snapshotContent}>
@@ -312,13 +317,13 @@ const ChatScreen: React.FC = ({ route }: any) => {
             <Text style={styles.snapshotLabel}>已摄入</Text>
           </View>
           <View style={styles.snapshotItem}>
-            <Text style={[styles.snapshotValue, { color: Colors.success }]}>
+            <Text style={[styles.snapshotValue, { color: Theme.colors.success }]}>
               {dailySummary ? Math.round(dailySummary.calorieRemaining).toLocaleString() : '--'}
             </Text>
             <Text style={styles.snapshotLabel}>剩余额度</Text>
           </View>
           <View style={styles.snapshotItem}>
-            <Text style={[styles.snapshotValue, { color: Colors.warning }]}>
+            <Text style={[styles.snapshotValue, { color: Theme.colors.warning }]}>
               {dailySummary ? dailySummary.mealRecords?.length || 0 : '--'}
             </Text>
             <Text style={styles.snapshotLabel}>餐次记录</Text>
@@ -372,7 +377,7 @@ const ChatScreen: React.FC = ({ route }: any) => {
         
         {isLoading && (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color={Colors.primary} />
+            <ActivityIndicator size="small" color={Theme.colors.primary} />
             <Text style={styles.loadingText}>AI 思考中...</Text>
           </View>
         )}
@@ -384,7 +389,7 @@ const ChatScreen: React.FC = ({ route }: any) => {
           <TextInput 
             style={styles.input}
             placeholder="输入您的饮食问题..."
-            placeholderTextColor={Colors.textMuted}
+            placeholderTextColor={Theme.colors.textMuted}
             value={inputText}
             onChangeText={setInputText}
             multiline
@@ -404,18 +409,19 @@ const ChatScreen: React.FC = ({ route }: any) => {
           </TouchableOpacity>
         </View>
       </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Theme.colors.background,
   },
   snapshot: {
-    backgroundColor: Colors.highlight,
-    padding: 16,
+    backgroundColor: Theme.colors.highlight,
+    padding: Theme.spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: '#D1FAE5',
   },
@@ -427,114 +433,118 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   snapshotValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.text,
+    fontSize: Theme.typography.sizes.h2,
+    fontWeight: Theme.typography.weights.bold,
+    color: Theme.colors.text,
   },
   snapshotLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginTop: 4,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textSecondary,
+    marginTop: Theme.spacing.xs,
   },
   chatContainer: {
     flex: 1,
-    padding: 16,
+    padding: Theme.spacing.lg,
   },
   chatContent: {
-    paddingBottom: 16,
+    paddingBottom: Theme.spacing.lg,
     flexGrow: 1,
   },
   messageLeft: {
-    backgroundColor: 'white',
-    padding: 12,
-    borderRadius: 18,
-    borderBottomLeftRadius: 4,
+    backgroundColor: Theme.colors.card,
+    padding: Theme.spacing.compact,
+    borderRadius: Theme.radius.none,
     alignSelf: 'flex-start',
     maxWidth: width * 0.85,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    elevation: 1,
+    marginBottom: Theme.spacing.compact,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
   },
   messageRight: {
-    backgroundColor: Colors.primary,
-    padding: 12,
-    borderRadius: 18,
-    borderBottomRightRadius: 4,
+    backgroundColor: Theme.colors.primary,
+    padding: Theme.spacing.compact,
+    borderRadius: Theme.radius.none,
     alignSelf: 'flex-end',
     maxWidth: width * 0.85,
-    marginBottom: 12,
+    marginBottom: Theme.spacing.compact,
   },
   messageTime: {
-    fontSize: 11,
-    color: Colors.textMuted,
-    marginTop: 4,
+    fontSize: Theme.typography.sizes.small,
+    color: Theme.colors.textMuted,
+    marginTop: Theme.spacing.xs,
   },
   quickQuestions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 8,
-    marginBottom: 16,
+    gap: Theme.spacing.sm,
+    marginTop: Theme.spacing.sm,
+    marginBottom: Theme.spacing.lg,
   },
   quickQuestionBtn: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#D1FAE5',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    backgroundColor: Theme.colors.card,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    paddingHorizontal: Theme.spacing.compact,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.none,
   },
   quickQuestionText: {
-    fontSize: 13,
-    color: Colors.primary,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.primary,
   },
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: 'white',
-    padding: 8,
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: Theme.colors.card,
+    padding: Theme.spacing.sm,
+    borderRadius: Theme.radius.none,
+    borderTopWidth: 1,
+    borderTopColor: Theme.colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: Theme.colors.border,
+    marginBottom: Theme.spacing.compact,
   },
   loadingText: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginLeft: 8,
+    fontSize: Theme.typography.sizes.caption,
+    color: Theme.colors.textSecondary,
+    marginLeft: Theme.spacing.sm,
   },
   inputContainer: {
-    backgroundColor: 'white',
+    backgroundColor: Theme.colors.card,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-    padding: 12,
+    borderTopColor: Theme.colors.divider,
+    padding: Theme.spacing.compact,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Theme.spacing.sm,
   },
   input: {
     flex: 1,
-    backgroundColor: Colors.cream,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 15,
+    backgroundColor: Theme.colors.background,
+    borderRadius: Theme.radius.none,
+    paddingHorizontal: Theme.spacing.lg,
+    paddingVertical: Theme.spacing.compact,
+    fontSize: Theme.typography.sizes.h3,
     maxHeight: 100,
     minHeight: 44,
   },
   sendBtn: {
     width: 44,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: Colors.primary,
+    borderRadius: Theme.radius.none,
+    backgroundColor: Theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   sendBtnDisabled: {
-    backgroundColor: Colors.textMuted,
+    backgroundColor: Theme.colors.textMuted,
   },
 });
 
