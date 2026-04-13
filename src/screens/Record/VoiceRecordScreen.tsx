@@ -702,7 +702,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   resultCard: {
-    marginHorizontal: Theme.spacing.lg,
     marginBottom: Theme.spacing.compact,
 
     backgroundColor: Theme.colors.card,

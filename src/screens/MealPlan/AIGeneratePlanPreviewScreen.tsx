@@ -642,11 +642,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: Theme.spacing.lg,
   },
-  headerTitle: {
-    fontSize: Theme.typography.sizes.h2,
-    fontWeight: Theme.typography.weights.semibold,
-    color: Theme.colors.text,
-  },
   editBtn: {
     fontSize: Theme.typography.sizes.caption,
     color: Theme.colors.primary,
@@ -778,7 +773,6 @@ const styles = StyleSheet.create({
     borderRadius: Theme.radius.md,
     marginBottom: Theme.spacing.compact,
     overflow: 'hidden',
-    marginHorizontal: Theme.spacing.lg,
   },
   dayHeader: {
     flexDirection: 'row',

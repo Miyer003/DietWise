@@ -185,7 +185,6 @@ const styles = StyleSheet.create({
     backgroundColor: Theme.colors.card,
     borderRadius: Theme.radius.md,
     padding: Theme.spacing.lg,
-    marginHorizontal: Theme.spacing.lg,
   },
   myFeedbackBtn: {
     flexDirection: 'row',

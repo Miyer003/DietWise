@@ -463,7 +463,6 @@ const styles = StyleSheet.create({
     borderRadius: Theme.radius.lg,
     marginBottom: Theme.spacing.md,
     overflow: 'hidden',
-    marginHorizontal: Theme.spacing.lg,
   },
   dayHeader: {
     flexDirection: 'row',

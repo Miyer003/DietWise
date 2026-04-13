@@ -820,7 +820,6 @@ const styles = StyleSheet.create({
     ...Theme.shadows.card,
     borderRadius: Theme.radius.lg,
     padding: Theme.spacing.lg,
-    marginHorizontal: Theme.spacing.lg,
   },
   settingRow: {
     flexDirection: 'row',
@@ -950,7 +949,7 @@ const styles = StyleSheet.create({
   },
   // AI生成卡片
   aiCard: {
-    marginHorizontal: Theme.spacing.lg,
+    
     marginBottom: Theme.spacing.md,
     backgroundColor: Theme.colors.highlight,
     borderWidth: 1,
@@ -1029,7 +1028,6 @@ const styles = StyleSheet.create({
     borderRadius: Theme.radius.lg,
     padding: Theme.spacing.lg,
     marginBottom: Theme.spacing.md,
-    marginHorizontal: Theme.spacing.lg,
   },
   dayHeader: {
     flexDirection: 'row',

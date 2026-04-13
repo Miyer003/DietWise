@@ -594,11 +594,6 @@ const styles = StyleSheet.create({
     padding: Theme.spacing.lg,
     backgroundColor: Theme.colors.card,
   },
-  headerTitle: {
-    fontSize: Theme.typography.sizes.h2,
-    fontWeight: Theme.typography.weights.semibold,
-    color: Theme.colors.text,
-  },
   resultContainer: {
     flex: 1,
     backgroundColor: Theme.colors.background,
@@ -615,7 +610,6 @@ const styles = StyleSheet.create({
     borderRadius: Theme.radius.lg,
     padding: Theme.spacing.page,
     marginBottom: Theme.spacing.lg,
-    marginHorizontal: Theme.spacing.lg,
   },
   resultHeader: {
     flexDirection: 'row',

@@ -620,7 +620,7 @@ const styles = StyleSheet.create({
     borderBottomColor: Theme.colors.divider,
   },
   aiCard: {
-    marginHorizontal: Theme.spacing.lg,
+    
     borderRadius: Theme.radius.lg,
     backgroundColor: Theme.colors.card,
     padding: Theme.spacing.lg,
@@ -718,7 +718,7 @@ const styles = StyleSheet.create({
     fontWeight: Theme.typography.weights.medium,
   },
   timelineCard: {
-    marginHorizontal: Theme.spacing.lg,
+    
     borderRadius: Theme.radius.lg,
     backgroundColor: Theme.colors.card,
     borderTopWidth: 1,

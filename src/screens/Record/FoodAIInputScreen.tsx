@@ -301,11 +301,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: Theme.spacing.lg,
   },
-  headerTitle: {
-    fontSize: Theme.typography.sizes.h2,
-    fontWeight: Theme.typography.weights.semibold,
-    color: Theme.colors.text,
-  },
   scrollView: {
     flex: 1,
   },
@@ -317,7 +312,6 @@ const styles = StyleSheet.create({
     borderRadius: Theme.radius.lg,
     padding: Theme.spacing.page,
     marginBottom: Theme.spacing.lg,
-    marginHorizontal: Theme.spacing.lg,
   },
   inputLabel: {
     fontSize: Theme.typography.sizes.h2,
@@ -365,7 +359,6 @@ const styles = StyleSheet.create({
     backgroundColor: Theme.colors.card,
     borderRadius: Theme.radius.lg,
     padding: Theme.spacing.page,
-    marginHorizontal: Theme.spacing.lg,
   },
   resultHeader: {
     flexDirection: 'row',

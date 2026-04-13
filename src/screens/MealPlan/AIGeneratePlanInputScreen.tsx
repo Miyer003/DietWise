@@ -442,7 +442,6 @@ const styles = StyleSheet.create({
     ...Theme.shadows.card,
     borderRadius: Theme.radius.lg,
     padding: Theme.spacing.lg,
-    marginHorizontal: Theme.spacing.lg,
   },
   sliderHeader: {
     flexDirection: 'row',

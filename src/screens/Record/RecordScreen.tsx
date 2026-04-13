@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { Theme } from '../../constants/Theme';
+import ScreenHeader from '../../components/ScreenHeader';
 import { FoodService, DietService } from '../../services/api';
 import { MealType, RecentFoodItem } from '../../types';
 
@@ -192,13 +193,7 @@ export default function RecordScreen({ navigation }: RecordScreenProps) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={true}
       >
-        {/* 顶部导航 */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>添加记录</Text>
-            <Text style={styles.subtitle}>选择记录方式</Text>
-          </View>
-        </View>
+        <ScreenHeader title="添加记录" subtitle="选择记录方式" />
 
         {/* 三种记录方式 */}
         <View style={styles.methodsContainer}>
@@ -332,15 +327,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 40,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Theme.spacing.page,
-    backgroundColor: Theme.colors.card,
-    ...Theme.shadows.card,
-    borderBottomWidth: 1,
-    borderBottomColor: Theme.colors.border,
-  },
   backButton: {
     width: 40,
     height: 40,
@@ -349,16 +335,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Theme.spacing.md,
-  },
-  title: {
-    fontSize: Theme.typography.sizes.h1,
-    fontWeight: Theme.typography.weights.bold,
-    color: Theme.colors.text,
-  },
-  subtitle: {
-    fontSize: Theme.typography.sizes.caption,
-    color: Theme.colors.textSecondary,
-    marginTop: Theme.spacing.xs,
   },
   methodsContainer: {
     padding: Theme.spacing.lg,
@@ -375,7 +351,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
-    marginHorizontal: Theme.spacing.lg,
   },
   iconContainer: {
     width: 56,

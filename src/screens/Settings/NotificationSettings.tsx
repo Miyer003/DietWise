@@ -550,7 +550,6 @@ const styles = StyleSheet.create({
   section: {
     marginHorizontal: Theme.spacing.lg,
     borderRadius: Theme.radius.lg,
-    paddingHorizontal: Theme.spacing.lg,
     marginBottom: Theme.spacing.lg,
   },
   sectionTitle: {

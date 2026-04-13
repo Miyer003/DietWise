@@ -200,21 +200,7 @@ export default function MyFeedbacksScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* 顶部标题栏 */}
-        <View style={styles.header}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.headerTitle}>我的反馈</Text>
-            <Text style={styles.headerSubtitle}>查看已提交的反馈与官方回复</Text>
-          </View>
-        </View>
-
-        {/* 顶部标题栏 */}
-        <View style={styles.header}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.headerTitle}>我的反馈</Text>
-            <Text style={styles.headerSubtitle}>查看已提交的反馈与官方回复</Text>
-          </View>
-        </View>
+        <ScreenHeader title="我的反馈" subtitle="查看已提交的反馈与官方回复" />
 
         {/* 提示信息 */}
         <View style={styles.tipContainer}>
@@ -249,27 +235,6 @@ export default function MyFeedbacksScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Theme.spacing.page,
-    paddingVertical: Theme.spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: Theme.colors.divider,
-    marginHorizontal: -Theme.spacing.lg,
-    marginBottom: Theme.spacing.lg,
-  },
-  headerTitle: {
-    fontSize: Theme.typography.sizes.h1,
-    fontWeight: Theme.typography.weights.light,
-    letterSpacing: 2,
-    color: Theme.colors.text,
-  },
-  headerSubtitle: {
-    fontSize: Theme.typography.sizes.caption,
-    color: Theme.colors.textMuted,
-    marginTop: Theme.spacing.xs,
-  },
   container: {
     flex: 1,
     backgroundColor: Theme.colors.background,
@@ -330,7 +295,6 @@ const styles = StyleSheet.create({
     gap: Theme.spacing.md,
   },
   card: {
-    marginHorizontal: Theme.spacing.lg,
     marginBottom: Theme.spacing.compact,
 
     backgroundColor: Theme.colors.card,
