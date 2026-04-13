@@ -21,8 +21,8 @@ export default function ConsultScreen({ navigation }: any) {
         {/* 顶部标题 */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.title}>健康咨询</Text>
-            <Text style={styles.subtitle}>AI助力您的饮食健康</Text>
+            <Text style={styles.headerTitle}>健康咨询</Text>
+            <Text style={styles.headerSubtitle}>AI助力您的饮食健康</Text>
           </View>
           <View style={styles.headerIcon}>
             <Ionicons name="sparkles" size={28} color={Colors.primary} />
@@ -70,8 +70,8 @@ export default function ConsultScreen({ navigation }: any) {
           <View style={[styles.tag, { backgroundColor: Colors.primaryLight }]}>
             <Text style={[styles.tagText, { color: Colors.primaryDark }]}>科学配比</Text>
           </View>
-          <View style={[styles.tag, { backgroundColor: '#FEF3C7' }]}>
-            <Text style={[styles.tagText, { color: '#D97706' }]}>一键生成</Text>
+          <View style={[styles.tag, { backgroundColor: Colors.highlight }]}>
+            <Text style={[styles.tagText, { color: Colors.primaryDark }]}>一键生成</Text>
           </View>
         </View>
 
@@ -114,15 +114,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     backgroundColor: Colors.card,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
-  title: {
-    fontSize: 24,
+  headerTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
     color: Colors.text,
   },
-  subtitle: {
+  headerSubtitle: {
     fontSize: 14,
     color: Colors.textSecondary,
     marginTop: 4,
@@ -130,7 +135,7 @@ const styles = StyleSheet.create({
   headerIcon: {
     width: 48,
     height: 48,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
@@ -183,13 +188,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   tag: {
-    backgroundColor: '#FFEDD5',
+    backgroundColor: Colors.primaryLight,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
   },
   tagText: {
-    color: '#EA580C',
+    color: Colors.primaryDark,
     fontSize: 12,
     fontWeight: '500',
   },
@@ -207,6 +212,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: Colors.card,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,

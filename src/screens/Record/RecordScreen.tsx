@@ -20,10 +20,10 @@ interface RecordScreenProps {
 }
 
 const MEAL_TYPES: { type: MealType; name: string; icon: React.ComponentProps<typeof Ionicons>['name']; color: string }[] = [
-  { type: 'breakfast', name: '早餐', icon: 'sunny-outline', color: '#FFEDD5' },
-  { type: 'lunch', name: '午餐', icon: 'sunny', color: '#FEE2E2' },
-  { type: 'dinner', name: '晚餐', icon: 'moon-outline', color: '#DBEAFE' },
-  { type: 'snack', name: '加餐', icon: 'cafe-outline', color: '#D1FAE5' },
+  { type: 'breakfast', name: '早餐', icon: 'sunny-outline', color: Colors.highlight },
+  { type: 'lunch', name: '午餐', icon: 'sunny', color: Colors.primaryLight },
+  { type: 'dinner', name: '晚餐', icon: 'moon-outline', color: Colors.highlight },
+  { type: 'snack', name: '加餐', icon: 'cafe-outline', color: Colors.highlight },
 ];
 
 export default function RecordScreen({ navigation }: RecordScreenProps) {
@@ -343,8 +343,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     backgroundColor: Colors.card,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   backButton: {
     width: 40,
@@ -406,7 +411,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   comingSoonBadge: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,

@@ -2,7 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
 import { useAuth } from '../store/AuthContext';
@@ -69,10 +69,26 @@ function MainTabNavigator() {
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.textMuted,
         headerShown: false,
+        // 自定义 tabBarButton 移除默认的圆形水波纹/阴影点击效果
+        tabBarButton: (props: any) => (
+          <Pressable
+            {...props}
+            android_ripple={null}
+            style={props.style}
+          />
+        ),
         tabBarStyle: {
           height: 84,
           paddingBottom: 20,
           paddingTop: 8,
+          backgroundColor: Colors.surface,
+          borderTopWidth: 1,
+          borderTopColor: Colors.border,
+          shadowColor: Colors.text,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.03,
+          shadowRadius: 8,
+          elevation: 2,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -97,22 +113,20 @@ function MainTabNavigator() {
           tabBarLabel: '记录',
           tabBarIcon: ({ color }) => (
             <View style={{
-              width: 56,
-              height: 56,
+              width: 52,
+              height: 52,
               backgroundColor: Colors.primary,
-              borderRadius: 28,
+              borderRadius: 18,
               justifyContent: 'center',
               alignItems: 'center',
-              marginTop: -20,
-              borderWidth: 4,
-              borderColor: Colors.background,
-              shadowColor: Colors.primary,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 4,
+              marginTop: -16,
+              shadowColor: Colors.primaryDark,
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.22,
+              shadowRadius: 10,
+              elevation: 5,
             }}>
-              <Ionicons name="add" size={32} color="white" />
+              <Ionicons name="add" size={30} color="white" />
             </View>
           ),
         }}

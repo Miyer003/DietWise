@@ -464,6 +464,11 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: Colors.card,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
     borderRadius: 16,
     padding: 16,
   },
@@ -493,7 +498,7 @@ const styles = StyleSheet.create({
   sliderTrack: {
     flex: 1,
     height: 6,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: Colors.border,
     borderRadius: 3,
     marginHorizontal: 8,
   },
@@ -519,7 +524,7 @@ const styles = StyleSheet.create({
   },
   mealCountBtn: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
@@ -554,7 +559,7 @@ const styles = StyleSheet.create({
   },
   goalBtn: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -590,7 +595,7 @@ const styles = StyleSheet.create({
   preferenceTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -626,13 +631,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   restrictionTag: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 10,
   },
   restrictionTagActive: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: Colors.primaryLight,
     borderWidth: 1,
     borderColor: '#EF4444',
   },
@@ -643,7 +648,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   restrictionTextActive: {
-    color: '#EF4444',
+    color: Colors.danger,
   },
   restrictionDesc: {
     fontSize: 12,
@@ -655,7 +660,7 @@ const styles = StyleSheet.create({
   },
   difficultyBtn: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
@@ -684,7 +689,7 @@ const styles = StyleSheet.create({
     color: Colors.text,
     minHeight: 80,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: Colors.border,
   },
   generateBtn: {
     backgroundColor: Colors.primary,
@@ -761,7 +766,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 56,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: Colors.border,
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 24,
@@ -779,7 +784,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     alignItems: 'center',
   },
   modalBtnCancelText: {

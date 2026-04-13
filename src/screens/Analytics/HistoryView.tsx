@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   },
   modeSwitch: {
     flexDirection: 'row',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     borderRadius: 12,
     padding: 4,
     marginBottom: 20,
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   historyIcon: {
     width: 48,
     height: 48,
-    backgroundColor: '#ECFDF5',
+    backgroundColor: Colors.highlight,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -467,6 +467,11 @@ const styles = StyleSheet.create({
   },
   emptyStateCard: {
     backgroundColor: Colors.card,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
     borderRadius: 16,
     padding: 40,
     alignItems: 'center',

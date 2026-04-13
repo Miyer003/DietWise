@@ -79,7 +79,7 @@ const markdownStyles = {
     color: Colors.textSecondary,
   },
   code_inline: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingHorizontal: 4,
     paddingVertical: 2,
     borderRadius: 4,
@@ -88,7 +88,7 @@ const markdownStyles = {
     color: Colors.danger,
   },
   code_block: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     padding: 12,
     borderRadius: 8,
     marginVertical: 8,
@@ -96,7 +96,7 @@ const markdownStyles = {
     fontSize: 13,
   },
   fence: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     padding: 12,
     borderRadius: 8,
     marginVertical: 8,
@@ -123,7 +123,7 @@ const markdownStyles = {
     marginVertical: 8,
   },
   thead: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
   },
   th: {
     padding: 8,
@@ -137,7 +137,7 @@ const markdownStyles = {
     borderColor: '#E5E7EB',
   },
   hr: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: Colors.border,
     height: 1,
     marginVertical: 12,
   },
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   snapshot: {
-    backgroundColor: '#ECFDF5',
+    backgroundColor: Colors.highlight,
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#D1FAE5',
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,

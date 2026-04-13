@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   statusBadge: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   prefTag: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 10,

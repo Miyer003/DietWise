@@ -106,7 +106,7 @@ const AICard: React.FC<{
     <View style={styles.aiCard}>
       <View style={styles.aiCardHeader}>
         <View style={styles.aiIcon}>
-          <Ionicons name="sparkles" size={20} color={Colors.textInverse} />
+          <Ionicons name="sparkles" size={20} color={Colors.primary} />
         </View>
         <View style={styles.aiTitleContainer}>
           <Text style={styles.aiTitle}>
@@ -526,6 +526,15 @@ const styles = StyleSheet.create({
   progressContainer: {
     alignItems: 'center',
     marginVertical: 16,
+    backgroundColor: Colors.highlight,
+    marginHorizontal: 16,
+    paddingVertical: 20,
+    borderRadius: 20,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
   progressRingContainer: {
     width: 160,
@@ -555,7 +564,16 @@ const styles = StyleSheet.create({
   },
   nutrientsContainer: {
     paddingHorizontal: 20,
+    paddingVertical: 16,
     marginBottom: 20,
+    marginHorizontal: 16,
+    backgroundColor: Colors.surface,
+    borderRadius: 20,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
   nutrientContainer: {
     marginBottom: 14,
@@ -598,11 +616,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   aiCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.highlight,
     borderRadius: 16,
     padding: 18,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
   },
   aiCardHeader: {
     flexDirection: 'row',
@@ -612,7 +633,7 @@ const styles = StyleSheet.create({
   aiIcon: {
     width: 36,
     height: 36,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.cream,
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
@@ -658,7 +679,7 @@ const styles = StyleSheet.create({
   aiButtonSecondary: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.cream,
     borderRadius: 10,
   },
   aiButtonSecondaryText: {
@@ -692,9 +713,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   timelineCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.cream,
     borderRadius: 16,
     padding: 16,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
   },
   timelineItem: {
     flexDirection: 'row',
@@ -785,7 +811,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: Colors.highlight,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,

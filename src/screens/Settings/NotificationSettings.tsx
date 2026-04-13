@@ -452,9 +452,9 @@ export default function NotificationSettings() {
 
         {/* Android FCM 提示 */}
         {Platform.OS === 'android' && (
-          <View style={[styles.tipCard, { backgroundColor: '#FEF3C7' }]}>
+          <View style={[styles.tipCard, { backgroundColor: Colors.highlight }]}>
             <Ionicons name="warning" size={20} color="#F59E0B" />
-            <Text style={[styles.tipText, { color: '#B45309' }]}>
+            <Text style={[styles.tipText, { color: Colors.accent }]}>
               Android 设备需要配置 Firebase Cloud Messaging 才能接收推送通知。如需完整推送功能，请参考 Expo 文档进行配置。
             </Text>
           </View>
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
   masterIcon: {
     width: 48,
     height: 48,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: Colors.highlight,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   timeBtn: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   timeBtnDisabled: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: Colors.border,
   },
   timeText: {
     fontSize: 14,
@@ -647,13 +647,13 @@ const styles = StyleSheet.create({
   intervalBtn: {
     width: 32,
     height: 32,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
   intervalBtnDisabled: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: Colors.border,
   },
   intervalText: {
     fontSize: 14,
@@ -669,7 +669,7 @@ const styles = StyleSheet.create({
   },
   tipCard: {
     flexDirection: 'row',
-    backgroundColor: '#EFF6FF',
+    backgroundColor: Colors.highlight,
     borderRadius: 12,
     padding: 16,
     marginHorizontal: 16,

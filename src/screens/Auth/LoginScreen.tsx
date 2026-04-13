@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   },
   modeSwitch: {
     flexDirection: 'row',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     borderRadius: 10,
     padding: 4,
     marginBottom: 24,

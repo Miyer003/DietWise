@@ -199,17 +199,17 @@ export default function AchievementsScreen({ navigation }: any) {
     const { conditionValue, conditionType } = badge;
     
     if (conditionType === 'streak_days') {
-      if (conditionValue >= 30) return { level: '困难', color: '#EF4444' };
-      if (conditionValue >= 7) return { level: '中等', color: '#F59E0B' };
-      return { level: '简单', color: '#10B981' };
+      if (conditionValue >= 30) return { level: '困难', color: Colors.danger };
+      if (conditionValue >= 7) return { level: '中等', color: Colors.warning };
+      return { level: '简单', color: Colors.success };
     }
     if (conditionType === 'record_count' && conditionValue >= 50) {
-      return { level: '困难', color: '#EF4444' };
+      return { level: '困难', color: Colors.danger };
     }
     if (conditionValue >= 20) {
-      return { level: '中等', color: '#F59E0B' };
+      return { level: '中等', color: Colors.warning };
     }
-    return { level: '简单', color: '#10B981' };
+    return { level: '简单', color: Colors.success };
   };
 
   // 获取进度单位
@@ -421,8 +421,8 @@ export default function AchievementsScreen({ navigation }: any) {
                     </View>
                   )}
                   {!selectedBadge.isUnlocked && (
-                    <View style={[styles.modalTag, { backgroundColor: '#9CA3AF20' }]}>
-                      <Text style={[styles.modalTagText, { color: '#6B7280' }]}>
+                    <View style={[styles.modalTag, { backgroundColor: Colors.alpha.text10 }]}>
+                      <Text style={[styles.modalTagText, { color: Colors.textSecondary }]}>
                         🔒 未解锁
                       </Text>
                     </View>
@@ -579,7 +579,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 8,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: Colors.border,
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 8,
@@ -685,7 +685,7 @@ const styles = StyleSheet.create({
   badgeProgressBar: {
     width: '100%',
     height: 4,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: Colors.border,
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -839,7 +839,7 @@ const styles = StyleSheet.create({
   },
   modalDivider: {
     height: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: Colors.border,
     marginVertical: 12,
   },
   difficultyBadge: {
@@ -874,7 +874,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     borderRadius: 12,
   },
   modalLockedHintText: {
@@ -899,7 +899,7 @@ const styles = StyleSheet.create({
   modalProgressBar: {
     width: '100%',
     height: 8,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: Colors.border,
     borderRadius: 4,
     overflow: 'hidden',
   },

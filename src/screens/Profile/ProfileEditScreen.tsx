@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
   avatarOption: {
     width: 48,
     height: 48,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
@@ -487,7 +487,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
   },
   inputDisabled: {
     color: Colors.textSecondary,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: Colors.border,
   },
   rowInputs: {
     flexDirection: 'row',
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
   },
   genderBtn: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
   },
   goalBtn: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',

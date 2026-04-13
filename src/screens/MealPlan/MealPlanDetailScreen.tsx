@@ -373,6 +373,11 @@ const styles = StyleSheet.create({
   },
   overviewCard: {
     backgroundColor: Colors.card,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
     margin: 16,
     padding: 20,
     borderRadius: 16,
@@ -392,7 +397,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryLight,
   },
   customBadge: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: Colors.highlight,
   },
   planTypeText: {
     fontSize: 13,
@@ -402,7 +407,7 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   customBadgeText: {
-    color: '#D97706',
+    color: Colors.accent,
   },
   planStatus: {
     fontSize: 14,
@@ -436,7 +441,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#F3F4F6',
   },
   flavorTag: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -456,6 +461,11 @@ const styles = StyleSheet.create({
   },
   dayCard: {
     backgroundColor: Colors.card,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
     borderRadius: 16,
     marginBottom: 12,
     overflow: 'hidden',

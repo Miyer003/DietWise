@@ -289,7 +289,7 @@ export default function MealPlanScreen({ navigation }: any) {
         }
       >
         {/* 状态卡片 */}
-        <View style={[styles.statusCard, hasActivePlan ? { backgroundColor: '#D1FAE5', borderColor: '#34D399' } : { backgroundColor: '#FFEDD5', borderColor: '#FED7AA' }]}>
+        <View style={[styles.statusCard, hasActivePlan ? { backgroundColor: Colors.highlight, borderColor: Colors.primary } : { backgroundColor: Colors.cream, borderColor: Colors.accent }]}>
           {/* 历史按钮 - 右上角 */}
           <TouchableOpacity 
             style={styles.historyBtnCorner}
@@ -791,7 +791,7 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   badge: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -809,6 +809,11 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: Colors.card,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
     borderRadius: 16,
     padding: 16,
   },
@@ -837,7 +842,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -863,7 +868,7 @@ const styles = StyleSheet.create({
   },
   segmentControl: {
     flexDirection: 'row',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     borderRadius: 10,
     padding: 4,
   },
@@ -902,7 +907,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   preferenceTag: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
@@ -924,7 +929,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   preferenceDisplayTag: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -942,7 +947,7 @@ const styles = StyleSheet.create({
   aiCard: {
     marginHorizontal: 16,
     marginBottom: 12,
-    backgroundColor: '#ECFDF5',
+    backgroundColor: Colors.highlight,
     borderWidth: 1,
     borderColor: '#D1FAE5',
   },
@@ -1015,6 +1020,11 @@ const styles = StyleSheet.create({
   },
   dayCard: {
     backgroundColor: Colors.card,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -1119,7 +1129,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.text,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: Colors.border,
   },
   dishNameInput: {
     width: '100%',
@@ -1185,11 +1195,16 @@ const styles = StyleSheet.create({
   },
   cancelBtn: {
     backgroundColor: Colors.card,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: Colors.border,
   },
   cancelBtnText: {
     color: Colors.textSecondary,
@@ -1205,6 +1220,11 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: Colors.card,
+    shadowColor: Colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
     borderRadius: 20,
     padding: 24,
     width: '100%',
@@ -1245,7 +1265,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 10,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     alignItems: 'center',
   },
   modalBtnCancelText: {

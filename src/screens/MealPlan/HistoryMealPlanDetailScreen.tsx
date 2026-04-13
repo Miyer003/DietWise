@@ -172,9 +172,9 @@ export default function HistoryMealPlanDetailScreen({ navigation, route }: Histo
         showsVerticalScrollIndicator={true}
       >
         {/* 状态卡片 */}
-        <View style={[styles.statusCard, { backgroundColor: '#F3F4F6', borderColor: '#E5E7EB' }]}>
+        <View style={[styles.statusCard, { backgroundColor: Colors.cream, borderColor: Colors.border }]}>
           <View style={styles.statusHeader}>
-            <View style={[styles.statusIcon, { backgroundColor: '#9CA3AF' }]}>
+            <View style={[styles.statusIcon, { backgroundColor: Colors.textMuted }]}>
               <Ionicons name="cube-outline" size={28} color={Colors.textMuted} />
             </View>
             <View>

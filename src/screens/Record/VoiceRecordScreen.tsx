@@ -790,14 +790,14 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
     justifyContent: 'center',
     alignItems: 'center',
   },
   sliderTrack: {
     flex: 1,
     height: 6,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: Colors.border,
     borderRadius: 3,
   },
   sliderFill: {
@@ -814,7 +814,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cream,
   },
   quickBtnActive: {
     backgroundColor: Colors.primary,

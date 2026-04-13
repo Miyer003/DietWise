@@ -17,18 +17,18 @@ import { Feedback } from '../../types';
 
 // 反馈类型映射
 const FEEDBACK_TYPE_MAP: Record<string, { label: string; icon: string; color: string }> = {
-  bug: { label: '问题反馈', icon: 'bug', color: '#EF4444' },
-  feature: { label: '功能建议', icon: 'bulb', color: '#F59E0B' },
-  data_error: { label: '数据错误', icon: 'warning', color: '#3B82F6' },
-  other: { label: '其他', icon: 'chatbubbles', color: '#10B981' },
+  bug: { label: '问题反馈', icon: 'bug', color: Colors.danger },
+  feature: { label: '功能建议', icon: 'bulb', color: Colors.warning },
+  data_error: { label: '数据错误', icon: 'warning', color: Colors.info },
+  other: { label: '其他', icon: 'chatbubbles', color: Colors.success },
 };
 
 // 状态映射
 const STATUS_MAP: Record<string, { label: string; color: string; bgColor: string }> = {
-  pending: { label: '待处理', color: '#F59E0B', bgColor: '#FEF3C7' },
-  processing: { label: '处理中', color: '#3B82F6', bgColor: '#DBEAFE' },
-  resolved: { label: '已解决', color: '#10B981', bgColor: '#D1FAE5' },
-  rejected: { label: '已关闭', color: '#6B7280', bgColor: '#F3F4F6' },
+  pending: { label: '待处理', color: Colors.warning, bgColor: Colors.highlight },
+  processing: { label: '处理中', color: Colors.info, bgColor: '#E8F0F3' },
+  resolved: { label: '已解决', color: Colors.success, bgColor: Colors.highlight },
+  rejected: { label: '已关闭', color: '#6B7280', bgColor: Colors.cream },
 };
 
 // 格式化日期
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   tipContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EFF6FF',
+    backgroundColor: Colors.highlight,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 8,
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
   },
   replyDivider: {
     height: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: Colors.border,
     marginBottom: 12,
   },
   replyHeader: {
