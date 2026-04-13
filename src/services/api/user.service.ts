@@ -60,6 +60,11 @@ export const UserService = {
     return apiClient.patch('/users/me/achievements/read');
   },
 
+  // 获取成就徽章进度
+  getAchievementsProgress: async (): Promise<ApiResponse<Record<string, { current: number; target: number }>>> => {
+    return apiClient.get('/users/me/achievements/progress');
+  },
+
   // 注销账号
   deleteAccount: async (): Promise<ApiResponse<null>> => {
     return apiClient.delete('/users/me');

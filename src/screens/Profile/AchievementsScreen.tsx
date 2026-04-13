@@ -47,6 +47,7 @@ export default function AchievementsScreen({ navigation }: any) {
   const [selectedBadge, setSelectedBadge] = useState<UserAchievement | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'unlocked' | 'locked'>('all');
+  const [progress, setProgress] = useState<Record<string, { current: number; target: number }>>({});
 
   useEffect(() => {
     loadBadges();
@@ -54,18 +55,16 @@ export default function AchievementsScreen({ navigation }: any) {
 
   const loadBadges = async () => {
     try {
+      // 并行获取成就列表和进度
+      const [achievementsRes, progressRes] = await Promise.all([
+        UserService.getAchievements('all') as any,
+        UserService.getAchievementsProgress() as any,
+      ]);
+
       // 获取用户已解锁的成就
-      // API 响应格式: {code: 0, message: 'success', data: {total, achievements}}
-      const achievementsRes = await UserService.getAchievements('all') as any;
-      // axios 拦截器返回的是 response.data
       const unlockedBadges = achievementsRes?.data?.achievements || [];
       
       console.log('[徽章] 已解锁:', unlockedBadges.length, unlockedBadges.map((b: any) => b.badgeCode));
-      
-      // 获取所有徽章定义
-      // 注意：admin/badges 需要认证，改用公开端点或从 UserService 获取
-      // 由于徽章定义是公开的，我们使用一个特殊的公开接口或者硬编码默认定义
-      // 暂时使用后端返回的徽章定义（如果有的话），否则使用默认定义
       
       // 获取后端返回的所有徽章定义
       let allBadgeDefs: BadgeDefinition[] = achievementsRes?.data?.badgeDefinitions || [];
@@ -83,6 +82,10 @@ export default function AchievementsScreen({ navigation }: any) {
           conditionValue: ub.conditionValue || 0,
         }));
       }
+
+      // 保存进度数据
+      const progressData = progressRes?.data || {};
+      setProgress(progressData);
 
       console.log('🏅 徽章定义总数:', allBadgeDefs.length);
 
@@ -104,6 +107,10 @@ export default function AchievementsScreen({ navigation }: any) {
     } catch (error) {
       console.error('加载徽章失败:', error);
     }
+  };
+
+  const getBadgeProgress = (badgeCode: string) => {
+    return progress[badgeCode] || { current: 0, target: 1 };
   };
 
   const handleBadgePress = (badge: UserAchievement) => {
@@ -203,6 +210,28 @@ export default function AchievementsScreen({ navigation }: any) {
       return { level: '中等', color: '#F59E0B' };
     }
     return { level: '简单', color: '#10B981' };
+  };
+
+  // 获取进度单位
+  const getProgressUnit = (conditionType: string) => {
+    switch (conditionType) {
+      case 'streak_days':
+      case 'balanced_days':
+      case 'sugar_control_days':
+      case 'calorie_perfect_days':
+      case 'water_days':
+        return '天';
+      case 'record_count':
+      case 'photo_count':
+      case 'chat_count':
+      case 'meal_plan_count':
+      case 'veggie_count':
+        return '次';
+      case 'early_record':
+        return '天';
+      default:
+        return '';
+    }
   };
 
   return (
@@ -306,9 +335,33 @@ export default function AchievementsScreen({ navigation }: any) {
                 {getCategoryLabel(badge.category)}
               </Text>
               {!badge.isUnlocked && (
-                <View style={styles.lockedOverlay}>
-                  <Ionicons name="lock-closed" size={20} color="#9CA3AF" />
-                </View>
+                <>
+                  <View style={styles.badgeProgressContainer}>
+                    <View style={styles.badgeProgressBar}>
+                      <View
+                        style={[
+                          styles.badgeProgressFill,
+                          {
+                            width: `${Math.min(
+                              (getBadgeProgress(badge.badgeCode).current /
+                                getBadgeProgress(badge.badgeCode).target) *
+                                100,
+                              100
+                            )}%`,
+                            backgroundColor: badge.iconColor,
+                          },
+                        ]}
+                      />
+                    </View>
+                    <Text style={styles.badgeProgressText}>
+                      {getBadgeProgress(badge.badgeCode).current}/
+                      {getBadgeProgress(badge.badgeCode).target}
+                    </Text>
+                  </View>
+                  <View style={styles.lockedOverlay}>
+                    <Ionicons name="lock-closed" size={20} color="#9CA3AF" />
+                  </View>
+                </>
               )}
             </TouchableOpacity>
           ))}
@@ -426,12 +479,45 @@ export default function AchievementsScreen({ navigation }: any) {
                   </View>
                 )}
 
+                {/* 进度展示 */}
+                {!selectedBadge.isUnlocked && (
+                  <View style={[styles.modalInfoCard, { marginBottom: 12 }]}>
+                    <View style={styles.modalInfoRow}>
+                      <Ionicons name="trending-up-outline" size={18} color={Colors.primary} />
+                      <View style={{ flex: 1, marginLeft: 12 }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+                          <Text style={styles.modalInfoLabel}>当前进度</Text>
+                          <Text style={[styles.modalInfoValue, { color: Colors.primary }]}>
+                            {getBadgeProgress(selectedBadge.badgeCode).current} / {getBadgeProgress(selectedBadge.badgeCode).target}
+                          </Text>
+                        </View>
+                        <View style={styles.modalProgressBar}>
+                          <View
+                            style={[
+                              styles.modalProgressFill,
+                              {
+                                width: `${Math.min(
+                                  (getBadgeProgress(selectedBadge.badgeCode).current /
+                                    getBadgeProgress(selectedBadge.badgeCode).target) *
+                                    100,
+                                  100
+                                )}%`,
+                                backgroundColor: selectedBadge.iconColor,
+                              },
+                            ]}
+                          />
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                )}
+
                 {/* 未解锁提示 */}
                 {!selectedBadge.isUnlocked && (
                   <View style={styles.modalLockedHint}>
                     <Ionicons name="lock-closed" size={20} color="#9CA3AF" />
                     <Text style={styles.modalLockedHintText}>
-                      继续努力，完成目标即可解锁此徽章！
+                      还差 {Math.max(0, getBadgeProgress(selectedBadge.badgeCode).target - getBadgeProgress(selectedBadge.badgeCode).current)} {getProgressUnit(selectedBadge.conditionType)} 即可解锁！
                     </Text>
                   </View>
                 )}
@@ -590,6 +676,28 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: Colors.textSecondary,
     marginTop: 2,
+  },
+  badgeProgressContainer: {
+    width: '100%',
+    marginTop: 6,
+    alignItems: 'center',
+  },
+  badgeProgressBar: {
+    width: '100%',
+    height: 4,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  badgeProgressFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  badgeProgressText: {
+    fontSize: 10,
+    color: Colors.textMuted,
+    marginTop: 3,
+    fontWeight: '500',
   },
   lockedOverlay: {
     position: 'absolute',
@@ -787,5 +895,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: 'white',
+  },
+  modalProgressBar: {
+    width: '100%',
+    height: 8,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  modalProgressFill: {
+    height: '100%',
+    borderRadius: 4,
   },
 });
