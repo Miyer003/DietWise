@@ -20,7 +20,7 @@ interface BadgeDefinition {
   badgeCode: string;
   badgeName: string;
   badgeDesc: string;
-  iconName: React.ComponentProps<typeof Ionicons>['name'];
+  iconEmoji: string;
   iconColor: string;
   category: string;
   conditionType: string;
@@ -32,7 +32,7 @@ interface UserAchievement {
   badgeCode: string;
   badgeName: string;
   badgeDesc?: string;
-  iconName: React.ComponentProps<typeof Ionicons>['name'];
+  iconEmoji: string;
   iconColor: string;
   category: string;
   conditionType: string;
@@ -67,63 +67,21 @@ export default function AchievementsScreen({ navigation }: any) {
       // 由于徽章定义是公开的，我们使用一个特殊的公开接口或者硬编码默认定义
       // 暂时使用后端返回的徽章定义（如果有的话），否则使用默认定义
       
-      // 检查 achievementsRes 是否包含徽章定义（后端扩展返回）
+      // 获取后端返回的所有徽章定义
       let allBadgeDefs: BadgeDefinition[] = achievementsRes?.data?.badgeDefinitions || [];
       
-      // 如果没有返回定义，尝试从其他接口获取
-      // TODO: 后端可以提供一个公开接口获取所有徽章定义
+      // 如果后端未返回，根据已解锁的徽章推断定义
       if (allBadgeDefs.length === 0) {
-        console.log('后端未返回徽章定义，使用本地默认值');
-      }
-      
-      // 如果仍然没有定义，根据已解锁的徽章推断定义，或使用硬编码
-      if (allBadgeDefs.length === 0) {
-        // 从已解锁的徽章中提取定义信息
         allBadgeDefs = unlockedBadges.map((ub: any) => ({
           badgeCode: ub.badgeCode,
           badgeName: ub.badgeName,
           badgeDesc: ub.badgeDesc,
-          iconName: ub.iconName,
+          iconEmoji: ub.iconEmoji || '🏆',
           iconColor: ub.iconColor,
           category: ub.category || 'general',
           conditionType: ub.conditionType || 'default',
           conditionValue: ub.conditionValue || 0,
         }));
-        
-        // 添加完整的默认徽章定义（与后端数据库保持一致）
-        const defaultLockedBadges: BadgeDefinition[] = [
-          // 连续记录类
-          { badgeCode: 'streak_3', badgeName: '连续3天', badgeDesc: '坚持记录3天', iconName: 'flame-outline', iconColor: '#F59E0B', category: 'continuous', conditionType: 'streak_days', conditionValue: 3 },
-          { badgeCode: 'streak_7', badgeName: '连续7天', badgeDesc: '坚持记录7天', iconName: 'flame', iconColor: '#F97316', category: 'continuous', conditionType: 'streak_days', conditionValue: 7 },
-          { badgeCode: 'streak_14', badgeName: '连续14天', badgeDesc: '坚持记录14天', iconName: 'flame', iconColor: '#EF4444', category: 'continuous', conditionType: 'streak_days', conditionValue: 14 },
-          { badgeCode: 'streak_30', badgeName: '连续30天', badgeDesc: '坚持记录30天', iconName: 'trophy', iconColor: '#DC2626', category: 'continuous', conditionType: 'streak_days', conditionValue: 30 },
-          { badgeCode: 'streak_100', badgeName: '百日坚持', badgeDesc: '坚持记录100天', iconName: 'medal-outline', iconColor: '#991B1B', category: 'continuous', conditionType: 'streak_days', conditionValue: 100 },
-          
-          // 均衡饮食类
-          { badgeCode: 'balanced_diet', badgeName: '营养均衡', badgeDesc: '连续3天营养均衡', iconName: 'fitness-outline', iconColor: '#10B981', category: 'balanced', conditionType: 'balanced_days', conditionValue: 3 },
-          { badgeCode: 'sugar_control', badgeName: '控糖达人', badgeDesc: '连续7天控糖', iconName: 'cube-outline', iconColor: '#3B82F6', category: 'balanced', conditionType: 'sugar_control_days', conditionValue: 7 },
-          { badgeCode: 'calorie_perfect', badgeName: '热量达标', badgeDesc: '连续5天热量达标', iconName: 'checkmark-circle-outline', iconColor: '#8B5CF6', category: 'balanced', conditionType: 'calorie_perfect_days', conditionValue: 5 },
-          { badgeCode: 'protein_master', badgeName: '蛋白质达人', badgeDesc: '连续7天蛋白质摄入达标', iconName: 'nutrition-outline', iconColor: '#F59E0B', category: 'balanced', conditionType: 'protein_days', conditionValue: 7 },
-          
-          // 习惯养成类
-          { badgeCode: 'first_record', badgeName: '初次记录', badgeDesc: '完成首次饮食记录', iconName: 'create-outline', iconColor: '#6366F1', category: 'habit', conditionType: 'record_count', conditionValue: 1 },
-          { badgeCode: 'record_10', badgeName: '记录新手', badgeDesc: '累计记录10次', iconName: 'bar-chart-outline', iconColor: '#8B5CF6', category: 'habit', conditionType: 'record_count', conditionValue: 10 },
-          { badgeCode: 'record_50', badgeName: '记录达人', badgeDesc: '累计记录50次', iconName: 'trending-up-outline', iconColor: '#EC4899', category: 'habit', conditionType: 'record_count', conditionValue: 50 },
-          { badgeCode: 'record_100', badgeName: '记录大师', badgeDesc: '累计记录100次', iconName: 'trophy-outline', iconColor: '#F59E0B', category: 'habit', conditionType: 'record_count', conditionValue: 100 },
-          { badgeCode: 'photo_master', badgeName: '拍照大师', badgeDesc: '拍照识别20次', iconName: 'camera-outline', iconColor: '#EC4899', category: 'habit', conditionType: 'photo_count', conditionValue: 20 },
-          { badgeCode: 'chat_enthusiast', badgeName: '咨询达人', badgeDesc: 'AI咨询10次', iconName: 'chatbubbles-outline', iconColor: '#14B8A6', category: 'habit', conditionType: 'chat_count', conditionValue: 10 },
-          { badgeCode: 'early_bird', badgeName: '早起鸟', badgeDesc: '连续7天在8点前记录早餐', iconName: 'sunny-outline', iconColor: '#F59E0B', category: 'habit', conditionType: 'early_record', conditionValue: 7 },
-          { badgeCode: 'veggie_lover', badgeName: '蔬菜爱好者', badgeDesc: '累计摄入蔬菜30次', iconName: 'leaf-outline', iconColor: '#22C55E', category: 'habit', conditionType: 'veggie_count', conditionValue: 30 },
-          { badgeCode: 'water_tracker', badgeName: '喝水达人', badgeDesc: '连续7天喝水达标', iconName: 'water-outline', iconColor: '#3B82F6', category: 'habit', conditionType: 'water_days', conditionValue: 7 },
-        ];
-        
-        // 合并，避免重复
-        const existingCodes = new Set(allBadgeDefs.map(b => b.badgeCode));
-        defaultLockedBadges.forEach(b => {
-          if (!existingCodes.has(b.badgeCode)) {
-            allBadgeDefs.push(b);
-          }
-        });
       }
 
       console.log('🏅 徽章定义总数:', allBadgeDefs.length);
@@ -328,7 +286,7 @@ export default function AchievementsScreen({ navigation }: any) {
                   },
                 ]}
               >
-                <Ionicons name={badge.iconName} size={28} color="white" />
+                <Text style={{ fontSize: 28 }}>{badge.iconEmoji || '🏆'}</Text>
                 {badge.isNew && (
                   <View style={styles.newBadge}>
                     <Text style={styles.newBadgeText}>NEW</Text>
@@ -379,7 +337,7 @@ export default function AchievementsScreen({ navigation }: any) {
                     },
                   ]}
                 >
-                  <Ionicons name={selectedBadge.iconName} size={48} color="white" />
+                  <Text style={{ fontSize: 48 }}>{selectedBadge.iconEmoji || '🏆'}</Text>
                   {!selectedBadge.isUnlocked && (
                     <View style={styles.modalLockOverlay}>
                       <Ionicons name="lock-closed" size={32} color="#9CA3AF" />

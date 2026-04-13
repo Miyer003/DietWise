@@ -205,7 +205,7 @@ export default function ProfileScreen({ navigation }: any) {
                   key={index} 
                   style={[styles.badgeIcon, { backgroundColor: achievement.iconColor + '20' }]}
                 >
-                  <Ionicons name="trophy" size={20} color={achievement.iconColor} />
+                  <Text style={{ fontSize: 20 }}>{achievement.iconEmoji || '🏆'}</Text>
                 </View>
               ))}
               {achievements.length < 4 && (
