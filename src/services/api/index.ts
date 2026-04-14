@@ -5,7 +5,6 @@ export { DietService } from './diet.service';
 export { FoodService } from './food.service';
 export { AIService } from './ai.service';
 export { MealPlanService } from './mealPlan.service';
-export { NotificationService } from './notification.service';
 export { TipsService } from './tips.service';
 export { FeedbackService } from './feedback.service';
 export { SyncService } from './sync.service';

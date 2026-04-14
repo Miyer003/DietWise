@@ -265,28 +265,6 @@ export interface ChatMessage {
 }
 
 // ============================================
-// 提醒设置类型
-// ============================================
-
-export interface NotificationSettings {
-  masterEnabled: boolean;
-  breakfastEnabled: boolean;
-  breakfastTime: string;
-  lunchEnabled: boolean;
-  lunchTime: string;
-  dinnerEnabled: boolean;
-  dinnerTime: string;
-  waterEnabled: boolean;
-  waterIntervalH: number;
-  waterStartTime: string;
-  waterEndTime: string;
-  recordRemind: boolean;
-  bedtimeRemind: boolean;
-  bedtimeTime: string;
-  expoPushToken?: string;
-}
-
-// ============================================
 // 用户自定义提示类型
 // ============================================
 
@@ -354,7 +332,6 @@ export interface SyncData {
   deviceId: string;
   records: DietRecord[];
   tips: UserTip[];
-  notificationSettings?: NotificationSettings;
 }
 
 export interface SyncResult {

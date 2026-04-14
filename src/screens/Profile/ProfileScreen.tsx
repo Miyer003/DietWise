@@ -28,7 +28,6 @@ export default function ProfileScreen({ navigation }: any) {
     { icon: 'person-outline', title: '个人画像', screen: 'ProfileEdit' },
     { icon: 'restaurant-outline', title: '我的食谱', screen: 'MealPlan' },
     { icon: 'chatbubble-outline', title: '意见反馈', screen: 'Feedback' },
-    { icon: 'notifications-outline', title: '提醒设置', screen: 'NotificationSettings' },
   ];
 
   const loadData = useCallback(async () => {

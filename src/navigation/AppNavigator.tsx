@@ -25,7 +25,6 @@ import AIGeneratePlanInputScreen from '../screens/MealPlan/AIGeneratePlanInputSc
 import AIGeneratePlanPreviewScreen from '../screens/MealPlan/AIGeneratePlanPreviewScreen';
 import HistoryMealPlanListScreen from '../screens/MealPlan/HistoryMealPlanListScreen';
 import HistoryMealPlanDetailScreen from '../screens/MealPlan/HistoryMealPlanDetailScreen';
-import NotificationSettings from '../screens/Settings/NotificationSettings';
 import FeedbackScreen from '../screens/Settings/FeedbackScreen';
 import MyFeedbacksScreen from '../screens/Settings/MyFeedbacksScreen';
 import AboutScreen from '../screens/Settings/AboutScreen';
@@ -233,11 +232,6 @@ function AppStackNavigator() {
       />
       
       {/* 设置页面 */}
-      <MainStack.Screen 
-        name="NotificationSettings" 
-        component={NotificationSettings} 
-        options={{ headerShown: false }}
-      />
       <MainStack.Screen 
         name="Feedback" 
         component={FeedbackScreen}

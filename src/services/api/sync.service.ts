@@ -1,11 +1,10 @@
 import apiClient from './client';
-import { ApiResponse, SyncData, SyncResult, DietRecord, MealPlan, UserProfile, NotificationSettings, Achievement } from '../../types';
+import { ApiResponse, SyncData, SyncResult, DietRecord, MealPlan, UserProfile, Achievement } from '../../types';
 
 export interface PullResponse {
   dietRecords: DietRecord[];
   mealPlans: MealPlan[];
   userProfile: UserProfile | null;
-  notificationSettings: NotificationSettings | null;
   achievements: Achievement[];
   serverTime: string;
 }
