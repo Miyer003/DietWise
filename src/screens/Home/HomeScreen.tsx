@@ -351,9 +351,10 @@ export default function HomeScreen({ navigation }: any) {
     ? (dailyData.calorieConsumed / dailyData.calorieGoal) * 100 
     : 0;
 
+  const calorieGoal = dailyData?.calorieGoal || profile?.dailyCalorieGoal || 2000;
   const proteinGoal = profile?.weightKg ? profile.weightKg * 1.2 : 60;
-  const carbsGoal = profile?.dailyCalorieGoal ? (profile.dailyCalorieGoal * 0.5) / 4 : 250;
-  const fatGoal = profile?.dailyCalorieGoal ? (profile.dailyCalorieGoal * 0.3) / 9 : 65;
+  const carbsGoal = calorieGoal * 0.5 / 4;
+  const fatGoal = calorieGoal * 0.3 / 9;
 
   return (
     <SafeAreaView style={styles.container}>
