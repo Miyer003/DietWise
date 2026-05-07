@@ -174,11 +174,15 @@ const userMarkdownStyles = {
   },
 };
 
-const ChatScreen: React.FC = ({ route }: any) => {
+const ChatScreen: React.FC = ({ route, navigation }: any) => {
   const { user } = useAuth();
+  const sessionId = route.params?.sessionId as string | undefined;
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [sessionTitle, setSessionTitle] = useState<string>('');
+  const [currentSessionId, setCurrentSessionId] = useState<string | undefined>(sessionId);
   const [dailySummary, setDailySummary] = useState<DailySummary | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const initialMessageSent = useRef(false);
@@ -214,10 +218,40 @@ const ChatScreen: React.FC = ({ route }: any) => {
     }
   }, []);
 
+  // 加载历史消息
+  const loadHistoryMessages = useCallback(async () => {
+    if (!sessionId) return;
+    setIsLoadingHistory(true);
+    try {
+      const res = await AIService.getChatSession(sessionId);
+      if (res.code === 0 && res.data) {
+        const historyMessages = res.data.messages || [];
+        setMessages(
+          historyMessages.map((msg: any) => ({
+            id: msg.id || String(Math.random()),
+            role: msg.role,
+            content: msg.content,
+            timestamp: new Date(msg.createdAt || Date.now()),
+          }))
+        );
+        if (res.data.session?.title) {
+          setSessionTitle(res.data.session.title);
+        }
+      }
+    } catch (error) {
+      console.error('加载历史消息失败:', error);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, [sessionId]);
+
   // 初始加载
   useEffect(() => {
     loadDailyData();
-  }, [loadDailyData]);
+    if (sessionId) {
+      loadHistoryMessages();
+    }
+  }, [loadDailyData, sessionId, loadHistoryMessages]);
 
   // 页面获得焦点时刷新数据
   useFocusEffect(
@@ -226,9 +260,9 @@ const ChatScreen: React.FC = ({ route }: any) => {
     }, [loadDailyData])
   );
 
-  // 添加欢迎消息
+  // 添加欢迎消息（仅新建会话时）
   useEffect(() => {
-    if (dailySummary && messages.length === 0) {
+    if (!sessionId && dailySummary && messages.length === 0) {
       const welcomeMessage: Message = {
         id: 'welcome',
         role: 'assistant',
@@ -237,7 +271,7 @@ const ChatScreen: React.FC = ({ route }: any) => {
       };
       setMessages([welcomeMessage]);
     }
-  }, [dailySummary, user]);
+  }, [dailySummary, user, sessionId, messages.length]);
 
   // 自动滚动到底部
   useEffect(() => {
@@ -261,11 +295,16 @@ const ChatScreen: React.FC = ({ route }: any) => {
     try {
       // 调用 AI 对话 API
       const res = await AIService.chat({
+        sessionId: currentSessionId,
         message: text.trim(),
         includeContext: true,
       });
 
       if (res.code === 0 && res.data) {
+        // 新建会话时保存返回的 sessionId
+        if (!currentSessionId && res.data.sessionId) {
+          setCurrentSessionId(res.data.sessionId);
+        }
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
@@ -305,7 +344,12 @@ const ChatScreen: React.FC = ({ route }: any) => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <ScreenHeader title="AI营养顾问" subtitle="基于今日饮食数据智能答疑" />
+        <ScreenHeader 
+          title={sessionTitle || 'AI营养顾问'} 
+          subtitle={sessionId ? '继续对话' : '基于今日饮食数据智能答疑'} 
+          rightIcon="time-outline"
+          onRightPress={() => navigation.navigate('ChatHistory')}
+        />
 
       {/* 顶部数据快照 */}
       <View style={styles.snapshot}>

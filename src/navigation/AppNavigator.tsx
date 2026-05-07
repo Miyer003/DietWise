@@ -17,6 +17,7 @@ import VoiceRecordScreen from '../screens/Record/VoiceRecordScreen';
 import AnalyticsScreen from '../screens/Analytics/AnalyticsScreen';
 import ConsultScreen from '../screens/Consult/ConsultScreen';
 import ChatScreen from '../screens/Consult/ChatScreen';
+import ChatHistoryListScreen from '../screens/Consult/ChatHistoryListScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import ProfileEditScreen from '../screens/Profile/ProfileEditScreen';
 import MealPlanScreen from '../screens/MealPlan/MealPlanScreen';
@@ -189,6 +190,11 @@ function AppStackNavigator() {
       <MainStack.Screen 
         name="Chat" 
         component={ChatScreen} 
+        options={{ headerShown: false }}
+      />
+      <MainStack.Screen 
+        name="ChatHistory" 
+        component={ChatHistoryListScreen} 
         options={{ headerShown: false }}
       />
       
